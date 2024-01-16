@@ -1,0 +1,63 @@
+// Place your key bindings in this file to override the defaults
+[
+  {
+    "key": "ctrl+0",
+    "command": "-workbench.action.lastEditorInGroup"
+  },
+  {
+    "key": "ctrl+0",
+    "command": "toggleVim"
+  },
+  {
+    "key": "ctrl+s",
+    "command": "workbench.action.files.save"
+  },
+  {
+    "key": "alt+space",
+    "command": "editor.action.triggerSuggest",
+    "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+  },
+  {
+    "key":     "cmd+9",
+    "command": "workbench.action.terminal.focus"
+  },
+  {
+    "key": "ctrl+q",
+    "command": "-extension.vim_winCtrlQ",
+    "when": "editorTextFocus && vim.active && vim.use<C-q> && !inDebugRepl"
+  },
+  {
+    "key": "alt+p",
+    "command": "workbench.action.quickOpen"
+  },
+  {
+    "key": "alt+w",
+    "command": "workbench.action.closeActiveEditor"
+  },
+  {
+    "key": "alt+j",
+    "command": "vscode-harpoon.gotoEditor1",
+  },
+  {
+    "key": "alt+k",
+    "command": "vscode-harpoon.gotoEditor2",
+  },
+  {
+    "key": "alt+l",
+    "command": "vscode-harpoon.gotoEditor3",
+  },
+  {
+    "key": "alt+;",
+    "command": "vscode-harpoon.gotoEditor4",
+  },
+  {
+    "key": "ctrl+y",
+    "command": "acceptSelectedSuggestion",
+    "when": "suggestWidgetVisible && textInputFocus",
+  },
+  {
+    "key": "alt+d",
+    "command": "editor.action.addSelectionToNextFindMatch",
+    "when": "editorFocus"
+  }
+]

@@ -6,6 +6,17 @@
 	// $1, $2 for tab stops, $0 for the final cursor position, and ${1:label}, ${2:another} for placeholders. 
 	// Placeholders with the same ids are connected.
 	// Example:
+
+// #include <iostream>
+
+// int main(int argc, char const *argv[])
+// {
+// 	std::cout << "-----------------------------------------\\\n";
+// 	std::cout << "hello\\\n";
+// 	return 0;
+// }
+
+
 	"CMake": {
 		"scope": "makefile",
 		"prefix": "!cmake",
@@ -14,25 +25,51 @@
 			"",
 			"i: init",
 			"",
+			"m: create_main",
+			"",
 			"c: clean",
 			"",
 			"default:",
 			"	cmake -B ./build",
 			"	cmake --build ./build",
-			"	./build/hello",
+			"	./build/Debug/main",
 			"",
-			"init: create_cmakelists",
+			"init: create_cmake",
+			"init: create_folders",
+			"init: create_main",
 			"",
-			"create_cmakelists:",
+			"create_cmake:",
 			"	printf \"cmake_minimum_required(VERSION 3.20.0)\\n\" > CMakeLists.txt",
-			"	printf \"project(Hello)\\n\" >> CMakeLists.txt",
-			"	printf \"include_directories(lib)\\n\" >> CMakeLists.txt",
+			"	printf \"project(Main)\\n\" >> CMakeLists.txt",
 			"	printf \"\\n\" >> CMakeLists.txt",
-			"	printf \"file(GLOB LIB \"lib/*.cpp\") >> CMakeLists.txt",
-			"	printf \"add_executable(Hello src/hello.cpp)\" >> CMakeLists.txt",
+			"	printf \"set(CMAKE_CXX_STANDARD 17)\\n\" >> CMakeLists.txt",
+			"	printf \"\\n\" >> CMakeLists.txt",
+			"	printf \"include_directories(fun)\\n\" >> CMakeLists.txt",
+			"	printf \"include_directories(src)\\n\" >> CMakeLists.txt",
+			"	printf \"\\n\" >> CMakeLists.txt",
+			"	printf \"file(GLOB mySources CONFIGURE_DEPENDS \"src/*.cpp\" \"fun/*.cpp\") >> CMakeLists.txt",
+			"	printf \"add_executable(Main src/main.cpp)\" >> CMakeLists.txt",
+			"",
+			"create_folders:",
+			"	mkdir fun",
+			"	mkdir build",
+			"	mkdir src",
+			"",
+			"create_main:",
+			"	printf \"#include <iostream>\\n\" > src/main.cpp",
+			"	printf \"\\n\" >> src/main.cpp",
+			"	printf \"int main(int argc, char const *argv[])\\n\" >> src/main.cpp",
+			"	printf \"{\\n\" >> src/main.cpp",
+			"	printf \"\tstd::cout << \\\"hello\\\" << std::endl;\\n\" >> src/main.cpp",
+			"	printf \"}\\n\" >> src/main.cpp",
 			"",
 			"clean:",
 			"	rm -rf build",
+			"",
+			"purge:",
+			"	rm -rf build",
+			"	rm -rf fun",
+			"	rm -rf src",
 		],
 		"description": "Log output to console"
 	}
