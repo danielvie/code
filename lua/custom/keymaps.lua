@@ -25,9 +25,16 @@ vim.keymap.set('n', '<s-q>', '@q', { desc = 'run macro @q' })
 vim.keymap.set('n', '<s-w>', '@w', { desc = 'run macro @w' })
 vim.keymap.set('n', '<s-e>', '@w', { desc = 'run macro @e' })
 
+vim.keymap.set('n', '<s-t>', '<cmd>.!cmd<cr>', { desc = 'run line as cmd' })
+vim.keymap.set('v', '<s-t>', ":'<,'>!cmd<cr>", { desc = 'run line as cmd' })
+
 -- fix windows
 vim.keymap.set('n', '<c-q>', '<c-v>', { desc = 'fix windows for <c-v>' })
 
 -- operators
 vim.keymap.set('o', '<s-l>', '$', { desc = 'operators to end of line' })
 vim.keymap.set('o', '<s-h>', '^', { desc = 'operators to begining of line' })
+
+-- move lines in visual mode
+vim.keymap.set('v', '<s-j>', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', '<s-k>', ":m '<-2<CR>gv=gv")
