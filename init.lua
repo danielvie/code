@@ -158,14 +158,19 @@ vim.opt.scrolloff = 10
 --  See `:help vim.keymap.set()`
 
 -- facilities
-vim.keymap.set('n', '<leader>w', '<cmd>w<cr>')
-vim.keymap.set('n', '<leader>q', '<cmd>q<cr>')
-vim.keymap.set('n', '<leader>x', '<cmd>bd<cr>')
-vim.keymap.set('n', '<leader>pv', '<cmd>Ex<cr>')
-vim.keymap.set('n', '<leader>0', '<cmd>cd %:p:h<cr>')
-vim.keymap.set('n', '<leader>v', '<cmd>!make<cr>')
-vim.keymap.set('n', '<s-l>', '<cmd>bn<cr>')
-vim.keymap.set('n', '<s-h>', '<cmd>bp<cr>')
+require 'custom.keymaps'
+-- vim.keymap.set('n', '<leader>w', '<cmd>w<cr>')
+-- vim.keymap.set('n', '<leader>q', '<cmd>q<cr>')
+-- vim.keymap.set('n', '<leader>x', '<cmd>bd<cr>')
+-- vim.keymap.set('n', '<leader>pv', '<cmd>Ex<cr>')
+-- vim.keymap.set('n', '<leader>0', '<cmd>cd %:p:h<cr>')
+-- vim.keymap.set('n', '<leader>v', '<cmd>!make<cr>')
+-- vim.keymap.set('n', '<s-l>', '<cmd>bn<cr>')
+-- vim.keymap.set('n', '<s-h>', '<cmd>bp<cr>')
+--
+-- vim.keymap.set('n', '<leader>no', '<cmd>e $userprofile/desktop/notes.md<cr>')
+-- vim.keymap.set('n', '<s-r>', 'za')
+-- vim.keymap.set('n', '<leader>t', 'ggVG')
 
 -- Set highlight on search, but clear on pressing <Esc> in normal mode
 vim.opt.hlsearch = true
@@ -249,6 +254,14 @@ require('lazy').setup({
 
   -- "gc" to comment visual regions/lines
   { 'numToStr/Comment.nvim', opts = {} },
+
+  -- replace with `gr`
+  {
+    'vim-scripts/ReplaceWithRegister',
+    opts = {},
+    config = function() -- This is the function that runs, AFTER loading
+    end,
+  },
 
   -- Here is a more advanced example where we pass configuration
   -- options to `gitsigns.nvim`. This is equivalent to the following Lua:
@@ -382,7 +395,9 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
+
       vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
@@ -552,6 +567,7 @@ require('lazy').setup({
         clangd = {},
         -- gopls = {},
         pyright = {},
+        matlab_ls = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
         --
@@ -788,7 +804,17 @@ require('lazy').setup({
       -- - saiw) - [S]urround [A]dd [I]nner [W]ord [)]Paren
       -- - sd'   - [S]urround [D]elete [']quotes
       -- - sr)'  - [S]urround [R]eplace [)] [']
-      require('mini.surround').setup()
+      require('mini.surround').setup {
+        mappings = {
+          add = 'sy',
+        },
+      }
+
+      require('mini.pairs').setup {}
+      require('mini.tabline').setup {}
+      require('mini.diff').setup {}
+      require('mini.starter').setup {}
+      require('mini.indentscope').gen_animation.none()
 
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
