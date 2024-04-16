@@ -7,7 +7,7 @@ git pager = `delta`
 ```
 
 ```
-git config --global core.editor "vim"
+git config --global core.editor "nvim"
 ```
 
 ```
