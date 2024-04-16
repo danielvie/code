@@ -4,30 +4,42 @@ general
 
 ```
 git pager = `delta`
+```
 
+```
 git config --global core.editor "vim"
+```
+
+```
 git config --global core.pager delta
+```
 
-git config --global core.autostash true
-git config --global core.autoSquash true
-
-git log --oneline -S "embarassing" --walk-reflog --date=local | grep commit | less
-
-REMOVE FILE FROM REPO
-
-git filter-branch --tree-filter 'rm -f path/to/file' HEAD
-
+```
+git commit --amend --reset-author
+```
 
 RRR - Reuse Recorder Resolution
 Once enabled, `rerere` will remember each side of a conflict and apply the recorded resolution next time the same conflict reappears.
 
-git config rerere.enabled true
-
- %userprofile%\.gitconfig
-~\.gitconfig
-
-git commit --amend --reset-author
 ```
+git config rerere.enabled true
+```
+
+```
+git config --global core.autostash true
+git config --global core.autoSquash true
+
+git log --oneline -S "embarassing" --walk-reflog --date=local | grep commit | less
+```
+
+REMOVE FILE FROM REPO
+```
+git filter-branch --tree-filter 'rm -f path/to/file' HEAD
+```
+
+
+%userprofile%\.gitconfig
+~\.gitconfig
 
 alias
 
