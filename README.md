@@ -1,3 +1,10 @@
+### terminal utils
+
+CLEAR terminal
+```
+alias cls='printf "\033c"'
+```
+
 ### git config
 
 general
@@ -35,11 +42,6 @@ git log --oneline -S "embarassing" --walk-reflog --date=local | grep commit | le
 REMOVE FILE FROM REPO
 ```
 git filter-branch --tree-filter 'rm -f path/to/file' HEAD
-```
-
-CLEAR terminal
-```
-alias cls='printf "\033c"'
 ```
 
 %userprofile%\.gitconfig
