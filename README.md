@@ -37,11 +37,15 @@ REMOVE FILE FROM REPO
 git filter-branch --tree-filter 'rm -f path/to/file' HEAD
 ```
 
+CLEAR terminal
+```
+alias cls='printf "\033c"'
+```
 
 %userprofile%\.gitconfig
 ~\.gitconfig
 
-alias
+### git alias
 
 ```
 [alias]
