@@ -1,8 +1,14 @@
 ### terminal utils
 
 CLEAR terminal
+linux
 ```
 alias cls='printf "\033c"'
+```
+
+macos:
+```
+alias cls='printf "\e[H\e[2J\e[3J"'
 ```
 
 ### git config
