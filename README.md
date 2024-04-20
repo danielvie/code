@@ -1,6 +1,7 @@
 ### terminal utils
 
 CLEAR terminal
+
 linux
 ```
 alias cls='printf "\033c"'
