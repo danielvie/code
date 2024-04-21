@@ -53,6 +53,19 @@ _fzf_comprun() {
 }
 ```
 
+Zoxide
+
+```
+brew install zoxide
+```
+
+in `.zshrc`
+
+```
+# -- config zoxide
+eval "$(zoxide init zsh)"
+alias cd="z"
+```
 
 ### git config
 
