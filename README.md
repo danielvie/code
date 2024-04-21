@@ -12,11 +12,7 @@ macos:
 alias cls='printf "\e[H\e[2J\e[3J"'
 ```
 
-FZF in terminal
-
-requirements:
-
-eza
+Eza
 
 ```
 brew install eza
@@ -25,6 +21,8 @@ brew install eza
 ```
 alias ls='eza --color=always --long --git --no-filesize --icons=always --no-time --no-user --no-permissions'
 ```
+
+FZF in terminal
 
 ```
 brew install fzf
