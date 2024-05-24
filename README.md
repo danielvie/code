@@ -70,6 +70,14 @@ alias cd="z"
 general
 
 ```
+git config --global user.name "Your Name"
+```
+
+```
+git config --global user.email "youremail@yourdomain.com"
+```
+
+```
 git pager = `delta`
 ```
 
