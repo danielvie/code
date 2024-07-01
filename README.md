@@ -184,8 +184,19 @@ git filter-branch --tree-filter 'rm -f path/to/file' HEAD
 
     iter = ci -am "iter"
     cii  = ci -am "iter"
-
+ 
     am  = ci -a --am
 
     customcmd = "!f() { git ci .github/workflows/backend.yml -m \"testing actions $1\" && git push; }; f"
+```
+
+### Compilation C++
+
+`.clangd` example
+```
+CompileFlags:
+  Add: [ 
+    '-std=c++23',
+    '-I/Users/danielvieira/Sandbox/cpp/cpp_expected/src',
+  ]
 ```
