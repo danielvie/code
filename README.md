@@ -200,3 +200,8 @@ CompileFlags:
     '-I/Users/danielvieira/Sandbox/cpp/cpp_expected/src',
   ]
 ```
+
+### export methods C++
+```cpp
+extern "C" __declspec(dllexport) int func(int a, int b) {...}
+```
