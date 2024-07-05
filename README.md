@@ -205,3 +205,6 @@ CompileFlags:
 ```cpp
 extern "C" __declspec(dllexport) int func(int a, int b) {...}
 ```
+
+### custom terminal
+starship
