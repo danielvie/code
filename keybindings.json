@@ -49,5 +49,15 @@
   {
     "key": "alt+;",
     "command": "vscode-harpoon.gotoEditor4",
+  },
+  {
+    "key": "ctrl+y",
+    "command": "acceptSelectedSuggestion",
+    "when": "suggestWidgetVisible && textInputFocus",
+  },
+  {
+    "key": "alt+d",
+    "command": "editor.action.addSelectionToNextFindMatch",
+    "when": "editorFocus"
   }
 ]
