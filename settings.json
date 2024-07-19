@@ -1,4 +1,5 @@
 {
+
   "editor.fontFamily": "'JetBrainsMono Nerd Font', 'Fira Code NF', 'cascadia code', Consolas, 'Courier New', monospace",
   "editor.fontLigatures": false,
   "editor.fontSize": 14,
@@ -39,21 +40,11 @@
 
   // language specific config
   "[python]": {
-    "editor.defaultFormatter": "ms-python.black-formatter",
     "editor.formatOnSave": true
   },
 
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features"
-  },
-  "[latex]": {
-    "editor.defaultFormatter": "James-Yu.latex-workshop"
-  },
-  "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
-  },
-  "[rust]": {
-    "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
 
   "explorer.compactFolders": false,
@@ -76,6 +67,9 @@
   "vim.smartRelativeLine": true,
   "vim.disableExtension": false,
   "vim.foldfix": true,
+  
+  "vim.highlightedyank.enable": true,
+  // "vim.highlightedyank.color": "#ff8c31",
 
   "vim.normalModeKeyBindings": [
     // {
@@ -89,6 +83,15 @@
       "before": ["<s-k>"],
       "commands": ["editor.action.showDefinitionPreviewHover"]
     },
+    {
+      "before": ["z", "m"],
+      "commands": ["editor.foldAll"],
+    },
+    {
+      "before": ["z", "r"],
+      "commands": ["editor.unfoldAll"],
+    },
+
     {
       "before": ["<s-k>"],
       "commands": ["editor.action.showDefinitionPreviewHover"]
@@ -502,7 +505,7 @@
   },
   "security.workspace.trust.untrustedFiles": "open",
   "liveServer.settings.donotShowInfoMsg": true,
-  "terminal.integrated.defaultProfile.windows": "Command Prompt",
+  "terminal.integrated.defaultProfile.windows": "PowerShell",
   "terminal.integrated.profiles.windows": {
     "PowerShell": {
       "source": "PowerShell",
@@ -572,7 +575,6 @@
     "language-julia.interrupt",
     "matlab.interrupt"
   ],
-  "julia.symbolCacheDownload": true,
   "editor.inlineSuggest.suppressSuggestions": true,
   "cSpell.customDictionaries": {},
   "cSpell.enableFiletypes": [
