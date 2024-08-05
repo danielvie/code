@@ -40,6 +40,25 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+f' -ScriptBlock {
 }
 ```
 
+open project folders
+```powershell
+Set-PSReadLineKeyHandler -Key "Ctrl+p" -ScriptBlock {
+    $sand = fd -t d -d 1 -a --base-directory "C:\SANDBOX"
+    $project = @(
+        $sand,
+        "C:\SANDBOX",
+        "$env:LOCALAPPDATA",
+        "$env:LOCALAPPDATA\nvim"
+    ) | fzf --tac 
+
+    if ($project) {
+        $command = "cd $project"
+        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    }
+}
+```
 
 
 # COMPLETE `$PROFILE` file
