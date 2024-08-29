@@ -5,14 +5,22 @@ conda init powershell
 
 create env in conda
 ```powershell
-conda create --name {name_venv} python=X.X
+conda create --name {name} python=X.X
 ```
 
 commands conda
 ```powershell
-conda activate {name_venv}
+conda activate {name}
 ```
 
 ```powershell
 conda deactivate
+```
+
+```powershell
+conda env list
+```
+
+```powershell
+conda env remove --name {name}
 ```
