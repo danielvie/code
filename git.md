@@ -6,6 +6,12 @@ git config --global user.name "Your Name"
 git config --global user.email "youremail@yourdomain.com"
 ```
 
+```bash
+[user]
+	name = Your Name
+	email = youremail@yourdomain.com
+```
+
 Set editor
 ```bash
 git pager = `delta`
@@ -14,6 +20,11 @@ git pager = `delta`
 Change editor
 ```bash
 git config --global core.editor "nvim"
+```
+
+```bash
+[core]
+    editor = nvim
 ```
 
 Change pager
