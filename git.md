@@ -14,7 +14,8 @@ git config --global user.email "youremail@yourdomain.com"
 
 Set editor
 ```bash
-git pager = `delta`
+[core]
+    pager = delta
 ```
 
 Change editor
