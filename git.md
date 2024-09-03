@@ -12,10 +12,26 @@ git config --global user.email "youremail@yourdomain.com"
 	email = youremail@yourdomain.com
 ```
 
-Set editor
+Set pager `delta`
 ```bash
 [core]
     pager = delta
+
+[interactive]
+    diffFilter = delta --color-only
+
+[delta]
+    navigate = true    # use n and N to move between diff sections
+
+    # delta detects terminal colors automatically; set one of these to disable auto-detection
+    # dark = true
+    # light = true
+
+[merge]
+    conflictstyle = diff3
+
+[diff]
+    colorMoved = default
 ```
 
 Change editor
