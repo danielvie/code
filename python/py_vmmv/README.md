@@ -1,9 +1,9 @@
 ```mermaid
 graph TD
-    A[View] -->|user interacts| B[ViewModel]
-    B -->|sends task| C[Model]
-    C -->|returns task list| B
-    B -->|updates| A
+    A[View] -->|user actions| B[ViewModel]
+    B -->|updates model| C[Model]
+    C -->|returns values| B
+    B -->|notifies UI| A
 
     subgraph Model-View-ViewModel
         C
