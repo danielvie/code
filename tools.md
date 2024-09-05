@@ -26,6 +26,8 @@ A modern alternative to ls
 A smarter cd command. Supports all major shells
 [https://github.com/ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide)
 
+note: to init zoxide in windows, run `zoxide init powershell` and put it in $PROFILE
+
 ## scc
 Sloc, Cloc and Code: scc is a very fast accurate code counter with complexity calculations and COCOMO estimates
 [https://github.com/boyter/scc](https://github.com/boyter/scc)
