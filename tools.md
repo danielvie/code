@@ -10,6 +10,10 @@ A simple, fast and user-friendly alternative to 'find'
 A command-line fuzzy finder
 [https://github.com/junegunn/fzf](https://github.com/junegunn/fzf)
 
+## bat
+A cat(1) clone with wings.
+[https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
+
 ## jq
 json processor
 [https://github.com/jqlang/jq](https://github.com/jqlang/jq)
