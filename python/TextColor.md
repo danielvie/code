@@ -1,7 +1,7 @@
 ```python
 from enum import Enum
 
-class Colors(Enum):
+class TextColor(Enum):
     CLEAR = "\033[0m"
 
     GRAY = "\033[30m"
