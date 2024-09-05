@@ -22,7 +22,18 @@ json processor
 A modern alternative to ls
 [https://github.com/eza-community/eza](https://github.com/eza-community/eza)
 
+## zoxide
+A smarter cd command. Supports all major shells
+[https://github.com/ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide)
+
+## scc
+Sloc, Cloc and Code: scc is a very fast accurate code counter with complexity calculations and COCOMO estimates
+[https://github.com/boyter/scc](https://github.com/boyter/scc)
+
+## bandwhich
+Terminal bandwidth utilization tool
+[https://github.com/imsnif/bandwhich](https://github.com/imsnif/bandwhich)
+
 ## portal
 CLI for transfering files
-
 [https://github.com/SpatiumPortae/portal](https://github.com/SpatiumPortae/portal)
