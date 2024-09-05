@@ -20,3 +20,8 @@ set "password" as password of the user
 ```powershell
 net user {username} password
 ```
+
+disable annoying `python` suggestion
+```powershell
+Manage App Execution Aliases
+```
