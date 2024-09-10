@@ -43,8 +43,8 @@ class TaskView(QWidget):
         self.viewmodel.tasks_changed.connect(self.update_view)
 
         # Binding events to View
-        self.viewmodel.show_progress.connect(self.show_progress)
-        self.viewmodel.hide_progress.connect(self.hide_progress)
+        self.viewmodel.show_progress_changed.connect(self.show_progress)
+        self.viewmodel.hide_progress_changed.connect(self.hide_progress)
 
         self.setLayout(layout)
         self.setWindowTitle("Task Manager")
