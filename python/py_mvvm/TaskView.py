@@ -1,4 +1,4 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, \
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, \
                             QLineEdit, QListWidget, \
                             QPushButton, QProgressBar
 from TaskViewModel import TaskViewModel
@@ -23,10 +23,19 @@ class TaskView(QWidget):
         self.add_button.clicked.connect(self.add_task)
         layout.addWidget(self.add_button)
 
+        # ButtonGroup
+        button_layout = QHBoxLayout()
+
         # Delete task button
         self.delete_button = QPushButton("Delete Task", self)
         self.delete_button.clicked.connect(self.delete_task)
-        layout.addWidget(self.delete_button)
+
+        self.clear_button = QPushButton("Clear Task", self)
+        self.clear_button.clicked.connect(self.clear_task)
+
+        button_layout.addWidget(self.delete_button)
+        button_layout.addWidget(self.clear_button)
+        layout.addLayout(button_layout)
 
         # Task list
         self.task_list = QListWidget(self)
@@ -72,6 +81,10 @@ class TaskView(QWidget):
         if task:
             self.viewmodel.delete_task(task)
             self.task_input.clear()
+
+    def clear_task(self):
+        self.viewmodel.clear_task()
+        self.task_input.clear()
 
     def update_view(self):
         self.task_list.clear()

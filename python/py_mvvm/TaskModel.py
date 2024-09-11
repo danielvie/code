@@ -9,5 +9,8 @@ class TaskModel:
     def delete_task(self, task):
         self._tasks.remove(task)
 
+    def clear_task(self):
+        self._tasks.clear()
+
     def get_tasks(self):
         return self._tasks

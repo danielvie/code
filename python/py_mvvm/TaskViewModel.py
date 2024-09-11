@@ -25,5 +25,12 @@ class TaskViewModel(QObject):
         self.tasks_changed.emit()
         self.hide_progress_changed.emit()
 
+    def clear_task(self):
+        self.model.clear_task()
+        self.tasks_changed.emit()
+
+        self.value = 0
+        self.hide_progress_changed.emit()
+
     def get_tasks(self):
         return self.model.get_tasks()
