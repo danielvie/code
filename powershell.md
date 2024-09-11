@@ -142,3 +142,8 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+r' -ScriptBlock {
     }
 }
 ```
+
+Install recomendation
+```powershell
+Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
+```
