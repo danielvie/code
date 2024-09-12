@@ -1,4 +1,5 @@
 import logging
+import re
 from colorama import init, Fore, Back, Style
 
 init()
@@ -33,7 +34,10 @@ class FileFormatter(logging.Formatter):
         return formatter.format(record)
 
 # Create a logger
-logger = logging.getLogger('logger')
+logger_name = 'logger    ^&*(^)132468'
+logger_name = re.sub(r'\W', '_', logger_name)
+logger_name = re.sub(r'_+', '_', logger_name)
+logger = logging.getLogger(logger_name)
 logger.setLevel(logging.DEBUG)
 
 # Create a console handler
@@ -41,7 +45,7 @@ console_handler = logging.StreamHandler()
 console_handler.setFormatter(CustomFormatter())
 
 # Create a file handler
-file_handler = logging.FileHandler('app.log')
+file_handler = logging.FileHandler(f'{logger_name}.log')
 file_handler.setFormatter(FileFormatter())
 
 # Add the handler to the logger
