@@ -1,45 +1,49 @@
 import logging
-from TextColor import TextColor
+from colorama import init, Fore, Back, Style
 
-# Create a custom logger
-logger = logging.getLogger('mylogger')
+init()
+class CustomFormatter(logging.Formatter):
+    # Define format strings for each log level
+    FORMATS = {
+        logging.DEBUG: f'%(asctime)s - {Fore.CYAN}[D] - %(filename)s:%(funcName)s - %(message)s{Style.RESET_ALL}',
+        logging.INFO: f'%(asctime)s - {Fore.BLACK}[I] - %(filename)s:%(funcName)s - %(message)s{Style.RESET_ALL}',
+        logging.WARNING: f'%(asctime)s - {Fore.YELLOW}[W] - %(filename)s:%(funcName)s - %(message)s{Style.RESET_ALL}',
+        logging.ERROR: f'%(asctime)s - {Back.RED}[E]{Style.RESET_ALL}{Fore.RED} - %(filename)s:%(funcName)s - %(message)s{Style.RESET_ALL}',
+    }
+
+    def format(self, record):
+        # Use the format string corresponding to the log level
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+class FileFormatter(logging.Formatter):
+    # Define format strings for each log level
+    FORMATS = {
+        logging.DEBUG: f'%(asctime)s - [D] - %(filename)s:%(funcName)s - %(message)s',
+        logging.INFO: f'%(asctime)s - [I] - %(filename)s:%(funcName)s - %(message)s',
+        logging.WARNING: f'%(asctime)s - [W] - %(filename)s:%(funcName)s - %(message)s',
+        logging.ERROR: f'%(asctime)s - [E] - %(filename)s:%(funcName)s - %(message)s',
+    }
+
+    def format(self, record):
+        # Use the format string corresponding to the log level
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+# Create a logger
+logger = logging.getLogger('logger')
 logger.setLevel(logging.DEBUG)
 
 # Create a console handler
 console_handler = logging.StreamHandler()
+console_handler.setFormatter(CustomFormatter())
 
-# Create a custom formatter with ANSI escape codes
-class CustomFormatter(logging.Formatter):
-    def format(self, record):
-        message = super().format(record)
-        if 'DEBUG' in message:
-            message = message.replace('DEBUG', f'{TextColor.CYAN.value}[D]{TextColor.CLEAR.value}')
-        if 'INFO' in message:
-            message = message.replace('INFO', f'{TextColor.GRAY.value}[I]{TextColor.CLEAR.value}')
-        if 'WARNING' in message:
-            message = message.replace('WARNING', f'{TextColor.YELLOW.value}[W]')
-            message += TextColor.CLEAR.value
-        if 'ERROR' in message:
-            message = message.replace('ERROR', f'{TextColor.RED.value}[E]')
-            message += TextColor.CLEAR.value
-        if 'CRITICAL' in message:
-            message = message.replace('CRITICAL', f'{TextColor.BG_RED.value}[CRITICAL]{TextColor.CLEAR.value}{TextColor.RED.value}')
-            message += TextColor.CLEAR.value
-        return message
-
-# Create and set a formatter with custom coloring
-formatter = CustomFormatter(
-    '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S'
-)
-console_handler.setFormatter(formatter)
+# Create a file handler
+file_handler = logging.FileHandler('app.log')
+file_handler.setFormatter(FileFormatter())
 
 # Add the handler to the logger
 logger.addHandler(console_handler)
-
-# # Log messages with different severities
-logger.debug('This is a debug message.')
-logger.info('This is an info message.')
-logger.warning('This is a warning message.')
-logger.error('This is an error message.')
-logger.critical('This is a critical message.')
+logger.addHandler(file_handler)
