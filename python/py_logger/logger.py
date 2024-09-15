@@ -1,8 +1,8 @@
 import logging
-import re
-from colorama import init, Fore, Back, Style
+from colorama import init as init_colorama, Fore, Back, Style
 
-init()
+init_colorama()
+
 class CustomFormatter(logging.Formatter):
     # Define format strings for each log level
     FORMATS = {
@@ -33,21 +33,20 @@ class FileFormatter(logging.Formatter):
         formatter = logging.Formatter(log_fmt)
         return formatter.format(record)
 
-# Create a logger
-logger_name = 'logger    ^&*(^)132468'
-logger_name = re.sub(r'\W', '_', logger_name)
-logger_name = re.sub(r'_+', '_', logger_name)
-logger = logging.getLogger(logger_name)
-logger.setLevel(logging.DEBUG)
+def LoggerBuilder(name: str):
+    _logger = logging.getLogger(name)
+    _logger.setLevel(logging.DEBUG)
 
-# Create a console handler
-console_handler = logging.StreamHandler()
-console_handler.setFormatter(CustomFormatter())
+    # Create a console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(CustomFormatter())
 
-# Create a file handler
-file_handler = logging.FileHandler(f'{logger_name}.log')
-file_handler.setFormatter(FileFormatter())
+    # Create a file handler
+    file_handler = logging.FileHandler(f'{name}.log')
+    file_handler.setFormatter(FileFormatter())
 
-# Add the handler to the logger
-logger.addHandler(console_handler)
-logger.addHandler(file_handler)
+    # Add the handler to the logger
+    _logger.addHandler(console_handler)
+    _logger.addHandler(file_handler)
+    
+    return _logger
