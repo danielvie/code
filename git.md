@@ -57,7 +57,7 @@ git commit --amend --reset-author
 RRR - Reuse Recorder Resolution
 (Once enabled, `rerere` will remember each side of a conflict and apply the recorded resolution next time the same conflict reappears.)
 ```bash
-git config rerere.enabled true
+git config --global rerere.enabled true
 ```
 
 autostash
