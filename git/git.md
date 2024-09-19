@@ -82,13 +82,18 @@ git filter-branch --tree-filter 'rm -f path/to/file' HEAD
 
 ### rebase strategy
 
-`-Xours` will prioritize the changes from the feat branch, ignoring the changes from the origin/main branch in case of conflicts.
-```powershell
-git rebase -Xours origin/main
-```
+Note that during git rebase and git pull --rebase, ours and theirs may appear swapped; --ours gives the version from the branch the changes are rebased onto, 
+while --theirs gives the version from the branch that holds your work that is being rebased.
 
-`-Xtheirs` will prioritize the changes from the origin/main branch, ignoring the changes from the feat branch in case of conflicts.
-```powershell
-git rebase -Xtheirs origin/main
-```
+This is because rebase is used in a workflow that treats the history at the remote as the shared canonical one, 
+and treats the work done on the branch you are rebasing as the third-party work to be integrated, 
+and you are temporarily assuming the role of the keeper of the canonical history during the rebase. 
+As the keeper of the canonical history, you need to view the history from the remote as ours (i.e. "our shared canonical history"), 
+while what you did on your side branch as theirs (i.e. "one contributor’s work on top of it").
+
+Example `git rebase -Xours origin/main`:
+`-Xours` will prioritize the changes from the `origin/main`, ignoring the changes from the `feat` branch in case of conflicts.
+
+Example `git rebase -Xtheirs origin/main`:
+`-Xtheirs` will prioritize the changes from the `feat` branch, ignoring the changes from the `origin/main` branch in case of conflicts.
 
