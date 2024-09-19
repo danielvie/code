@@ -82,7 +82,7 @@ git filter-branch --tree-filter 'rm -f path/to/file' HEAD
 
 ### rebase strategy
 
-Note that during git rebase and git pull --rebase, ours and theirs may appear swapped; 
+During git rebase and git pull --rebase, ours and theirs may appear swapped; 
 
 --ours gives the version from the branch the changes are rebased onto, while
 
@@ -94,7 +94,7 @@ and you are temporarily assuming the role of the keeper of the canonical history
 As the keeper of the canonical history, you need to view the history from the remote as ours (i.e. "our shared canonical history"), 
 while what you did on your side branch as theirs (i.e. "one contributor’s work on top of it").
 
-Example 
+Example:
 ```powershell
 git rebase -Xours origin/main
 ```
