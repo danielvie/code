@@ -91,9 +91,14 @@ and you are temporarily assuming the role of the keeper of the canonical history
 As the keeper of the canonical history, you need to view the history from the remote as ours (i.e. "our shared canonical history"), 
 while what you did on your side branch as theirs (i.e. "one contributor’s work on top of it").
 
-Example `git rebase -Xours origin/main`:
+Example 
+```powershell
+git rebase -Xours origin/main
+```
 `-Xours` will prioritize the changes from the `origin/main`, ignoring the changes from the `feat` branch in case of conflicts.
 
-Example `git rebase -Xtheirs origin/main`:
+```powershell
+git rebase -Xtheirs origin/main
+```
 `-Xtheirs` will prioritize the changes from the `feat` branch, ignoring the changes from the `origin/main` branch in case of conflicts.
 
