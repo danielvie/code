@@ -81,12 +81,14 @@ git filter-branch --tree-filter 'rm -f path/to/file' HEAD
 
 
 ### rebase strategy
+
+`-Xours` will prioritize the changes from the feat branch, ignoring the changes from the origin/main branch in case of conflicts.
 ```powershell
 git rebase -Xours origin/main
 ```
-This will prioritize the changes from the feat branch, ignoring the changes from the origin/main branch in case of conflicts.
 
+`-Xtheirs` will prioritize the changes from the origin/main branch, ignoring the changes from the feat branch in case of conflicts.
 ```powershell
 git rebase -Xtheirs origin/main
 ```
-This will prioritize the changes from the origin/main branch, ignoring the changes from the feat branch in case of conflicts.
+
