@@ -82,8 +82,11 @@ git filter-branch --tree-filter 'rm -f path/to/file' HEAD
 
 ### rebase strategy
 
-Note that during git rebase and git pull --rebase, ours and theirs may appear swapped; --ours gives the version from the branch the changes are rebased onto, 
-while --theirs gives the version from the branch that holds your work that is being rebased.
+Note that during git rebase and git pull --rebase, ours and theirs may appear swapped; 
+
+--ours gives the version from the branch the changes are rebased onto, while
+
+--theirs gives the version from the branch that holds your work that is being rebased.
 
 This is because rebase is used in a workflow that treats the history at the remote as the shared canonical one, 
 and treats the work done on the branch you are rebasing as the third-party work to be integrated, 
