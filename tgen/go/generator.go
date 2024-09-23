@@ -1,3 +1,4 @@
+// generator.go
 package main
 
 import (
@@ -28,13 +29,13 @@ func genFile(filename, templateString string) error {
 }
 
 func genPython() {
-	templatePython := 
-`if __name__ == "__main__":
+	templatePython :=
+		`if __name__ == "__main__":
     print('bla ble')
 `
 
-	templateMakefile := 
-`r:
+	templateMakefile :=
+		`r:
 	python main.py
 `
 
@@ -47,8 +48,8 @@ func genPython() {
 }
 
 func genCpp() {
-	templateMain := 
-`#include <iostream>
+	templateMain :=
+		`#include <iostream>
 
 int main(int argc, char const *argv[])
 {
@@ -57,8 +58,8 @@ int main(int argc, char const *argv[])
 }
 `
 
-	templateCMake := 
-`cmake_minimum_required(VERSION 3.20.0)
+	templateCMake :=
+		`cmake_minimum_required(VERSION 3.20.0)
 project(main)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -72,8 +73,8 @@ target_include_directories(main PRIVATE
 )
 `
 
-	templateMakefile := 
-`all:b
+	templateMakefile :=
+		`all:b
 all:r
 
 b:
@@ -92,21 +93,5 @@ r:
 	}
 	if err := genFile("./Makefile", templateMakefile); err != nil {
 		fmt.Println(err)
-	}
-}
-
-func main() {
-	if len(os.Args) != 2 {
-		fmt.Println("no arguments")
-		return
-	}
-
-	switch os.Args[1] {
-		case "python":
-			genPython()
-		case "cpp":
-			genCpp()
-		default:
-			fmt.Println("name not known!")
 	}
 }
