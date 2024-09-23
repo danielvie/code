@@ -14,7 +14,6 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+r' -ScriptBlock {
 ```
 
 open directory
-
 ```powershell
 Set-PSReadlineKeyHandler -Chord 'Ctrl+d' -ScriptBlock {
     $search = "cd ""$(fd -t d | fzf --tac --no-sort --ansi)"""
@@ -26,6 +25,12 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+d' -ScriptBlock {
     }
 }
 ```
+
+add addr to PATH
+```powershell
+$env:PATH += ";<newpath>"
+```
+
 
 open in nvim
 ```powershell
