@@ -1,0 +1,3 @@
+
+r:
+	python main.py
