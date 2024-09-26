@@ -1,3 +1,6 @@
+all: b
+all: cp
+
 b:
 	go build
 

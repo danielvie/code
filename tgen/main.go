@@ -17,8 +17,6 @@ examples:
 
 	flag.Parse()
 
-	fmt.Printf("option: %s\n", *option)
-
 	// Check if the option is provided via the flag
 	if *option == "" {
 		if len(os.Args) < 2 {
@@ -30,7 +28,7 @@ examples:
 	}
 
 	switch *option {
-	case "python":
+	case "python", "py":
 		genPython()
 	case "cpp":
 		genCpp()
