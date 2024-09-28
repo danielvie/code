@@ -1,12 +1,13 @@
 ```mermaid
 graph TD
-    subgraph MVC
-        C[Controller]
-        M[Model]
+    subgraph MVP
         V[View]
+        M[Model]
+        P[PRESENTER]
     end
 
-    V -->|reads| M
-    V -->|notifies| C
-    C -->|updates| M
+    M -->|notifies| P
+    P -->|updates| M
+    P -->|updates| V
+    V -->|notifies| P
 ```
