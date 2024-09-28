@@ -1,4 +1,4 @@
-from TaskModel import TaskModel
+from model import TaskModel
 from PyQt6.QtCore import pyqtSignal, QObject
 
 # ViewModel

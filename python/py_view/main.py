@@ -1,6 +1,6 @@
 import sys
-from TaskView import TaskView
-from TaskViewModel import TaskViewModel
+from view import TaskView
+from view_model import TaskViewModel
 from PyQt6.QtWidgets import QApplication
 
 if __name__ == "__main__":

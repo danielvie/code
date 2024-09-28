@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, \
                             QLineEdit, QListWidget, \
                             QPushButton, QProgressBar
-from TaskViewModel import TaskViewModel
+from view_model import TaskViewModel
 
 # View
 class TaskView(QWidget):
