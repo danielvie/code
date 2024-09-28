@@ -18,7 +18,7 @@ class TaskViewModel(QObject):
 
         self.value += 10
         self.value = min(100, self.value)
-        self.show_progress_changed.emit(self.value, f"indo .. {self.value}")
+        self.show_progress_changed.emit(self.value, f"progress changed to {self.value}")
 
     def delete_task(self, task):
         self.model.delete_task(task)
