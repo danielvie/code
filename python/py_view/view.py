@@ -1,71 +1,91 @@
-import tkinter as tk
-from typing import Protocol
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, \
+                            QLineEdit, QListWidget, \
+                            QPushButton, QProgressBar
+from view_model import TaskViewModel
 
-TITLE = "To Do List"
-DELETE_BTN_TXT = "Delete"
-
-
-class Presenter(Protocol):
-    def handle_add_task(self, event=None) -> None:
-        ...
-
-    def handle_delete_task(self, event=None) -> None:
-        ...
-
-
-class TodoList(tk.Tk):
-    def __init__(self) -> None:
+# View
+class TaskView(QWidget):
+    def __init__(self, viewmodel: TaskViewModel):
         super().__init__()
-        self.title(TITLE)
-        self.geometry("500x300")
+        self.viewmodel = viewmodel
+        self.initUI()
 
-    def init_ui(self, presenter: Presenter) -> None:
-        self.frame = tk.Frame(self, padx=10, pady=10)
-        self.frame.pack(fill=tk.BOTH, expand=True)
+    def initUI(self):
+        layout = QVBoxLayout()
 
-        self.task_list = tk.Listbox(
-            self.frame,
-            height=10,
-            activestyle="none",
-        )
-        self.task_list.bind("<FocusOut>", self.on_focus_out)
-        self.task_list.bind("<<ListboxSelect>>", self.on_select_task)
-        self.task_list.pack(fill=tk.X)
+        # Task input
+        self.task_input = QLineEdit(self)
+        self.task_input.setPlaceholderText("Enter a new task")
+        layout.addWidget(self.task_input)
 
-        self.my_entry = tk.Entry(self.frame)
-        self.my_entry.pack(fill=tk.X)
-        self.my_entry.bind("<Return>", presenter.handle_add_task)
+        # Add task button
+        self.add_button = QPushButton("Add Task", self)
+        self.add_button.clicked.connect(self.add_task)
+        layout.addWidget(self.add_button)
 
-        self.del_task_button = tk.Button(
-            self.frame,
-            text=DELETE_BTN_TXT,
-            width=6,
-            pady=5,
-            state=tk.DISABLED,
-        )
-        self.del_task_button.pack(side=tk.TOP, anchor=tk.NE)
-        self.del_task_button.bind("<Button-1>", presenter.handle_delete_task)
+        # ButtonGroup
+        button_layout = QHBoxLayout()
 
-    def get_entry_text(self) -> str:
-        return self.my_entry.get()
+        # Delete task button
+        self.delete_button = QPushButton("Delete Task", self)
+        self.delete_button.clicked.connect(self.delete_task)
 
-    def clear_entry(self) -> None:
-        self.my_entry.delete(0, "end")
+        self.clear_button = QPushButton("Clear Task", self)
+        self.clear_button.clicked.connect(self.clear_task)
 
-    @property
-    def selected_task(self) -> str:
-        return self.task_list.get(self.task_list.curselection())
+        button_layout.addWidget(self.delete_button)
+        button_layout.addWidget(self.clear_button)
+        layout.addLayout(button_layout)
 
-    def on_select_task(self, event=None) -> None:
-        self.del_task_button.config(state=tk.NORMAL)
+        # Task list
+        self.task_list = QListWidget(self)
+        layout.addWidget(self.task_list)
 
-    def on_focus_out(self, event=None) -> None:
-        self.task_list.selection_clear(0, tk.END)
-        self.del_task_button.config(state=tk.DISABLED)
+        # Task list
+        self.progress = QProgressBar(self)
+        self.progress.setGeometry(50,50, 200, 30)
+        self.progress.setValue(100)
+        self.progress.setVisible(False)
+        layout.addWidget(self.progress)
 
-    def update_task_list(self, tasks: list[str]) -> None:
-        self.task_list.delete(0, tk.END)
-        for item in tasks:
-            self.task_list.insert(tk.END, item)
-        self.del_task_button.config(state=tk.DISABLED)
-        self.task_list.yview(tk.END)
+        # Binding ViewModel to View
+        self.viewmodel.tasks_changed.connect(self.update_view)
+
+        # Binding events to View
+        self.viewmodel.show_progress_changed.connect(self.show_progress)
+        self.viewmodel.hide_progress_changed.connect(self.hide_progress)
+
+        self.setLayout(layout)
+        self.setWindowTitle("Task Manager")
+        self.show()
+
+    def show_progress(self, value, message):
+        self.progress.setVisible(True)
+        self.progress.setValue(value)
+        print(message)
+
+    def hide_progress(self):
+        self.progress.setVisible(False)
+
+    def add_task(self):
+        task = self.task_input.text()
+        if task:
+            self.viewmodel.add_task(task)
+            self.task_input.clear()
+
+    def delete_task(self):
+        if self.task_list.currentItem() == None:
+            return
+
+        task = self.task_list.currentItem().text()
+        if task:
+            self.viewmodel.delete_task(task)
+            self.task_input.clear()
+
+    def clear_task(self):
+        self.viewmodel.clear_task()
+        self.task_input.clear()
+
+    def update_view(self):
+        self.task_list.clear()
+        self.task_list.addItems(self.viewmodel.get_tasks())

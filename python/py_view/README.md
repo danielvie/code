@@ -1,13 +1,18 @@
 ```mermaid
 graph TD
-    subgraph MVP
+    subgraph Model-View-ViewModel
         V[View]
         M[Model]
-        P[PRESENTER]
+        VM[ViewModel]
     end
 
-    M -->|notifies| P
-    P -->|updates| M
-    P -->|updates| V
-    V -->|notifies| P
+    V -->|user actions| VM
+    VM -->|updates| M
+    M -->|returns values| VM
+    VM -->|notifies UI| V
 ```
+
+the main difference between mvvm and mvp is that the presenter has a 
+reference to the view whereas the ViewModel doesn't have that instead,
+a view directly binds to properties on the viewmodel to send and receive
+updates.
