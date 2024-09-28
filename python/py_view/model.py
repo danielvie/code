@@ -1,16 +1,14 @@
-# Model
-class TaskModel:
-    def __init__(self):
-        self._tasks = []
+class Model:
+    def __init__(self) -> None:
+        self._tasks: list[str] = []
 
-    def add_task(self, task):
+    def add_task(self, task: str) -> None:
         self._tasks.append(task)
 
-    def delete_task(self, task):
-        self._tasks.remove(task)
+    def delete_task(self, task: str) -> None:
+        for t in self._tasks:
+            if t == task:
+                self._tasks.remove(t)
 
-    def clear_task(self):
-        self._tasks.clear()
-
-    def get_tasks(self):
+    def get_tasks(self) -> list[str]:
         return self._tasks
