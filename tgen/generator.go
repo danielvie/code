@@ -34,15 +34,17 @@ func genPython() {
     print('bla ble')
 `
 
-	templateMakefile :=
+	templateJustfile :=
 		`r:
 	python main.py
+
+set shell := ["powershell", "-c"]
 `
 
 	if err := genFile("./main.py", templatePython); err != nil {
 		fmt.Println(err)
 	}
-	if err := genFile("./Makefile", templateMakefile); err != nil {
+	if err := genFile("./Justfile", templateJustfile); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -73,9 +75,8 @@ target_include_directories(main PRIVATE
 )
 `
 
-	templateMakefile :=
-		`all:b
-all:r
+	templateJustfile :=
+		`all:b r
 
 b:
 	cmake -B build
@@ -83,6 +84,8 @@ b:
 
 r:
 	./build/debug/main.exe
+
+set shell := ["powershell", "-c"]
 `
 
 	if err := genFile("./src/main.cpp", templateMain); err != nil {
@@ -91,7 +94,7 @@ r:
 	if err := genFile("./CMakeLists.txt", templateCMake); err != nil {
 		fmt.Println(err)
 	}
-	if err := genFile("./Makefile", templateMakefile); err != nil {
+	if err := genFile("./Justfile", templateJustfile); err != nil {
 		fmt.Println(err)
 	}
 }

@@ -1,8 +1,8 @@
-all: b
-all: cp
+all: b cp
 
 b:
 	go build
 
 cp:
 	cp tgen.exe C:\SANDBOX\APP\bin
+
