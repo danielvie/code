@@ -38,7 +38,7 @@ func genPython() {
 		`r:
 	python main.py
 
-set shell := ["powershell", "-c"]
+# set shell := ["powershell", "-c"]
 `
 
 	if err := genFile("./main.py", templatePython); err != nil {
@@ -85,7 +85,7 @@ b:
 r:
 	./build/debug/main.exe
 
-set shell := ["powershell", "-c"]
+# set shell := ["powershell", "-c"]
 `
 
 	if err := genFile("./src/main.cpp", templateMain); err != nil {
