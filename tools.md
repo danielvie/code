@@ -10,9 +10,9 @@ A simple, fast and user-friendly alternative to 'find'
 A command-line fuzzy finder
 [https://github.com/junegunn/fzf](https://github.com/junegunn/fzf)
 
-## bat
-A cat(1) clone with wings.
-[https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
+## just
+Just a command runner
+[https://github.com/casey/just](https://github.com/casey/just)
 
 ## jq
 json processor
@@ -27,6 +27,10 @@ A smarter cd command. Supports all major shells
 [https://github.com/ajeetdsouza/zoxide](https://github.com/ajeetdsouza/zoxide)
 
 note: to init zoxide in windows, run `zoxide init powershell` and put it in $PROFILE
+
+## bat
+A cat(1) clone with wings.
+[https://github.com/sharkdp/bat](https://github.com/sharkdp/bat)
 
 ## scc
 Sloc, Cloc and Code: scc is a very fast accurate code counter with complexity calculations and COCOMO estimates
