@@ -13,7 +13,9 @@ func main() {
 		`an option to generate, 
 examples:
 	tgen python
+	tgen pytask
 	tgen cpp
+	tgen cpptask
 	tgen go
 `)
 
@@ -32,6 +34,8 @@ examples:
 	switch *option {
 	case "python", "py":
 		gen.GenPython()
+	case "pytask":
+		gen.GenPythonTask()
 	case "cpp":
 		gen.GenCpp()
 	case "cpptask":
