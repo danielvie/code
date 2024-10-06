@@ -34,17 +34,21 @@ func genPython() {
     print('bla ble')
 `
 
-	templateJustfile :=
-		`r:
-	python main.py
-
-# set shell := ["powershell", "-c"]
+	templateTaskfile :=
+		`version: '3'
+tasks:
+  default:
+    deps:
+      - run
+  run:
+    cmds:
+      - python main.py
 `
 
 	if err := genFile("./main.py", templatePython); err != nil {
 		fmt.Println(err)
 	}
-	if err := genFile("./Justfile", templateJustfile); err != nil {
+	if err := genFile("./Taskfile.yml", templateTaskfile); err != nil {
 		fmt.Println(err)
 	}
 }
@@ -55,8 +59,8 @@ func genCpp() {
 
 int main(int argc, char const *argv[])
 {
-	std::cout << "bla ble\n";
-	return 0;
+    std::cout << "bla ble\n";
+    return 0;
 }
 `
 
@@ -75,17 +79,23 @@ target_include_directories(main PRIVATE
 )
 `
 
-	templateJustfile :=
-		`all:b r
+	templateTaskfile :=
+		`version: '3'
+tasks:
+  default:
+    deps:
+      - run
 
-b:
-	cmake -B build
-	cmake --build build
+  build:
+    cmds:
+      - cmake -B build
+      - cmake --build build
 
-r:
-	./build/debug/main.exe
-
-# set shell := ["powershell", "-c"]
+  run:
+    deps:
+      - build
+    cmds:
+      - ./build/debug/main.exe
 `
 
 	if err := genFile("./src/main.cpp", templateMain); err != nil {
@@ -94,7 +104,7 @@ r:
 	if err := genFile("./CMakeLists.txt", templateCMake); err != nil {
 		fmt.Println(err)
 	}
-	if err := genFile("./Justfile", templateJustfile); err != nil {
+	if err := genFile("./Taskfile.yml", templateTaskfile); err != nil {
 		fmt.Println(err)
 	}
 }

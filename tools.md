@@ -14,6 +14,10 @@ A command-line fuzzy finder
 Just a command runner
 [https://github.com/casey/just](https://github.com/casey/just)
 
+## task
+A task runner / simpler Make alternative written in Go
+[https://github.com/go-task/task](https://github.com/go-task/task)
+
 ## jq
 json processor
 [https://github.com/jqlang/jq](https://github.com/jqlang/jq)

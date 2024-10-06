@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+  default:
+    deps: 
+      - copy
+
+  build:
+    cmds:
+    - go build
+
+  copy:
+    deps: 
+      - build
+    cmds:
+      - cp tgen.exe C:/SANDBOX/APP/bin
