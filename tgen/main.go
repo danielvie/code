@@ -32,6 +32,8 @@ examples:
 		genPython()
 	case "cpp":
 		genCpp()
+	case "cpptask":
+		genCppTask()
 	default:
 		fmt.Println("name not known!")
 		flag.Usage()

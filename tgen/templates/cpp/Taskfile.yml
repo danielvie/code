@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+  default:
+    deps:
+      - run
+
+  build:
+    cmds:
+      - cmake -B build
+      - cmake --build build
+
+  run:
+    deps:
+      - build
+    cmds:
+      - ./build/debug/main.exe

@@ -1,0 +1,9 @@
+version: '3'
+
+tasks:
+  default:
+    deps:
+      - run
+  run:
+    cmds:
+      - python main.py
