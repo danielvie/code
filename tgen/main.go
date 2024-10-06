@@ -4,11 +4,13 @@ import (
 	"flag"
 	"fmt"
 	"os"
+
+	"tgen/gen"
 )
 
 func main() {
 	option := flag.String("option", "",
-		`an option to generate, 
+		`an option to generate, 
 examples:
 	tgen python
 	tgen cpp
@@ -29,11 +31,11 @@ examples:
 
 	switch *option {
 	case "python", "py":
-		genPython()
+		gen.GenPython()
 	case "cpp":
-		genCpp()
+		gen.GenCpp()
 	case "cpptask":
-		genCppTask()
+		gen.GenCppTask()
 	default:
 		fmt.Println("name not known!")
 		flag.Usage()

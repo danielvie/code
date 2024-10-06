@@ -14,3 +14,9 @@ tasks:
       - build
     cmds:
       - cp tgen.exe C:/SANDBOX/APP/bin
+
+  test:
+    aliases:
+      - t
+    cmds:
+      - go test ./testing

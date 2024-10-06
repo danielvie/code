@@ -1,5 +1,5 @@
 // generator.go
-package main
+package gen
 
 import (
 	"embed"
@@ -12,7 +12,7 @@ import (
 //go:embed templates
 var templates embed.FS
 
-func genFile(filename, templatePath string) error {
+func GenFile(filename, templatePath string) error {
 	// ensure the directory exists
 	filePath := filepath.Dir(filename)
 	if err := os.MkdirAll(filePath, os.ModePerm); err != nil {
@@ -36,42 +36,44 @@ func genFile(filename, templatePath string) error {
 	return t.Execute(file, nil)
 }
 
-func genPython() {
-	if err := genFile("./main.py", "templates/python/main.py"); err != nil {
+func GenPython() error {
+	if err := GenFile("./main.py", "templates/python/main.py"); err != nil {
 		fmt.Println(err)
 	}
 
-	if err := genPythonTask(); err != nil {
-		fmt.Println(err)
-	}
-}
-
-func genPythonTask() error {
-	if err := genFile("./Taskfile.yml", "templates/python/Taskfile.yml"); err != nil {
+	if err := GenPythonTask(); err != nil {
 		fmt.Println(err)
 	}
 
 	return nil
 }
 
-func genCpp() error {
-	if err := genFile("./src/main.cpp", "templates/cpp/main.cpp"); err != nil {
-		fmt.Println(err)
-	}
-
-	if err := genFile("./CMakeLists.txt", "templates/cpp/CMakeLists.txt"); err != nil {
-		fmt.Println(err)
-	}
-
-	if err := genCppTask(); err != nil {
+func GenPythonTask() error {
+	if err := GenFile("./Taskfile.yml", "templates/python/Taskfile.yml"); err != nil {
 		fmt.Println(err)
 	}
 
 	return nil
 }
 
-func genCppTask() error {
-	if err := genFile("./Taskfile.yml", "templates/cpp/Taskfile.yml"); err != nil {
+func GenCpp() error {
+	if err := GenFile("./src/main.cpp", "templates/cpp/main.cpp"); err != nil {
+		fmt.Println(err)
+	}
+
+	if err := GenFile("./CMakeLists.txt", "templates/cpp/CMakeLists.txt"); err != nil {
+		fmt.Println(err)
+	}
+
+	if err := GenCppTask(); err != nil {
+		fmt.Println(err)
+	}
+
+	return nil
+}
+
+func GenCppTask() error {
+	if err := GenFile("./Taskfile.yml", "templates/cpp/Taskfile.yml"); err != nil {
 		fmt.Println(err)
 	}
 
