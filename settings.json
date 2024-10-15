@@ -1,7 +1,7 @@
-{
 
+{
   "editor.fontFamily": "'JetBrainsMono Nerd Font', 'Fira Code NF', 'cascadia code', Consolas, 'Courier New', monospace",
-  "editor.fontLigatures": false,
+  "editor.fontLigatures": true,
   "editor.fontSize": 14,
   "editor.lineHeight": 1.8,
   "editor.rulers": [80, 120],
@@ -11,8 +11,6 @@
   "editor.guides.bracketPairs": true,
   "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
   "editor.trimAutoWhitespace": false,
-  // "editor.stickyScroll.enabled": true,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
   "editor.quickSuggestions": { "strings": true },
   "editor.colorDecorators": false,
   "editor.formatOnSave": false,
@@ -20,8 +18,6 @@
   "editor.formatOnType": false,
   "editor.stickyScroll.defaultModel": "indentationModel",
   "editor.inlayHints.enabled": "offUnlessPressed",
-
-  "scm.experimental.showHistoryGraph": true,
 
   // "window.titleBarStyle": "native",
 
@@ -40,11 +36,23 @@
 
   // language specific config
   "[python]": {
-    "editor.formatOnSave": true
+    "editor.defaultFormatter": "ms-python.autopep8",
+    "editor.formatOnSave": false,
+    "diffEditor.ignoreTrimWhitespace": false,
   },
+  "autopep8.showNotifications": "always",
 
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features"
+  },
+  "[latex]": {
+    "editor.defaultFormatter": "James-Yu.latex-workshop"
+  },
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
 
   "explorer.compactFolders": false,
@@ -55,7 +63,7 @@
    */
   "vim.leader": "<space>",
   "vim.enableNeovim": true,
-  "vim.neovimPath": "/usr/local/bin/nvim",
+  "vim.neovimPath": "C:/SANDBOX/APP/nvim-win64/bin/nvim.exe",
   "vim.useSystemClipboard": true,
 
   "vim.easymotion": true,
@@ -69,12 +77,30 @@
   "vim.foldfix": true,
   
   "vim.highlightedyank.enable": true,
-  // "vim.highlightedyank.color": "#ff8c31",
+
+  "vim.normalModeKeyBindingsNonRecursive": [
+    {
+        "before": ["]", "d"],
+        "commands": ["editor.action.marker.nextInFiles"],
+        "silent": true
+    },
+    {
+        "before": ["[", "d"],
+        "commands": ["editor.action.marker.prevInFiles"],
+        "silent": true
+    }
+  ],
 
   "vim.normalModeKeyBindings": [
     // {
     //   "before": "<leave",              "command": "workbench.action.debug.start",    "when": "!inDebugMode" },
     // },
+
+
+    {
+      "before": ["leader", "leader", "y"],
+      "after": ["V",":","s","/",".","/","\"","&","\"",",","/","g","<cr>"]
+    },
     {
       "before": ["leader", "s", "f"],
       "commands": ["workbench.action.quickOpen"]
@@ -83,15 +109,6 @@
       "before": ["<s-k>"],
       "commands": ["editor.action.showDefinitionPreviewHover"]
     },
-    {
-      "before": ["z", "m"],
-      "commands": ["editor.foldAll"],
-    },
-    {
-      "before": ["z", "r"],
-      "commands": ["editor.unfoldAll"],
-    },
-
     {
       "before": ["<s-k>"],
       "commands": ["editor.action.showDefinitionPreviewHover"]
@@ -146,6 +163,38 @@
       "before": ["leader", "k", "s"],
       "commands": ["workbench.action.openGlobalKeybindings"]
     },
+
+    // FOLDING COMMANDS
+    {
+      "before": ["z", "j"],
+      "commands": ["editor.foldAll"]
+    },
+    {
+      "before": ["z", "m"],
+      "commands": ["editor.foldAllExcept"],
+      "when": "editorTextFocus && foldingEnabled"
+    },
+    // {
+    //   "before": ["z", ","],
+    //   "commands": ["editor.foldLevel3"],
+    //   "when": "editorTextFocus && foldingEnabled"
+    // },
+    {
+      "before": ["z", "r"],
+      "commands": ["editor.unfoldAll"]
+    },
+    {
+      "before": ["<s-r>"],
+      "commands": ["editor.toggleFoldRecursively"],
+      "when": "editorTextFocus && foldingEnabled"
+    },
+    // macro <s-t>
+    {
+      "before": ["<s-t>"],
+      "after": [
+        ":",".","!","p","o","w","e","r","s","h","e","l","l","<cr>"
+      ]
+    },
     {
       "before": ["<leader>", "v"],
       "commands": [
@@ -159,7 +208,7 @@
     // },
   ],
 
-  "runInTerminal.commands": [{ "match": "\\.*", "name": "r", "cmd": "make" }],
+  "runInTerminal.commands": [{ "match": "\\.*", "name": "r", "cmd": "task" }],
 
   "vim.visualModeKeyBindings": [
     // playground visualmode
@@ -192,6 +241,15 @@
         "l",
         "b",
        ]
+    },
+    
+
+    // macro <s-t>
+    {
+      "before": ["<s-t>"],
+      "after": [
+        ":","!","p","o","w","e","r","s","h","e","l","l","<cr>"
+      ]
     },
 
     // macro <s-e>
@@ -459,6 +517,22 @@
   /*
    * TODO-Tree configs
    */
+  "todo-tree.tree.scanMode": "workspace only",
+
+  "todo-tree.general.tags": [
+    "BUG",
+    "HACK",
+    "FIXME",
+    "ALERT",
+    "??",
+    "..",
+    "TODO",
+    "XXX",
+    "[ ]",
+    "[x]",
+    "NOTE"
+  ],
+  "todo-tree.regex.regex": "((%|#|//|<!--|^\\s*\\*)\\s*($TAGS)|^\\s*- \\[ \\])",
 
   "todo-tree.highlights.defaultHighlight": {
     "type": "text-and-comment",
@@ -479,8 +553,16 @@
     "FIXME": {
       "foreground": "#ffffff",
       // "background": "#992233",
-      "background": "#a83293",
-      "iconColour": "#a83293",
+      "background": "#fa324e",
+      "iconColour": "#fa324e",
+      "gutterIcon": true
+    },
+    "ALERT": {
+      "icon": "alert",
+      "foreground": "#ffffff",
+      // "background": "#992233",
+      "background": "#fa5731",
+      "iconColour": "#fa5731",
       "gutterIcon": true
     },
     "NOTE": {
@@ -490,10 +572,27 @@
       "background": "#a142e5",
       "iconColour": "#a142e5",
       "gutterIcon": true
+    },
+    "..": {
+      "icon": "bookmark-fill",
+      "foreground": "#ffffff",
+      // "background": "#992233",
+      "background": "#a142e5",
+      "iconColour": "#a142e5",
+      "gutterIcon": true
+    },
+    "??": {
+      "icon": "question",
+      "foreground": "#ffffff",
+      // "background": "#992233",
+      "background": "#f745b6",
+      "iconColour": "#f745b6",
+      "gutterIcon": true
     }
   },
   "todo-tree.general.tagGroups": {
-    "FIXME": ["FIXME", "FIXIT", "FIX"]
+    "FIXME": ["FIXME", "FIXIT", "FIX"],
+    "ALERT": ["ALERT"],
   },
 
   "workbench.colorCustomizations": {
@@ -505,7 +604,7 @@
   },
   "security.workspace.trust.untrustedFiles": "open",
   "liveServer.settings.donotShowInfoMsg": true,
-  "terminal.integrated.defaultProfile.windows": "PowerShell",
+  "terminal.integrated.defaultProfile.windows": "Windows PowerShell",
   "terminal.integrated.profiles.windows": {
     "PowerShell": {
       "source": "PowerShell",
@@ -524,7 +623,13 @@
     },
     "Ubuntu (WSL)": {
       "path": "C:\\Windows\\System32\\wsl.exe",
-      "args": ["-d", "Ubuntu"]
+      "args": [
+        "-d",
+        "Ubuntu"
+      ]
+    },
+    "Windows PowerShell": {
+      "path": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe"
     }
   },
   "security.workspace.trust.enabled": false,
@@ -537,17 +642,6 @@
     "**/*.txt",
     "**/.*.tex"
   ],
-  "todo-tree.general.tags": [
-    "BUG",
-    "HACK",
-    "FIXME",
-    "TODO",
-    "XXX",
-    "[ ]",
-    "[x]",
-    "NOTE"
-  ],
-  "todo-tree.regex.regex": "((%|#|//|<!--|^\\s*\\*)\\s*($TAGS)|^\\s*- \\[ \\])",
   "terminal.external.osxExec": "Warp.app",
   "terminal.integrated.defaultProfile.osx": "zsh",
   "cmake.configureOnOpen": true,
@@ -563,18 +657,16 @@
   },
 
   "diffEditor.hideUnchangedRegions.enabled": true,
-  "diffEditor.ignoreTrimWhitespace": false,
+  "diffEditor.ignoreTrimWhitespace": true,
   "diffEditor.useInlineViewWhenSpaceIsLimited": false,
   "MATLAB.installPath": "/Applications/MATLAB_R2022a.app",
 
-  "scm.showIncomingChanges": "auto",
-  "scm.showOutgoingChanges": "auto",
-
-  "terminal.integrated.stickyScroll.enabled": true,
+  "scm.showHistoryGraph": false,
   "terminal.integrated.commandsToSkipShell": [
     "language-julia.interrupt",
     "matlab.interrupt"
   ],
+  "julia.symbolCacheDownload": true,
   "editor.inlineSuggest.suppressSuggestions": true,
   "cSpell.customDictionaries": {},
   "cSpell.enableFiletypes": [
@@ -658,5 +750,20 @@
       "name": "Vue Green",
       "value": "#42b883"
     }
-  ]
+  ],
+  "powershell.promptToUpdatePowerShell": false,
+  "vim.vimrc.path": "$HOME/.vimrc",
+  "[jsonc]": {
+    "editor.defaultFormatter": "vscode.json-language-features"
+  },
+  "[powershell]": {
+    "editor.defaultFormatter": "ms-vscode.powershell"
+  },
+  "excalidraw.theme": "dark",
+  "cmake.showOptionsMovedNotification": false,
+  "julia.enableTelemetry": false,
+  "explorer.confirmDelete": false,
+  "zig.initialSetupDone": false,
+  // "gitlens.blame.format": "${message|40?} ${commit} ${agoOrDate|14-}",
+  // "gitlens.blame.dateFormat": ""
 }
