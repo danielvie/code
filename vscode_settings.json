@@ -1,4 +1,3 @@
-
 {
   "editor.fontFamily": "'JetBrainsMono Nerd Font', 'Fira Code NF', 'cascadia code', Consolas, 'Courier New', monospace",
   "editor.fontLigatures": true,
@@ -11,6 +10,8 @@
   "editor.guides.bracketPairs": true,
   "editor.bracketPairColorization.independentColorPoolPerBracketType": true,
   "editor.trimAutoWhitespace": false,
+
+  // "editor.stickyScroll.enabled": true,
   "editor.quickSuggestions": { "strings": true },
   "editor.colorDecorators": false,
   "editor.formatOnSave": false,
@@ -18,6 +19,10 @@
   "editor.formatOnType": false,
   "editor.stickyScroll.defaultModel": "indentationModel",
   "editor.inlayHints.enabled": "offUnlessPressed",
+  "terminal.integrated.enablePersistentSessions": false,
+  
+  "cmake.generator": "Visual Studio 17 2022",
+
 
   // "window.titleBarStyle": "native",
 
@@ -36,23 +41,11 @@
 
   // language specific config
   "[python]": {
-    "editor.defaultFormatter": "ms-python.autopep8",
-    "editor.formatOnSave": false,
-    "diffEditor.ignoreTrimWhitespace": false,
+    "editor.formatOnSave": true
   },
-  "autopep8.showNotifications": "always",
 
   "[html]": {
     "editor.defaultFormatter": "vscode.html-language-features"
-  },
-  "[latex]": {
-    "editor.defaultFormatter": "James-Yu.latex-workshop"
-  },
-  "[cpp]": {
-    "editor.defaultFormatter": "ms-vscode.cpptools"
-  },
-  "[rust]": {
-    "editor.defaultFormatter": "rust-lang.rust-analyzer"
   },
 
   "explorer.compactFolders": false,
@@ -77,19 +70,7 @@
   "vim.foldfix": true,
   
   "vim.highlightedyank.enable": true,
-
-  "vim.normalModeKeyBindingsNonRecursive": [
-    {
-        "before": ["]", "d"],
-        "commands": ["editor.action.marker.nextInFiles"],
-        "silent": true
-    },
-    {
-        "before": ["[", "d"],
-        "commands": ["editor.action.marker.prevInFiles"],
-        "silent": true
-    }
-  ],
+  // "vim.highlightedyank.color": "#ff8c31",
 
   "vim.normalModeKeyBindings": [
     // {
@@ -97,9 +78,55 @@
     // },
 
 
+    // vimrc
+    // macros
     {
-      "before": ["leader", "leader", "y"],
-      "after": ["V",":","s","/",".","/","\"","&","\"",",","/","g","<cr>"]
+      "before": ["<s-q>"],
+      "after": ["@", "q", "<esc>"]
+    },
+    {
+      "before": ["<s-w>"],
+      "after": ["@", "w", "<esc>"]
+    },
+    {
+      "before": ["<s-e>"],
+      "after": ["@", "e", "<esc>"]
+    },
+    {
+      "before": ["<s-t>"],
+      "after": [":", ".", "!", "s", "h", "<cr>"]
+    },
+    {
+      "before": ["<leader>", "w"],
+      "after": [":", "w", "<cr>"]
+    },
+    // a-w -> close window
+    {
+      "before": ["<a-w>"],
+      "after": [":", "q", "<cr>"]
+    },
+    // a-q -> quit
+    {
+      "before": ["<a-q>"],
+      "after": [":", "w", "a", "<cr>", ":", "q", "<cr>"]
+    },
+    
+    // facilities
+    // select all
+    {
+      "before": ["<leader>", "<leader>", "t"],
+      "after": ["g", "g", "V", "G"]
+    },
+
+    // s-h -> previous buffer
+    {
+      "before": ["<s-h>"],
+      "after": [":", "b", "p", "r", "e", "v", "i", "o", "u", "s", "<cr>"]
+    },
+    // s-l -> next buffer
+    {
+      "before": ["<s-l>"],
+      "after": [":", "b", "n", "e", "x", "t", "<cr>"]
     },
     {
       "before": ["leader", "s", "f"],
@@ -110,9 +137,44 @@
       "commands": ["editor.action.showDefinitionPreviewHover"]
     },
     {
+      "before": ["s"],
+      "after": ["<leader>", "<leader>", "<leader>", "b", "d", "w"]
+    },
+    {
+      "before": ["g", "l"],
+      "after": ["<leader>", "<leader>", "<leader>", "b", "d", "j", "k"]
+    },
+    {
+      "before": ["<s-b>"],
+      "after": ["<leader>", "<leader>","b"]
+    },
+    {
+      "before": ["z", "m"],
+      "commands": ["editor.foldAllExcept"],
+    },
+    {
+      "before": ["<leader>", "b"],
+      "commands": ["workbench.action.toggleSidebarVisibility"],
+    },
+    {
+      "before": ["<leader>", "g"],
+      "commands": ["workbench.files.action.showActiveFileInExplorer"],
+    },
+    {
+      "before": ["z", "r"],
+      "commands": ["editor.unfoldAll"],
+    },
+    {
+      "before": ["<s-r>"],
+      "commands": ["editor.toggleFoldRecursively"],
+    },
+
+    {
       "before": ["<s-k>"],
       "commands": ["editor.action.showDefinitionPreviewHover"]
     },
+
+
     {
       "before": ["leader", "h"],
       "commands": ["workbench.action.moveEditorLeftInGroup"]
@@ -164,47 +226,20 @@
       "commands": ["workbench.action.openGlobalKeybindings"]
     },
 
-    // FOLDING COMMANDS
-    {
-      "before": ["z", "j"],
-      "commands": ["editor.foldAll"]
-    },
-    {
-      "before": ["z", "m"],
-      "commands": ["editor.foldAllExcept"],
-      "when": "editorTextFocus && foldingEnabled"
-    },
-    // {
-    //   "before": ["z", ","],
-    //   "commands": ["editor.foldLevel3"],
-    //   "when": "editorTextFocus && foldingEnabled"
-    // },
-    {
-      "before": ["z", "r"],
-      "commands": ["editor.unfoldAll"]
-    },
-    {
-      "before": ["<s-r>"],
-      "commands": ["editor.toggleFoldRecursively"],
-      "when": "editorTextFocus && foldingEnabled"
-    },
-    // macro <s-t>
-    {
-      "before": ["<s-t>"],
-      "after": [
-        ":",".","!","p","o","w","e","r","s","h","e","l","l","<cr>"
-      ]
-    },
     {
       "before": ["<leader>", "v"],
       "commands": [
         { "command": "runInTerminal.run", "args": { "name": "r" } }
       ]
     },
-    
+
     // {
     //   "before": ["<leader>", "v"],
-    //   "commands": ["workbench.action.debug.start"],
+    //   "commands": ["matlab.runFile"]
+    // },
+    // {
+    //   "before": ["<leader>", "v"],
+    //   "commands": ["workbench.action.debug.start"],\bar{}
     // },
   ],
 
@@ -212,92 +247,34 @@
 
   "vim.visualModeKeyBindings": [
     // playground visualmode
+    {
+      "before": ["s"],
+      "after": ["<leader>", "<leader>", "<leader>","b", "d","w"]
+    },
+    {
+      "before": ["g", "l"],
+      "after": ["<leader>", "<leader>", "<leader>", "b", "d", "j", "k"]
+    },
 
     // surround with $$ and add ${}^\infty$
     { "before": ["q"],
-      "after": [
-        "c",
-        "\\",
-        ";",
-        "\\",
-        "m",
-        "a",
-        "t",
-        "h",
-        "r",
-        "m",
-        "{",
-        "<Esc>",
-        "p"
-      ]
+      "after": [ "c", "\\", ";", "\\", "m", "a", "t", "h", "r", "m", "{", "<Esc>", "p" ]
     },
 
     // macro <s-b>
     // add bar
-    {
-      "before": ["<s-b>"],
-      "after": [ 
-        "<leader>",
-        "l",
-        "b",
-       ]
-    },
-    
 
-    // macro <s-t>
+
     {
-      "before": ["<s-t>"],
-      "after": [
-        ":","!","p","o","w","e","r","s","h","e","l","l","<cr>"
-      ]
+      "before": ["<s-e>"],
+      "after": ["c","i","f"," ","(","h","a","s","L","o","g","<Esc>","l","a"," ","{", "<cr>"," ","<Esc>","p","k","d","d","V","j","<Esc>","f","}","]","}","k","V",">","<Esc>"]
     },
 
     // macro <s-e>
-    {
-      "before": ["<s-e>"],
-      "after": [
-        "c",
-        "\\",
-        "[",
-        "\\",
-        "<Esc>",
-        "i",
-        "<Cr>",
-        "<Esc>",
-        "O",
-        "\\",
-        "b",
-        "e",
-        "g",
-        "i",
-        "n",
-        "{",
-        "a",
-        "l",
-        "i",
-        "g",
-        "n",
-        "e",
-        "d",
-        "<Esc>",
-        "o",
-        "\\",
-        "e",
-        "n",
-        "d",
-        "{",
-        "a",
-        "l",
-        "i",
-        "g",
-        "n",
-        "e",
-        "d",
-        "}",
-        "<Esc>",
-        "P"
-      ]
-    },
+    // {
+    //   "before": ["<s-e>"],
+    //   "after": [ "c", "\\", "[", "\\", "<Esc>", "i", "<Cr>", "<Esc>", "O", "\\", "b", "e", "g", "i", "n", "{", "a", "l", "i", "g", "n", "e", "d", "<Esc>", "o", "\\", "e", "n", "d", "{", "a", "l", "i", "g", "n", "e", "d", "}", "<Esc>", "P" ]
+    // },
 
     {
       "before": ["<leader>", "s"],
@@ -306,23 +283,7 @@
 
     {
       "before": ["<leader>", "i"],
-      "after": [
-        "c",
-        "$",
-        "$",
-        "<esc>",
-        "P",
-        "a",
-        "^",
-        "\\",
-        "i",
-        "n",
-        "f",
-        "t",
-        "y",
-        "<esc>",
-        "l"
-      ]
+      "after": [ "c", "$", "$", "<esc>", "P", "a", "^", "\\", "i", "n", "f", "t", "y", "<esc>", "l" ]
     },
 
     // indent lines
@@ -355,30 +316,7 @@
     // purple
     {
       "before": ["<leader>", "c", "p"],
-      "after": [
-        "c",
-        "\\",
-        "p",
-        "u",
-        "r",
-        "p",
-        "l",
-        "e",
-        "{",
-        "<cr>",
-        "<Esc>",
-        "p",
-        "k",
-        "m",
-        "J",
-        "v",
-        "i",
-        "{",
-        ">",
-        "<Esc>",
-        "`",
-        "J",
-        "d",
+      "after": [ "c", "\\", "p", "u", "r", "p", "l", "e", "{", "<cr>", "<Esc>", "p", "k", "m", "J", "v", "i", "{", ">", "<Esc>", "`", "J", "d",
         "d",
         "k",
         "k"
@@ -388,66 +326,11 @@
     // comentario
     {
       "before": ["<leader>", "c", "c"],
-      "after": [
-        "c",
-        "\\",
-        "c",
-        "o",
-        "m",
-        "e",
-        "n",
-        "t",
-        "a",
-        "r",
-        "i",
-        "o",
-        "{",
-        "<cr>",
-        "<Esc>",
-        "p",
-        "k",
-        "m",
-        "J",
-        "v",
-        "i",
-        "{",
-        ">",
-        "<Esc>",
-        "`",
-        "J",
-        "d",
-        "d",
-        "k",
-        "k"
-      ]
+      "after": [ "c", "\\", "c", "o", "m", "e", "n", "t", "a", "r", "i", "o", "{", "<cr>", "<Esc>", "p", "k", "m", "J", "v", "i", "{", ">", "<Esc>", "`", "J", "d", "d", "k", "k" ]
     },
     {
       "before": ["<leader>", "p", "p"],
-      "after": [
-        "c",
-        "\\",
-        "p",
-        "u",
-        "r",
-        "p",
-        "l",
-        "e",
-        "{",
-        "<cr>",
-        "<esc>",
-        "P",
-        "g",
-        "v",
-        "j",
-        "j",
-        "o",
-        "j",
-        ">",
-        "o",
-        "<esc>",
-        "d",
-        "d"
-      ]
+      "after": [ "c", "\\", "p", "u", "r", "p", "l", "e", "{", "<cr>", "<esc>", "P", "g", "v", "j", "j", "o", "j", ">", "o", "<esc>", "d", "d" ]
     },
 
     // textbold
@@ -517,6 +400,7 @@
   /*
    * TODO-Tree configs
    */
+
   "todo-tree.tree.scanMode": "workspace only",
 
   "todo-tree.general.tags": [
@@ -532,7 +416,8 @@
     "[x]",
     "NOTE"
   ],
-  "todo-tree.regex.regex": "((%|#|//|<!--|^\\s*\\*)\\s*($TAGS)|^\\s*- \\[ \\])",
+
+  "todo-tree.regex.regex": "((%%?|#|//|<!--|^\\s*\\*)\\s*($TAGS)|^\\s*- \\[ \\])",
 
   "todo-tree.highlights.defaultHighlight": {
     "type": "text-and-comment",
@@ -636,12 +521,6 @@
 
   "git.mergeEditor": true,
   "git.confirmSync": false,
-  "grammarly.files.include": [
-    "**/README.md",
-    "**/readme.md",
-    "**/*.txt",
-    "**/.*.tex"
-  ],
   "terminal.external.osxExec": "Warp.app",
   "terminal.integrated.defaultProfile.osx": "zsh",
   "cmake.configureOnOpen": true,
@@ -651,22 +530,15 @@
   "errorLens.enabledDiagnosticLevels": ["error", "warning", "info", "hint"],
   "debug.inlineValues": "on",
 
-  "tailwindCSS.includeLanguages": {
-    "plaintext": "javascript",
-    "html": "html"
-  },
-
   "diffEditor.hideUnchangedRegions.enabled": true,
-  "diffEditor.ignoreTrimWhitespace": true,
+  "diffEditor.ignoreTrimWhitespace": false,
   "diffEditor.useInlineViewWhenSpaceIsLimited": false,
-  "MATLAB.installPath": "/Applications/MATLAB_R2022a.app",
+  "MATLAB.installPath": "C:/Program Files/MATLAB/R2024a",
 
-  "scm.showHistoryGraph": false,
   "terminal.integrated.commandsToSkipShell": [
     "language-julia.interrupt",
     "matlab.interrupt"
   ],
-  "julia.symbolCacheDownload": true,
   "editor.inlineSuggest.suppressSuggestions": true,
   "cSpell.customDictionaries": {},
   "cSpell.enableFiletypes": [
@@ -751,19 +623,25 @@
       "value": "#42b883"
     }
   ],
-  "powershell.promptToUpdatePowerShell": false,
-  "vim.vimrc.path": "$HOME/.vimrc",
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
+  "[cpp]": {
+    "editor.defaultFormatter": "ms-vscode.cpptools"
   },
-  "[powershell]": {
-    "editor.defaultFormatter": "ms-vscode.powershell"
+  "idf.gitPathWin": "C:\\Users\\daniel\\.espressif\\tools\\idf-git\\2.39.2\\cmd\\git.exe",
+  "idf.espIdfPathWin": "C:\\Users\\daniel\\esp\\v5.3\\esp-idf",
+  "idf.pythonBinPathWin": "C:\\Users\\daniel\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",
+  "idf.toolsPathWin": "C:\\Users\\daniel\\.espressif",
+  "idf.customExtraPaths": "C:\\Users\\daniel\\.espressif\\tools\\xtensa-esp-elf-gdb\\14.2_20240403\\xtensa-esp-elf-gdb\\bin;C:\\Users\\daniel\\.espressif\\tools\\riscv32-esp-elf-gdb\\14.2_20240403\\riscv32-esp-elf-gdb\\bin;C:\\Users\\daniel\\.espressif\\tools\\xtensa-esp-elf\\esp-13.2.0_20240530\\xtensa-esp-elf\\bin;C:\\Users\\daniel\\.espressif\\tools\\riscv32-esp-elf\\esp-13.2.0_20240530\\riscv32-esp-elf\\bin;C:\\Users\\daniel\\.espressif\\tools\\esp32ulp-elf\\2.38_20240113\\esp32ulp-elf\\bin;C:\\Users\\daniel\\.espressif\\tools\\cmake\\3.24.0\\bin;C:\\Users\\daniel\\.espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20240318\\openocd-esp32\\bin;C:\\Users\\daniel\\.espressif\\tools\\ninja\\1.11.1;C:\\Users\\daniel\\.espressif\\tools\\idf-exe\\1.0.3;C:\\Users\\daniel\\.espressif\\tools\\ccache\\4.8\\ccache-4.8-windows-x86_64;C:\\Users\\daniel\\.espressif\\tools\\dfu-util\\0.11\\dfu-util-0.11-win64;C:\\Users\\daniel\\.espressif\\tools\\esp-rom-elfs\\20240305",
+  "idf.customExtraVars": {
+    "OPENOCD_SCRIPTS": "C:\\Users\\daniel\\.espressif\\tools\\openocd-esp32\\v0.12.0-esp32-20240318/openocd-esp32/share/openocd/scripts",
+    "IDF_CCACHE_ENABLE": "1",
+    "ESP_ROM_ELF_DIR": "C:\\Users\\daniel\\.espressif\\tools\\esp-rom-elfs\\20240305/"
   },
+  "extensions.ignoreRecommendations": true,
+  "gitlens.blame.format": "${message|25?} -> ${author|10-} (${agoOrDate|14-})",
+  "diffEditor.renderSideBySide": true,
   "excalidraw.theme": "dark",
   "cmake.showOptionsMovedNotification": false,
-  "julia.enableTelemetry": false,
-  "explorer.confirmDelete": false,
-  "zig.initialSetupDone": false,
-  // "gitlens.blame.format": "${message|40?} ${commit} ${agoOrDate|14-}",
-  // "gitlens.blame.dateFormat": ""
+  "zig.initialSetupDone": true,
+  "zig.path": "zig",
+  "zig.zls.path": "c:\\Users\\daniel\\AppData\\Roaming\\Code\\User\\globalStorage\\ziglang.vscode-zig\\zls_install\\zls.exe"
 }
