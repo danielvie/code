@@ -2,6 +2,14 @@
 
 CLEAR terminal
 
+set env
+```powershell
+set Path=<newpath>;%Path%
+```
+```powershell
+$env:Path = "<newpath>;$env:Path"
+```
+
 linux
 ```
 alias cls='printf "\033c"'
@@ -13,7 +21,6 @@ alias cls='printf "\e[H\e[2J\e[3J"'
 ```
 
 Eza
-
 ```
 brew install eza
 ```
