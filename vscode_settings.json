@@ -31,8 +31,6 @@
 
   // "workbench.statusBar.visible": false,
   "workbench.iconTheme": "symbols",
-  // "workbench.activityBar.location": "hidden", // ctrl+q
-  "workbench.colorTheme": "Catppuccin Macchiato",
   "workbench.editor.labelFormat": "short",
 
   // "symbols.hidesExplorerArrows": false,
@@ -70,7 +68,7 @@
   "vim.foldfix": true,
   
   "vim.highlightedyank.enable": true,
-  // "vim.highlightedyank.color": "#ff8c31",
+  "vim.highlightedyank.color": "#ffb530",
 
   "vim.normalModeKeyBindings": [
     // {
@@ -117,6 +115,19 @@
       "before": ["<leader>", "<leader>", "t"],
       "after": ["g", "g", "V", "G"]
     },
+
+    {
+        "before": ["]", "d"],
+        "commands": ["editor.action.marker.nextInFiles"],
+        "silent": true
+    },
+    {
+        "before": ["[", "d"],
+        "commands": ["editor.action.marker.prevInFiles"],
+        "silent": true
+    },
+
+
 
     // s-h -> previous buffer
     {
@@ -213,6 +224,9 @@
     { "before": ["<leader>", "4"], "commands": ["vscode-harpoon.gotoEditor4"] },
     { "before": ["<leader>", "5"], "commands": ["vscode-harpoon.gotoEditor5"] },
     { "before": ["<leader>", "6"], "commands": ["vscode-harpoon.gotoEditor6"] },
+
+
+
     {
       "before": ["<c-k>"],
       "commands": ["workbench.action.focusNextGroup"]
@@ -626,6 +640,7 @@
   "[cpp]": {
     "editor.defaultFormatter": "ms-vscode.cpptools"
   },
+
   "idf.gitPathWin": "C:\\Users\\daniel\\.espressif\\tools\\idf-git\\2.39.2\\cmd\\git.exe",
   "idf.espIdfPathWin": "C:\\Users\\daniel\\esp\\v5.3\\esp-idf",
   "idf.pythonBinPathWin": "C:\\Users\\daniel\\.espressif\\python_env\\idf5.3_py3.11_env\\Scripts\\python.exe",
@@ -636,12 +651,30 @@
     "IDF_CCACHE_ENABLE": "1",
     "ESP_ROM_ELF_DIR": "C:\\Users\\daniel\\.espressif\\tools\\esp-rom-elfs\\20240305/"
   },
+
   "extensions.ignoreRecommendations": true,
   "gitlens.blame.format": "${message|25?} -> ${author|10-} (${agoOrDate|14-})",
   "diffEditor.renderSideBySide": true,
   "excalidraw.theme": "dark",
   "cmake.showOptionsMovedNotification": false,
-  "zig.initialSetupDone": true,
   "zig.path": "zig",
-  "zig.zls.path": "c:\\Users\\daniel\\AppData\\Roaming\\Code\\User\\globalStorage\\ziglang.vscode-zig\\zls_install\\zls.exe"
+  "zig.zls.enabled": "on",
+
+  "extensions.experimental.affinity": {
+    "asvetliakov.vscode-neovim": 1
+  },
+  "gitlens.views.scm.grouped.views": {
+    "commits": true,
+    "branches": true,
+    "remotes": true,
+    "stashes": true,
+    "tags": true,
+    "worktrees": true,
+    "contributors": true,
+    "repositories": false,
+    "searchAndCompare": true,
+    "launchpad": false
+  },
+  "svelte.enable-ts-plugin": true,
+  "workbench.colorTheme": "One Dark Pro",
 }
