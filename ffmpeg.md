@@ -1,6 +1,6 @@
 with cuda
 ```powershell
-ffmpeg -hwaccel cuda -i input.mp4 -c:v hevc_nvenc -b:v 1000k -c:a mp3 output.mp4
+ffmpeg -hwaccel cuda -i input.mp4 -c:v hevc_nvenc -b:v 1500k -c:a mp3 output_1500k.mp4
 ```
 
 
