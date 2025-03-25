@@ -1,3 +1,9 @@
+with cuda
+```powershell
+ffmpeg -hwaccel cuda -i input.mp4 -c:v hevc_nvenc -b:v 1000k -c:a mp3 output.mp4
+```
+
+
 reduce bitrate
 ```powershell
 ffmpeg -i input.mp4 -vcodec libx264 -b:v 1000k -acodec mp3 output.mp4
