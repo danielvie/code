@@ -1,6 +1,6 @@
 # USEFUL commands
 
-allow execution of scripts. (NOTE:: options are: AllSigned, Bypass, Default, RemoteSigned, Restricted, Undefined, Unrestricted.)
+Allow execution of scripts. (NOTE:: options are: AllSigned, Bypass, Default, RemoteSigned, Restricted, Undefined, Unrestricted.)
 ```powershell
 Set-ExecutionPolicy Unrestricted
 ```
