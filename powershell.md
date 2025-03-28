@@ -1,3 +1,15 @@
+# USEFUL commands
+
+allow execution of scripts. (NOTE:: options are: AllSigned, Bypass, Default, RemoteSigned, Restricted, Undefined, Unrestricted.)
+```powershell
+Set-ExecutionPolicy Unrestricted
+```
+
+Install recomendation
+```powershell
+Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
+```
+
 # USEFUL bindings
 
 open history
@@ -148,7 +160,4 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+r' -ScriptBlock {
 }
 ```
 
-Install recomendation
-```powershell
-Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
-```
+
