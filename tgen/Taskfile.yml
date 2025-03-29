@@ -2,21 +2,19 @@ version: '3'
 
 tasks:
   default:
-    deps: 
-      - copy
+    deps: ["copy"]
 
   build:
+    aliases: ["b"]
     cmds:
-    - go build
+      - go build
 
   copy:
-    deps: 
-      - build
+    deps: ["build"]
     cmds:
       - cp tgen.exe C:/SANDBOX/APP/bin
 
   test:
-    aliases:
-      - t
+    aliases: ["t"]
     cmds:
       - go test ./testing

@@ -2,16 +2,15 @@ version: '3'
 
 tasks:
   default:
-    deps:
-      - run
+    deps: ["main"]
 
   build:
+    aliases: ["b"]
     cmds:
       - cmake -B build
       - cmake --build build
 
-  run:
-    deps:
-      - build
+  main:
+    deps: ["build"]
     cmds:
       - ./build/debug/main.exe

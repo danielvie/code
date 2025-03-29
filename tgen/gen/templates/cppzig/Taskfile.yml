@@ -1,0 +1,14 @@
+version: '3'
+
+tasks:
+  default:
+    deps: ["main"]
+
+  build:
+    aliases: ["b"]
+    cmds:
+      - zig build
+
+  main:
+    cmds:
+      - zig build run

@@ -2,8 +2,7 @@ version: '3'
 
 tasks:
   default:
-    deps:
-      - run
-  run:
+    deps: ["main"]
+  main:
     cmds:
       - 
