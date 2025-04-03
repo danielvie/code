@@ -10,6 +10,11 @@ Install recomendation
 Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
 ```
 
+Append Path
+```powershell
+$env:Path += ";C:\Your\New\Path"
+```
+
 # USEFUL bindings
 
 open history
