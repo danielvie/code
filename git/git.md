@@ -12,6 +12,13 @@ git config --global user.email "youremail@yourdomain.com"
 	email = youremail@yourdomain.com
 ```
 
+Set grep to Peal compatible regex
+```bash
+[grep]
+    lineNumber = true
+    patternType = perl
+```
+
 Set pager `delta`
 ```bash
 [core]
