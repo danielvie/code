@@ -3,6 +3,10 @@ with cuda
 ffmpeg -hwaccel cuda -i input.mp4 -c:v hevc_nvenc -b:v 1500k -c:a mp3 output_1500k.mp4
 ```
 
+cut time frame
+```powershell
+ffmpeg -i input.mp4 -ss 00:31:40 -to 00:33:00 -c:v copy -c:a copy -map 0:v -map 0:a -map 0:5 output.mp4
+```
 
 reduce bitrate
 ```powershell
