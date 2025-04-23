@@ -35,6 +35,7 @@
     log1        = log -n 1
     move        = "!f() { git co -b temp_Branch_D0nV1; git reset --soft $1; git co $1; git br -D temp_Branch_D0nV1; }; f"
     purge       = reflog expire --expire-unreachable=now --all
+    obliterate  = reflog expire --expire-unreachable=now --all
     ref         = log --reflog --pretty=format:"%h%x09%an%x09%ad%x09%s"
     ref2        = log --reflog --oneline
     rem         = remote -v
