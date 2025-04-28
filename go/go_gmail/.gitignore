@@ -1,0 +1,6 @@
+# secrets 
+client_secret.json
+token.json
+
+# folders 
+.vscode/

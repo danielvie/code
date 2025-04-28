@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  main:
+    aliases: ["m"]
+    cmds:
+     - go run main.go
+
+  clear:
+    aliases: ["c"]
+    cmds:
+     - powershell rm token.json
