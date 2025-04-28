@@ -21,132 +21,26 @@ import (
 	"google.golang.org/api/option"
 )
 
-// Retrieve a token, saves the token, then returns the generated client.
-func initialize_gmail_service() (*gmail.Service, error) {
-	// read client secret
-	b, err := os.ReadFile("client_secret.json")
-	if err != nil {
-		return nil, err
+func build_query_command(query_list []string) string {
+	for i, qi := range query_list {
+		query_list[i] = fmt.Sprintf("from:%s", strings.ReplaceAll(qi, "\"", "\\\""))
 	}
 
-	// get scope config
-	config, err := google.ConfigFromJSON(b, gmail.GmailModifyScope)
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
-	}
+	query_command := strings.Join(query_list, " OR ")
+	query_command = fmt.Sprintf("(%s)", query_command)
 
-	// read the token
-	tok_file := "token.json"
-	tok, err := token_from_file(tok_file)
-	if err != nil {
-		tok = get_token_from_web(config)
-		save_token(tok_file, tok)
-	}
-
-	// get service object
-	ctx := context.Background()
-	client := config.Client(ctx, tok)
-	srv, err := gmail.NewService(ctx, option.WithHTTPClient(client))
-	if err != nil {
-		return nil, fmt.Errorf("Unable to create Gmail service: %v", err)
-	}
-
-	return srv, nil
+	return query_command
 }
 
-// Request a token from the web, then returns the retrieved token.
-func get_token_from_web(config *oauth2.Config) *oauth2.Token {
-	config.RedirectURL = "urn:ietf:wg:oauth:2.0:oob"
-	auth_url := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("1. Go to this URL in your browser:\n%v\n", auth_url)
-	fmt.Printf("2. After authorizing, copy the code provided.\n")
-	fmt.Printf("3. Paste the code here and press Enter: ")
+func confirm_removal(emails_id []string) string {
+	emails_id_len := len(emails_id)
+	fmt.Printf("Do you want to remove %d elements? (Yes/No): ", emails_id_len)
+	var user_response string
+	fmt.Scanln(&user_response)
 
-	var auth_code string
-	if _, err := fmt.Scan(&auth_code); err != nil {
-		log.Fatalf("Unable to read authorization code: %v", err)
-	}
-
-	tok, err := config.Exchange(context.TODO(), auth_code)
-	if err != nil {
-		log.Fatalf("Unable to retrieve token from web: %v", err)
-	}
-	return tok
+	return user_response
 }
 
-// Retrieve a token from a local file.
-func token_from_file(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(tok)
-	return tok, err
-}
-
-// Save a token to a file path.
-func save_token(path string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", path)
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
-	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
-}
-
-// List emails and return them as a string slice
-func fetch_emails(srv *gmail.Service, query_command string) []string {
-	user := "me"
-	r, err := srv.Users.Messages.List(user).
-		LabelIds("INBOX").
-		Q(query_command).
-		// Q("from:\"liquidz\" OR from:\"nubank\"").
-		MaxResults(100).Do()
-
-	// r, err := srv.Users.Messages.List(user).Do()
-	if err != nil {
-		log.Fatalf("Unable to retrieve messages: %v", err)
-	}
-
-	var email_lines []string
-
-	for _, m := range r.Messages {
-		msg, err := srv.Users.Messages.Get(user, m.Id).Do()
-		if err != nil {
-			log.Printf("Unable to retrieve message %v: %v", m.Id, err)
-			continue
-		}
-
-		var from, subject, date string
-		for _, header := range msg.Payload.Headers {
-			if header.Name == "From" {
-				from = header.Value
-			}
-			if header.Name == "Subject" {
-				subject = header.Value
-			}
-			if header.Name == "Date" {
-				date = header.Value
-			}
-		}
-
-		email_lines = append(email_lines, fmt.Sprintf("%s | %s | %s | %s", from, subject, date, m.Id))
-	}
-	// sorting emails
-	sort.Strings(email_lines)
-
-	// enumerating lines
-	for i, email := range email_lines {
-		email_lines[i] = fmt.Sprintf("%3d: %s", i+1, email)
-	}
-
-	return email_lines
-}
-
-// Write email list to a file and open it in Neovim
 func edit_emails_in_nvim(email_lines []string, query_command string, flag_query_command bool) []string {
 	// Create a temporary file
 	tmp_file, err := os.CreateTemp("", "gmail_emails_*.txt")
@@ -190,6 +84,25 @@ func edit_emails_in_nvim(email_lines []string, query_command string, flag_query_
 	// Split content into lines and return
 	// Using strings.Split to convert the string into a slice of lines
 	return strings.Split(strings.TrimSuffix(string(modified_content), "\n"), "\n")
+}
+
+func edit_querylist_file(queries []string) error {
+	// open file
+	file, err := os.OpenFile("query_list.txt", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+	if err != nil {
+		return fmt.Errorf("unable to open file: %v", err)
+	}
+	defer file.Close()
+
+	// write items in file
+	for _, item := range queries {
+		_, err := file.WriteString(fmt.Sprintf("%s\n", item))
+		if err != nil {
+			return fmt.Errorf("unable to write to file: %v", err)
+		}
+	}
+
+	return nil
 }
 
 func edit_querylist_in_nvim(command_list []string) []string {
@@ -268,26 +181,56 @@ func edit_querylist_in_nvim(command_list []string) []string {
 
 	return filtered_list
 }
-func edit_querylist_file(queries []string) error {
-	// open file
-	file, err := os.OpenFile("query_list.txt", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0644)
+
+func fetch_emails(srv *gmail.Service, query_command string) []string {
+	user := "me"
+	r, err := srv.Users.Messages.List(user).
+		LabelIds("INBOX").
+		Q(query_command).
+		// Q("from:\"liquidz\" OR from:\"nubank\"").
+		MaxResults(100).Do()
+
+	// r, err := srv.Users.Messages.List(user).Do()
 	if err != nil {
-		return fmt.Errorf("unable to open file: %v", err)
+		log.Fatalf("Unable to retrieve messages: %v", err)
 	}
-	defer file.Close()
 
-	// write items in file
-	for _, item := range queries {
-		_, err := file.WriteString(fmt.Sprintf("%s\n", item))
+	var email_lines []string
+
+	for _, m := range r.Messages {
+		msg, err := srv.Users.Messages.Get(user, m.Id).Do()
 		if err != nil {
-			return fmt.Errorf("unable to write to file: %v", err)
+			log.Printf("Unable to retrieve message %v: %v", m.Id, err)
+			continue
 		}
+
+		var from, subject, date string
+		for _, header := range msg.Payload.Headers {
+			if header.Name == "From" {
+				from = header.Value
+			}
+			if header.Name == "Subject" {
+				subject = header.Value
+			}
+			if header.Name == "Date" {
+				date = header.Value
+			}
+		}
+
+		email_lines = append(email_lines, fmt.Sprintf("%s | %s | %s | %s", from, subject, date, m.Id))
+	}
+	// sorting emails
+	sort.Strings(email_lines)
+
+	// enumerating lines
+	for i, email := range email_lines {
+		email_lines[i] = fmt.Sprintf("%3d: %s", i+1, email)
 	}
 
-	return nil
+	return email_lines
 }
 
-func find_id(line string) string {
+func get_id_from_line(line string) string {
 	// regex the pattern
 	pattern := `^\s+\d+`
 	re := regexp.MustCompile(pattern)
@@ -302,6 +245,81 @@ func find_id(line string) string {
 	}
 
 	return msg_id
+}
+
+func get_token_from_file(file string) (*oauth2.Token, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(f).Decode(tok)
+	return tok, err
+}
+
+func get_token_from_web(config *oauth2.Config) *oauth2.Token {
+	config.RedirectURL = "urn:ietf:wg:oauth:2.0:oob"
+	auth_url := config.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
+	fmt.Printf("1. Go to this URL in your browser:\n%v\n", auth_url)
+	fmt.Printf("2. After authorizing, copy the code provided.\n")
+	fmt.Printf("3. Paste the code here and press Enter: ")
+
+	var auth_code string
+	if _, err := fmt.Scan(&auth_code); err != nil {
+		log.Fatalf("Unable to read authorization code: %v", err)
+	}
+
+	tok, err := config.Exchange(context.TODO(), auth_code)
+	if err != nil {
+		log.Fatalf("Unable to retrieve token from web: %v", err)
+	}
+	return tok
+}
+
+func init_gmail_srv() (*gmail.Service, error) {
+	// read client secret
+	b, err := os.ReadFile("client_secret.json")
+	if err != nil {
+		return nil, err
+	}
+
+	// get scope config
+	config, err := google.ConfigFromJSON(b, gmail.GmailModifyScope)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse client secret file to config: %v", err)
+	}
+
+	// read the token
+	tok_file := "token.json"
+	tok, err := get_token_from_file(tok_file)
+	if err != nil {
+		tok = get_token_from_web(config)
+		save_token(tok_file, tok)
+	}
+
+	// get service object
+	ctx := context.Background()
+	client := config.Client(ctx, tok)
+	srv, err := gmail.NewService(ctx, option.WithHTTPClient(client))
+	if err != nil {
+		return nil, fmt.Errorf("unable to create Gmail service: %v", err)
+	}
+
+	return srv, nil
+}
+
+func read_ids_from_email_list(content []string) []string {
+	ids_to_remove := make([]string, 0, len(content))
+
+	for _, c := range content {
+		id := get_id_from_line(c)
+		if len(id) > 0 {
+			ids_to_remove = append(ids_to_remove, id)
+		}
+	}
+
+	return ids_to_remove
 }
 
 func read_query_file() []string {
@@ -354,40 +372,17 @@ func remove_messages(srv *gmail.Service, ids []string) {
 	fmt.Printf("Time taken: %.2f sec\n", elapsed)
 }
 
-func build_query_command(query_list []string) string {
-	for i, qi := range query_list {
-		query_list[i] = fmt.Sprintf("from:%s", strings.ReplaceAll(qi, "\"", "\\\""))
+func save_token(path string, token *oauth2.Token) {
+	fmt.Printf("Saving credential file to: %s\n", path)
+	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	if err != nil {
+		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
-
-	query_command := strings.Join(query_list, " OR ")
-	query_command = fmt.Sprintf("(%s)", query_command)
-
-	return query_command
+	defer f.Close()
+	json.NewEncoder(f).Encode(token)
 }
 
-func read_ids_from_email_list(content []string) []string {
-	ids_to_remove := make([]string, 0, len(content))
-
-	for _, c := range content {
-		id := find_id(c)
-		if len(id) > 0 {
-			ids_to_remove = append(ids_to_remove, id)
-		}
-	}
-
-	return ids_to_remove
-}
-
-func confirm_removal(emails_id []string) string {
-	emails_id_len := len(emails_id)
-	fmt.Printf("Do you want to remove %d elements? (Yes/No): ", emails_id_len)
-	var user_response string
-	fmt.Scanln(&user_response)
-
-	return user_response
-}
-
-func get_command(reader *bufio.Reader) string {
+func select_command(reader *bufio.Reader) string {
 	fmt.Printf("select a command: ")
 	input, _ := reader.ReadString('\n')
 	user_response := strings.TrimSpace(input)
@@ -402,7 +397,7 @@ func main() {
 	commands_list := make([]string, 0)
 
 	// init gmail
-	srv, err := initialize_gmail_service()
+	srv, err := init_gmail_srv()
 	if err != nil {
 		if os.IsNotExist(err) {
 			current_dir, _ := os.Getwd()
@@ -444,7 +439,7 @@ func main() {
 		}
 
 		// get command
-		command := get_command(reader)
+		command := select_command(reader)
 
 		switch strings.ToLower(command) {
 		case ".":
