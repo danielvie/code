@@ -1,0 +1,22 @@
+build
+dist
+myscript.spec
+.DS_Store
+runwin.cmd
+
+*.exe
+
+*.exe
+
+# random
+*.lock
+
+# secret
+credential.json
+*.pickle
+
+# folders
+__pycache__/
+.venv/
+.vscode/
+main.spec

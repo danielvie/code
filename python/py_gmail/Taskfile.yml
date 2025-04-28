@@ -1,0 +1,15 @@
+version: '3'
+
+tasks:
+  default:
+    deps: [run]
+
+  run:
+    cmds:
+      - uv run -m pygmail.main
+
+  clean:
+    aliases:
+      - c
+    cmds:
+      - powershell rm token.pickle
