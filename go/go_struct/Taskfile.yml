@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  init:
+    aliases: ["i"]
+    cmds:
+     - go mod init mygo
+
+  main:
+    aliases: ["m"]
+    cmds:
+     - go run main.go
