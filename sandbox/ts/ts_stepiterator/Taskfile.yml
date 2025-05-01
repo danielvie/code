@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  main:
+    aliases: ["m"]
+    cmds:
+     - cd src && bun test_main.ts
+     
+  server:
+    aliases: ["s"]
+    cmds:
+    - bun run dev
