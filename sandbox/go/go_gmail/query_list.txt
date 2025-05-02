@@ -66,6 +66,9 @@ flixbus
 flying blue
 foxbit
 fozoco
+from:caixa
+from:icatu
+from:inter
 frontendmasters
 fusion 360
 gitbutler

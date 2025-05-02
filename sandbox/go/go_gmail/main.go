@@ -23,7 +23,8 @@ import (
 
 func build_query_command(query_list []string) string {
 	for i, qi := range query_list {
-		query_list[i] = fmt.Sprintf("from:%s", strings.ReplaceAll(qi, "\"", "\\\""))
+		// query_list[i] = fmt.Sprintf("from:%s", strings.ReplaceAll(qi, "\"", "\\\""))
+		query_list[i] = strings.ReplaceAll(qi, "\"", "\\\"")
 	}
 
 	query_command := strings.Join(query_list, " OR ")
@@ -187,7 +188,6 @@ func fetch_emails(srv *gmail.Service, query_command string) []string {
 	r, err := srv.Users.Messages.List(user).
 		LabelIds("INBOX").
 		Q(query_command).
-		// Q("from:\"liquidz\" OR from:\"nubank\"").
 		MaxResults(100).Do()
 
 	// r, err := srv.Users.Messages.List(user).Do()
@@ -393,7 +393,7 @@ func select_command(reader *bufio.Reader) string {
 func main() {
 	// vars
 	reader := bufio.NewReader(os.Stdin)
-	break_out := false
+	break_forloop := false
 	commands_list := make([]string, 0)
 
 	// init gmail
@@ -404,7 +404,7 @@ func main() {
 			fmt.Printf("\nclient_secret.json does not exist\n")
 			fmt.Printf("\nHow to fix this:\n\n")
 			fmt.Printf("1. goto https://console.cloud.google.com/apis/credentials\n")
-			fmt.Printf("2. put the file in `%s` as `credential.json`\n\n", current_dir)
+			fmt.Printf("2. put the file in `%s` as `client_secret.json`\n\n", current_dir)
 			return
 		}
 		log.Fatalf("Failed to initialize Gmail service: %v", err)
@@ -448,12 +448,20 @@ func main() {
 			query_command = build_query_command(query_list)
 		case "":
 			// should break out
-			break_out = true
+			break_forloop = true
 		case "e":
 			// should edit the query_file
 			queries_updated := edit_querylist_in_nvim(commands_list)
 			edit_querylist_file(queries_updated)
+			commands_list = make([]string, 0)
 
+			// ask new command
+			command = select_command(reader)
+			if command == "" {
+				break_forloop = true
+			}
+			query_command = build_query_command([]string{command})
+			commands_list = append(commands_list, command)
 		default:
 			// should compute a custom query_command
 			query_command = build_query_command([]string{command})
@@ -461,11 +469,10 @@ func main() {
 		}
 
 		// prompt for new input
-		if break_out {
+		if break_forloop {
 			break
 		}
 	}
 
 	println("Program terminated")
-
 }
