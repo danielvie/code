@@ -15,6 +15,10 @@ function App() {
         const steps = test.get_steps()
 
         set_steps(steps)
+        handle_clear()
+    }
+
+    function handle_clear() {
         set_steps_results({}) // reset results when loading new steps
         set_steps_running({}) // reset running states
     }
@@ -58,10 +62,9 @@ function App() {
 
     return (
         <>
-            <div className="card">
-                <button onClick={handle_click}>
-                    run test
-                </button>
+            <div className="card flex gap-2">
+                <button onClick={handle_click}>run test</button>
+                <button onClick={handle_clear}>clear tests</button>
             </div>
             <div id='steps' className='flex flex-col gap-2'>
                 {steps.map((step, idx) => (
