@@ -390,6 +390,28 @@ func select_command(reader *bufio.Reader) string {
 	return user_response
 }
 
+func process_messages(srv *gmail.Service, emails []string, query_command string) {
+	// edit emails on nvim
+	if len(emails) > 0 {
+		// edit nvim
+		flag_query_command := true
+		emails_edited := edit_emails_in_nvim(emails, query_command, flag_query_command)
+		emails_id := read_ids_from_email_list(emails_edited)
+
+		// confirm with the user to remove ids
+		user_response := confirm_removal(emails_id)
+		user_response_lower := strings.ToLower(user_response)
+
+		// remove emails
+		if user_response_lower == "y" || user_response_lower == "yes" {
+			fmt.Println("Proceeding with removal...")
+			remove_messages(srv, emails_id)
+		}
+	} else {
+		fmt.Printf("emails len: %d\n", len(emails))
+	}
+}
+
 func main() {
 	// vars
 	reader := bufio.NewReader(os.Stdin)
@@ -414,30 +436,9 @@ func main() {
 	query_list := read_query_file()
 	query_command := build_query_command(query_list)
 
+	emails := fetch_emails(srv, query_command)
+	process_messages(srv, emails, query_command)
 	for {
-		// process query_command
-		emails := fetch_emails(srv, query_command)
-
-		// edit emails on nvim
-		if len(emails) > 0 {
-			// edit nvim
-			flag_query_command := true
-			emails_edited := edit_emails_in_nvim(emails, query_command, flag_query_command)
-			emails_id := read_ids_from_email_list(emails_edited)
-
-			// confirm with the user to remove ids
-			user_response := confirm_removal(emails_id)
-			user_response_lower := strings.ToLower(user_response)
-
-			// remove emails
-			if user_response_lower == "y" || user_response_lower == "yes" {
-				fmt.Println("Proceeding with removal...")
-				remove_messages(srv, emails_id)
-			}
-		} else {
-			fmt.Printf("emails len: %d\n", len(emails))
-		}
-
 		// get command
 		command := select_command(reader)
 
@@ -454,14 +455,7 @@ func main() {
 			queries_updated := edit_querylist_in_nvim(commands_list)
 			edit_querylist_file(queries_updated)
 			commands_list = make([]string, 0)
-
-			// ask new command
-			command = select_command(reader)
-			if command == "" {
-				break_forloop = true
-			}
-			query_command = build_query_command([]string{command})
-			commands_list = append(commands_list, command)
+			continue
 		default:
 			// should compute a custom query_command
 			query_command = build_query_command([]string{command})
@@ -472,6 +466,9 @@ func main() {
 		if break_forloop {
 			break
 		}
+
+		emails := fetch_emails(srv, query_command)
+		process_messages(srv, emails, query_command)
 	}
 
 	println("Program terminated")
