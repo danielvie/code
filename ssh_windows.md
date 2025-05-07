@@ -21,3 +21,18 @@
 # Check the Server:
 - Open a terminal on another computer.
 - Use the command: ssh <username>@<windows_ip_address>.
+
+# Useful commands:
+
+```powershell
+Get-Service | rg -i ssh
+```
+
+```powershell
+Start-Service -Name sshd
+```
+
+```powershell
+Stop-Service -Name sshd
+```
+
