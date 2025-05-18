@@ -23,8 +23,8 @@ import (
 
 func build_query_command(query_list []string) string {
 	for i, qi := range query_list {
-		// query_list[i] = fmt.Sprintf("from:%s", strings.ReplaceAll(qi, "\"", "\\\""))
-		query_list[i] = strings.ReplaceAll(qi, "\"", "\\\"")
+		// query_list[i] = strings.ReplaceAll(qi, "\"", "\\\"")
+		query_list[i] = "\"" + qi + "\""
 	}
 
 	query_command := strings.Join(query_list, " OR ")
@@ -40,6 +40,24 @@ func confirm_removal(emails_id []string) string {
 	fmt.Scanln(&user_response)
 
 	return user_response
+}
+
+func open_file_in_neovim(tmp_file *os.File) []byte {
+	// cmd := exec.Command("nvim", "-u", "NONE", "-i", "NONE", tmp_file.Name())
+	cmd := exec.Command("nvim", tmp_file.Name())
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		log.Fatalf("Unable to open Neovim: %v", err)
+	}
+
+	modified_content, err := os.ReadFile(tmp_file.Name())
+	if err != nil {
+		log.Fatalf("Unable to read temp file: %v", err)
+	}
+
+	return modified_content
 }
 
 func edit_emails_in_nvim(email_lines []string, query_command string, flag_query_command bool) []string {
@@ -68,19 +86,9 @@ func edit_emails_in_nvim(email_lines []string, query_command string, flag_query_
 	}
 
 	// Open Neovim with the file
-	cmd := exec.Command("nvim", tmp_file.Name())
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("Unable to open Neovim: %v", err)
-	}
+	modified_content := open_file_in_neovim(tmp_file)
 
 	// Read the modified content
-	modified_content, err := os.ReadFile(tmp_file.Name())
-	if err != nil {
-		log.Fatalf("Unable to read temp file: %v", err)
-	}
 
 	// Split content into lines and return
 	// Using strings.Split to convert the string into a slice of lines
@@ -143,19 +151,21 @@ func edit_querylist_in_nvim(command_list []string) []string {
 	}
 
 	// Open Neovim with the file
-	cmd := exec.Command("nvim", tmp_file.Name())
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		log.Fatalf("Unable to open Neovim: %v", err)
-	}
+	modified_content := open_file_in_neovim(tmp_file)
+	// cmd := exec.Command("nvim", "-u", "NONE", "-i", "NONE", tmp_file.Name())
+	// // cmd := exec.Command("nvim", tmp_file.Name())
+	// cmd.Stdin = os.Stdin
+	// cmd.Stdout = os.Stdout
+	// cmd.Stderr = os.Stderr
+	// if err := cmd.Run(); err != nil {
+	// 	log.Fatalf("Unable to open Neovim: %v", err)
+	// }
 
 	// Read the modified content
-	modified_content, err := os.ReadFile(tmp_file.Name())
-	if err != nil {
-		log.Fatalf("Unable to read temp file: %v", err)
-	}
+	// modified_content, err := os.ReadFile(tmp_file.Name())
+	// if err != nil {
+	// 	log.Fatalf("Unable to read temp file: %v", err)
+	// }
 
 	// Split content into lines and return
 	content_list := strings.Split(strings.TrimSuffix(string(modified_content), "\n"), "\n")
@@ -330,7 +340,16 @@ func read_query_file() []string {
 
 	queries := strings.Split(strings.ReplaceAll(string(f), "\r", ""), "\n")
 
-	return queries
+	// remove empty values
+	result := make([]string, 0)
+
+	for _, qi := range queries {
+		if strings.TrimSpace(qi) != "" {
+			result = append(result, qi)
+		}
+	}
+
+	return result
 }
 
 func remove_messages(srv *gmail.Service, ids []string) {
@@ -435,6 +454,7 @@ func main() {
 	// read query file
 	query_list := read_query_file()
 	query_command := build_query_command(query_list)
+	println(query_command)
 
 	emails := fetch_emails(srv, query_command)
 	process_messages(srv, emails, query_command)
@@ -469,7 +489,8 @@ func main() {
 
 		emails := fetch_emails(srv, query_command)
 		process_messages(srv, emails, query_command)
-	}
 
-	println("Program terminated")
+		println("Program terminated")
+
+	}
 }

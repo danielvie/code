@@ -41,6 +41,15 @@ Set pager `delta`
     colorMoved = default
 ```
 
+Make submodules update automatically
+```bash
+git config --global submodule.recurse true
+```
+
+```bash
+git config --global push.recurseSubmodules on-demand
+```
+
 Change editor
 ```bash
 git config --global core.editor "nvim"
@@ -86,7 +95,6 @@ Remove file from repo
 git filter-branch --tree-filter 'rm -f path/to/file' HEAD
 ```
 
-
 ### rebase strategy
 
 During git rebase and git pull --rebase, ours and theirs may appear swapped; 
@@ -102,12 +110,12 @@ As the keeper of the canonical history, you need to view the history from the re
 while what you did on your side branch as theirs (i.e. "one contributor’s work on top of it").
 
 Example:
-```powershell
+```bash
 git rebase -Xours origin/main
 ```
 `-Xours` will prioritize the changes from the `origin/main`, ignoring the changes from the `feat` branch in case of conflicts.
 
-```powershell
+```bash
 git rebase -Xtheirs origin/main
 ```
 `-Xtheirs` will prioritize the changes from the `feat` branch, ignoring the changes from the `origin/main` branch in case of conflicts.
