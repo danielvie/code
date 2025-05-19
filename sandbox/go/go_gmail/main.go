@@ -152,20 +152,6 @@ func edit_querylist_in_nvim(command_list []string) []string {
 
 	// Open Neovim with the file
 	modified_content := open_file_in_neovim(tmp_file)
-	// cmd := exec.Command("nvim", "-u", "NONE", "-i", "NONE", tmp_file.Name())
-	// // cmd := exec.Command("nvim", tmp_file.Name())
-	// cmd.Stdin = os.Stdin
-	// cmd.Stdout = os.Stdout
-	// cmd.Stderr = os.Stderr
-	// if err := cmd.Run(); err != nil {
-	// 	log.Fatalf("Unable to open Neovim: %v", err)
-	// }
-
-	// Read the modified content
-	// modified_content, err := os.ReadFile(tmp_file.Name())
-	// if err != nil {
-	// 	log.Fatalf("Unable to read temp file: %v", err)
-	// }
 
 	// Split content into lines and return
 	content_list := strings.Split(strings.TrimSuffix(string(modified_content), "\n"), "\n")
