@@ -32,3 +32,17 @@ command windows
 ```powershell
 ffmpeg -i input_video.mp4 -b 1500k -vcodec wmv2 -acodec wmav2 -crf 19 -filter:v fps=fps=30 output.wmv
 ```
+
+join multiple files
+
+1. create a text file (e.g `filelist.txt`):
+```powershell
+file 'video1.mp4'
+file 'video2.mp4'
+file 'video3.mp4'
+```
+
+2. run ffmpeg command:
+```powershell
+ffmpeg -f concat -safe 0 -i filelist.txt -c copy output.mp4
+```
