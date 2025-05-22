@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ title }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        h1 { color: #333; }
+    </style>
+</head>
+<body>
+    <h1>{{ heading }}</h1>
+    <p>{{ message }}</p>
+    <form method="GET" action="/get">
+        <label for="name">Name:</label>
+        <input type="text" id="name" name="name" value="{{ name or '' }}">
+        <label for="message">Message:</label>
+        <input type="text" id="message" name="message" value="{{ get_message or '' }}">
+        <button type="submit">Submit</button>
+    </form>
+    {% if name or get_message %}
+    <h2>Submitted Data:</h2>
+    <p>Name: {{ name or 'Not provided' }}</p>
+    <p>Message: {{ get_message or 'Not provided' }}</p>
+    {% endif %}
+    <a href="/">Back to Home</a>
+</body>
+</html>

@@ -1,0 +1,27 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [server]
+
+  server:
+    aliases: ["s"]
+    cmds:
+      - uv run python app.py
+
+  build:
+    aliases: ["b"]
+    cmds:
+      - uv run python freeze.py
+      
+  docker_build:
+    aliases: ["db"]
+    cmds:
+      - docker build -t flask-project .
+
+  docker_run:
+    deps: [docker_build]
+    aliases: ["dr"]
+    cmds:
+      - docker run -p 8000:5000 flask-project
