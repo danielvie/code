@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WASM Calculator</title>
+</head>
+<body>
+    <input id="in_a" type="text" value="3">
+    <input id="in_b" type="text" value="6">
+    <button onclick="return clickme()">click me!</button>
+
+    <script src="build/wasm_calculator.js"></script>
+    <script>
+
+        let foo = Object()
+        
+        function clickme() {
+            // let a = 5
+            // let b = 15
+            const a = parseInt(document.getElementById('in_a').value) || 3
+            const b = parseInt(document.getElementById('in_b').value) || 3
+
+            console.log(`sum(${a}, ${b}): ${foo.sum(a,b)}`)
+            console.log(`mul(${a}, ${b}): ${foo.mul(a,b)}`)
+
+            return 0
+        }
+
+        WasmCalculator().then(Module => {
+            // Wrap the WASM functions for easier calling
+            foo.sum = Module.cwrap('sum', 'number', ['number', 'number']);
+            foo.mul = Module.cwrap('multiply', 'number', ['number', 'number']);
+
+            greet = Module.cwrap('greet', 'string', ['string']);
+        })
+
+    </script>
+</body>
+</html>
