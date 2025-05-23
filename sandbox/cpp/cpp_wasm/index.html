@@ -3,36 +3,52 @@
 <head>
     <title>WASM Calculator</title>
 </head>
-<body>
+<body style="font-family: monospace; font-size: large;">
     <input id="in_a" type="text" value="3">
     <input id="in_b" type="text" value="6">
+    <input id="in_name" type="text" value="my name">
     <button onclick="return clickme()">click me!</button>
+        
+    <div id="results" style="margin-top: 5em;"></div>
 
     <script src="build/wasm_calculator.js"></script>
     <script>
-
         let foo = Object()
+        
+        function fn_get_target() {
+            return document.getElementById('results')
+        }
+        function fn_message_clear(msg) {
+            const target = fn_get_target()
+            target.innerText = ''
+        }
+
+        function fn_message_append(msg) {
+            const target = fn_get_target()
+            target.innerText += `${msg}\n`
+        }
         
         function clickme() {
             // let a = 5
             // let b = 15
             const a = parseInt(document.getElementById('in_a').value) || 3
             const b = parseInt(document.getElementById('in_b').value) || 3
+            const name = document.getElementById('in_name').value || ""
 
-            console.log(`sum(${a}, ${b}): ${foo.sum(a,b)}`)
-            console.log(`mul(${a}, ${b}): ${foo.mul(a,b)}`)
+            fn_message_clear()
+            fn_message_append(`sum(${a}, ${b}): ${foo.sum(a,b)}`)
+            fn_message_append(`mul(${a}, ${b}): ${foo.mul(a,b)}`)
+            fn_message_append(`greet(${name}): ${foo.greet(name)}`)
 
             return 0
         }
 
         WasmCalculator().then(Module => {
-            // Wrap the WASM functions for easier calling
+            // point wams methods
             foo.sum = Module.cwrap('sum', 'number', ['number', 'number']);
             foo.mul = Module.cwrap('multiply', 'number', ['number', 'number']);
-
-            greet = Module.cwrap('greet', 'string', ['string']);
+            foo.greet = Module.cwrap('greet', 'string', ['string']);
         })
-
     </script>
 </body>
 </html>

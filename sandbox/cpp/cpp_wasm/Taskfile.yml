@@ -1,0 +1,28 @@
+version: "3"
+
+tasks:
+  default:
+    deps: [build]
+    
+  cmake:
+    cmds:
+      - emcmake cmake -B build
+      - cmake --build build
+
+  build:
+    cmds:
+      - powershell New-Item -Path temp -ItemType Directory -Force
+      - emcc -c src/calculator.cpp -o temp/calculator.o  
+      - emcc -c src/greet.cpp -o temp/greet.o  
+      - emcc -c src/multiply.cpp -o temp/multiply.o  
+      - emcc -c src/subtract.cpp -o temp/subtract.o  
+      - emcc -c src/sum.cpp -o temp/sum.o  
+
+  link: 
+    cmds:
+      - powershell New-Item -Path build -ItemType Directory -Force
+      - emcc 
+        temp/calculator.o temp/greet.o temp/multiply.o temp/subtract.o temp/sum.o -o build/wasm_calculator.js 
+        -s WASM=1 -s EXPORTED_FUNCTIONS='["_sum", "_subtract", "_multiply", "_greet"]' 
+        -s EXPORTED_RUNTIME_METHODS='["ccall", "cwrap"]' 
+        -s MODULARIZE=1 -s EXPORT_NAME='WasmCalculator'
