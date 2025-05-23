@@ -1,4 +1,3 @@
-
 BTG
 Marc at Frontend
 Pato Academy
@@ -15,9 +14,11 @@ from:aliexpress
 from:casey
 from:duolingo
 from:gshield
+from:linkedin
 from:nordvpn
 from:nubank
 from:onedrive
+from:promobit
 from:sencon
 from:strava
 icatu
@@ -32,6 +33,7 @@ nubank
 onedrive
 printables
 promobit
+researchgate
 ryanair
 sams
 sem parar
