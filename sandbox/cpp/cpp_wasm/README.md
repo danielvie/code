@@ -2,10 +2,6 @@
 Get the emsdk repo
 ```powershell
 git clone https://github.com/emscripten-core/emsdk.git
-```
-
-Enter that directory
-```powershell
 cd emsdk
 ```
 
