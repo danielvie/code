@@ -35,7 +35,7 @@ func build_query_command(query_list []string) string {
 
 func confirm_removal(emails_id []string) string {
 	emails_id_len := len(emails_id)
-	fmt.Printf("Do you want to remove %d elements? (Yes/No): ", emails_id_len)
+	fmt.Printf("Do you want to remove %d elements? (yes/No): ", emails_id_len)
 	var user_response string
 	fmt.Scanln(&user_response)
 
@@ -190,6 +190,9 @@ func fetch_emails(srv *gmail.Service, query_command string) []string {
 	if err != nil {
 		log.Fatalf("Unable to retrieve messages: %v", err)
 	}
+
+	println("len messages")
+	println(len(r.Messages))
 
 	var email_lines []string
 

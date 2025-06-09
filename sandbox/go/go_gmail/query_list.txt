@@ -2,8 +2,15 @@ BTG
 Marc at Frontend
 Pato Academy
 Recibos da Uber
+aerosimulados
+aerosjc
+btg pactual
 bunq
+casey muratori
+chess.com
 chilli beans
+comgas
+condominio aquarius
 duolingo
 exotrail
 familysearch
@@ -11,6 +18,7 @@ flying blue
 from:"estadão"
 from:"mercado livre"
 from:aliexpress
+from:b3
 from:casey
 from:duolingo
 from:gshield
@@ -24,6 +32,7 @@ from:strava
 icatu
 inter
 investidor10
+kabum
 liquidz
 masterclass
 medium
