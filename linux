@@ -1,5 +1,0 @@
-# symbolic link
-
-```sh
-ln -s $(which fdfind) /usr/local/bin/fd && \
-```
