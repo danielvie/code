@@ -1,55 +1,39 @@
-BTG
-Marc at Frontend
-Pato Academy
-Recibos da Uber
-aerosimulados
-aerosjc
-btg pactual
-bunq
-casey muratori
-chess.com
-chilli beans
-comgas
-condominio aquarius
-duolingo
-exotrail
-familysearch
-flying blue
-from:"estadão"
-from:"mercado livre"
-from:aliexpress
-from:b3
-from:casey
+from:auvp
+from:b3.com.br
+from:btgpactual.com
+from:bunq
+from:casey muratori
+from:chess.com
+from:chilli beans
+from:comgas
+from:crea
+from:crunchyroll
 from:duolingo
-from:gshield
+from:emirates
+from:flying blue
+from:hotmilhas
+from:hoto tools
+from:icatu
+from:inter
+from:investidor10
+from:ippg.sec@ita.br
+from:kabum
 from:linkedin
-from:nordvpn
+from:marc at frontend
+from:masterclass
+from:medium
+from:mercado pago
+from:nederlandse
 from:nubank
+from:olivia from warp
 from:onedrive
+from:porto seguro
+from:printables
 from:promobit
-from:sencon
+from:reddit
+from:sam's
 from:strava
-icatu
-inter
-investidor10
-kabum
-liquidz
-masterclass
-medium
-mercado
-modular
-nubank
-onedrive
-printables
-promobit
-researchgate
-ryanair
-sams
-sem parar
-sencon
-strava
-tokio marine
-towards ai
-uber
-villas boas
-workana
+from:swift
+from:tokio
+from:towards ai
+from:tripadvisor
