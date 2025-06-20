@@ -23,6 +23,7 @@ from:marc at frontend
 from:masterclass
 from:medium
 from:mercado pago
+from:mercadolivre
 from:nederlandse
 from:nubank
 from:olivia from warp
