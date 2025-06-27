@@ -203,6 +203,8 @@ function cd_nvim {
     Set-Location "C:/Users/daniel/AppData/Local/nvim"
 }
 
+function fd { fdfind --path-separator / $args }
+
 Set-Alias cdd mkdir_cd
 Set-Alias ll eza
 Set-Alias t task
