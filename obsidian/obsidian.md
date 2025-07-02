@@ -5,10 +5,11 @@
 - Excalidraw
 - Iconize
 - Omnisearch
-- Past Link
+- Paste Link
 - Recent Files
 - Style Settings
-
+- Tasks
+  
 # Task queries
 
 ```tasks
