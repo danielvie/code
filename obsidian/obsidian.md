@@ -9,6 +9,9 @@
 - Recent Files
 - Style Settings
 - Tasks
+
+# Theme
+- Border
   
 # Task queries
 
