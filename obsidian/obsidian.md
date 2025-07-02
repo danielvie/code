@@ -9,6 +9,7 @@
 - Recent Files
 - Style Settings
 - Tasks
+- Vimrc Support
 
 # Theme
 - Border
