@@ -6,6 +6,9 @@ nmap k gk
 nmap H ^
 nmap L $
 
+nmap Q @q
+nmap W @w
+
 " Quickly remove search highlights
 nmap <esc> :nohl<CR>
 
@@ -28,3 +31,5 @@ nmap zr :unfoldall<CR>
 
 " exmap foldall obcommand editor:fold-all
 nmap zm :foldall<CR>
+
+nmap <A-t> ggVG
