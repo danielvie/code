@@ -9,6 +9,7 @@
 - Recent Files
 - Style Settings
 - Tasks
+- Vim Yank Highlight
 - Vimrc Support
 
 # Theme
