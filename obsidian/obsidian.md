@@ -3,6 +3,7 @@
 - Auto Card Link
 - Dataview
 - Excalidraw
+- GIT
 - Iconize
 - Omnisearch
 - Paste Link
