@@ -55,6 +55,8 @@
     reso        = "!f() { branch_name=$(git rev-parse --abbrev-ref HEAD); git reset --hard origin/$branch_name;  }; f"
     ress        = reset --soft
     root        = rev-parse --show-toplevel
+    zip         = "!f() { git archive --output=$1 HEAD; }; f"
+
 
     ; WORKTREE
     wt          = "!f() { git worktree $1 $2; }; f"
