@@ -46,6 +46,35 @@ function e {
     explorer $arg
 }
 
+function we {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$CommandName
+    )
+
+    try {
+        # Get the command object. The 'Get-Command' cmdlet resolves aliases and functions
+        # to their underlying executable paths.
+        $commandInfo = Get-Command -Name $CommandName -ErrorAction Stop
+
+        # Get the full path of the command's source file.
+        $commandPath = $commandInfo.Source
+
+        # Split the path to get only the parent directory.
+        # This is the folder containing the executable.
+        $directoryPath = Split-Path -Path $commandPath -Parent
+
+        # Use 'Start-Process' to open File Explorer with the directory path as the argument.
+        Write-Host "Opening folder for '$CommandName': $directoryPath" -ForegroundColor Green
+        Start-Process -FilePath "explorer.exe" -ArgumentList $directoryPath
+    }
+    catch {
+        # Catch any errors, such as if the command does not exist.
+        Write-Error "Could not find the command '$CommandName' or an error occurred."
+        Write-Error $_.Exception.Message
+    }
+}
+
 function rmf {
     param (
         [string]$arg
