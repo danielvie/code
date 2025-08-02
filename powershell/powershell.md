@@ -10,6 +10,11 @@ Install recomendation
 Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
 ```
 
+Install PSFzf module
+```powershell
+Install-Module PSFzf
+```
+
 Append Path
 ```powershell
 $env:Path += ";C:\Your\New\Path"
