@@ -1,5 +1,6 @@
 Invoke-Expression (&starship init powershell)
 
+
 $sandbox  = "C:\SANDBOX\"
 $sandcode = "C:\SANDBOX\CODE\"
 
@@ -185,18 +186,17 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+p' -ScriptBlock {
     GoToProjects
 }
 
-Set-PSReadlineKeyHandler -Chord 'Ctrl+r' -ScriptBlock {
-    $historyPath = [System.IO.Path]::Combine($env:APPDATA, 'Microsoft', 'Windows', 'PowerShell', 'PSReadLine', 'ConsoleHost_history.txt')
-    $search = Get-Content -Path $historyPath | Select-Object -Unique | fzf --tac 
+# === Using PSFzf
+Import-Module PSFzf
 
-    if ($search) {
-        [Microsoft.PowerShell.PSConsoleReadLine]::SetCursorPosition(0)
-        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($search)
-        # [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-    }
-}
+# This enables fuzzy-finding for file paths, commands, and more when you press Tab.
+Set-PSReadLineKeyHandler -Key Tab -ScriptBlock { Invoke-FzfTabCompletion }
 
+# Override Ctrl+R for fuzzy history search.
+Set-PsFzfOption -PSReadlineChordReverseHistory 'Ctrl+r'
 
+# Override Ctrl+T for fuzzy path selection.
+Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t'
 
 # open project with explorer 
 Set-PSReadLineKeyHandler -Key "Ctrl+e" -ScriptBlock {
