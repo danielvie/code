@@ -1,6 +1,5 @@
 Invoke-Expression (&starship init powershell)
 
-
 $sandbox  = "C:\SANDBOX\"
 $sandcode = "C:\SANDBOX\CODE\"
 
@@ -20,12 +19,15 @@ function home {
     Set-Location $env:USERPROFILE
 }
 
+function local {
+    Set-Location $env:LOCALAPPDATA
+}
 function localapp {
     Set-Location $env:LOCALAPPDATA
 }
 
 function gmail {
-    Set-Location $sandbox/code.git/go/go_gmail
+    Set-Location $sandbox/code.git/sandbox/go/go_gmail
     task
 }
 
@@ -37,7 +39,7 @@ function w {
     param (
         [string]$arg
     )
-    Get-Command $arg
+    (Get-Command $arg).Source
 }
 
 function e {
@@ -46,7 +48,6 @@ function e {
     )
     explorer $arg
 }
-
 function we {
     param (
         [Parameter(Mandatory=$true)]
@@ -76,6 +77,8 @@ function we {
     }
 }
 
+
+
 function rmf {
     param (
         [string]$arg
@@ -104,21 +107,23 @@ function ExpandFolders {
 }
 
 function GetProjects {
-    $sandbox = ExpandFolders $sandbox -depth 4
+    $sandbox = ExpandFolders $sandbox -depth 5
 
     $doutorado = "C:\Users\daniel\Documents\DOUTORADO"
-    $doutorado = ExpandFolders $doutorado -depth 1
+    $doutorado = ExpandFolders $doutorado -depth 4
     
     $documents = "C:\Users\daniel\Documents"
     $documents = ExpandFolders $documents -depth 1
 
     $arduino = "$documents\Arduino"
-
     $downloads = "$env:USERPROFILE\Downloads"
-    
     $nvim = "$env:LOCALAPPDATA\nvim"
-
     $alias = "C:\SANDBOX\ALIAS\"
+    $localapp = "$env:LOCALAPPDATA"
+
+    $program_files_x86 = ExpandFolders ${env:ProgramFiles(x86)} -depth 3
+    $program_files_ = ExpandFolders $env:ProgramFiles -depth 3
+    $program_files  = $program_files + $program_files_
 
     $projects = @(
         $alias,
@@ -128,17 +133,16 @@ function GetProjects {
         $documents,
         $downloads,
         $arduino,
-        ${env:ProgramFiles(x86)},
-        $env:ProgramFiles
+        $localapp,
+        $program_files
     ) | Sort-Object
     
     return $projects
 }
 
-function GoToProjects {
+function FZF_go_to_projects {
     
-    $projects = GetProjects
-    $search = $projects | fzf --tac
+    $search = GetProjects | fzf --tac
 
     if ($search) {
         # Set-Location $search
@@ -150,28 +154,41 @@ function GoToProjects {
     }
 }
 
-Set-PSReadlineKeyHandler -Chord 'Ctrl+o' -ScriptBlock {
+function FZF_open_project_with_vscode {
+    $search = $(GetProjects | fzf --tac)
     
-    $search = fd -t d -d 5 | fzf --tac
     if ($search) {
-        # $command = "cd ""$search"""
-        Set-Location $search
-        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-        # [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        code $search
     }
 }
 
-Set-PSReadLineKeyHandler -Chord 'Ctrl+d' -ScriptBlock {
-    $search = fd -t d -d 4 | fzf --tac
+function FZF_project_explore {
+    $search = GetProjects | fzf --tac
     
     if ($search) {
-        Set-Location $search
-        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        Invoke-Item -Path $search
     }
 }
 
+# .. SET BEHAVIOR
+
+Import-Module PSFzf
+
+Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t'
+Set-PsFzfOption -PSReadlineChordReverseHistory 'Ctrl+r'
+Set-PSReadLineKeyHandler -Key Tab -ScriptBlock { Invoke-FzfTabCompletion }
+
+Set-PSReadlineKeyHandler -Chord 'Ctrl+p' -ScriptBlock {
+    FZF_go_to_projects
+}
+
+Set-PSReadlineKeyHandler -Chord 'Alt+p' -ScriptBlock {
+    FZF_go_to_projects
+}
+
+Set-PSReadlineKeyHandler -Chord 'Ctrl+Alt+p' -ScriptBlock {
+    FZF_open_project_with_vscode
+}
 Set-PSReadlineKeyHandler -Chord 'Ctrl+f' -ScriptBlock {
     $search = fd -t f -d 5 | fzf --tac --ansi --preview 'bat --color=always --style=numbers --line-range=:500 {}'
     if ($search) {
@@ -182,29 +199,45 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+f' -ScriptBlock {
     }
 }
 
-Set-PSReadlineKeyHandler -Chord 'Ctrl+p' -ScriptBlock {
-    GoToProjects
+Set-PSReadLineKeyHandler -Chord 'Ctrl+d' -ScriptBlock {
+    $search = fd -t d -d 4 | fzf --tac
+    # $search = fzf --tac
+    
+    if ($search) {
+        Set-Location $search
+        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    }
 }
 
-# === Using PSFzf
-Import-Module PSFzf
+Set-PSReadLineKeyHandler -Chord 'Ctrl+u' -ScriptBlock {
+    $search = fd -t d -d 4 -u | fzf --tac
+    
+    if ($search) {
+        Set-Location $search
+        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    }
+}
 
-# This enables fuzzy-finding for file paths, commands, and more when you press Tab.
-Set-PSReadLineKeyHandler -Key Tab -ScriptBlock { Invoke-FzfTabCompletion }
-
-# Override Ctrl+R for fuzzy history search.
-Set-PsFzfOption -PSReadlineChordReverseHistory 'Ctrl+r'
-
-# Override Ctrl+T for fuzzy path selection.
-Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t'
+Set-PSReadlineKeyHandler -Chord 'Ctrl+o' -ScriptBlock {
+    $search = fd -t d -d 5 | fzf --tac
+    if ($search) {
+        # $command = "cd ""$search"""
+        Set-Location $search
+        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+        # [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)
+        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+    }
+}
 
 # open project with explorer 
 Set-PSReadLineKeyHandler -Key "Ctrl+e" -ScriptBlock {
-    $search = GetProjects | fzf --tac
-    
-    if ($search) {
-        Invoke-Item -Path $search
-    }
+    FZF_project_explore
+}
+
+Set-PSReadLineKeyHandler -Key "Alt+e" -ScriptBlock {
+    FZF_project_explore
 }
 
 function gstatus {
@@ -219,36 +252,50 @@ function cr_fun {
     code -r .
 }
 
-function mkdir_cd {
-    param (
-        [string]$arg
-    )
-    
-    mkdir -p $arg
-    Set-Location $arg
-}
-
 function cd_nvim {
-    Set-Location "C:/Users/daniel/AppData/Local/nvim"
+    Set-Location "~/AppData/Local/nvim"
 }
 
 function fd { fdfind --path-separator / $args }
+function fdd { fdfind $args }
 
-Set-Alias cdd mkdir_cd
-Set-Alias ll eza
-Set-Alias t task
-Set-Alias m mingw32-make
-Set-Alias j just
+function cdd { 
+    param (
+        [string]$path
+    )
+    mkdir -p $path 
+    Set-Location $path
+}
+
+function ssh_with_firewall_off {
+    Start-Service -Name sshd
+    netsh advfirewall set allprofiles state off
+}
+
+function gd {
+    git diff
+}
+
+# .. ALIASES
+
+Set-Alias b bun
 Set-Alias c code
-Set-Alias cr cr_fun
-Set-Alias g git
-Set-Alias v nvim
-Set-Alias d docker
-Set-Alias gs gstatus
-Set-Alias gfe gfetch
-
 Set-Alias cdvim cd_nvim
+Set-Alias cr cr_fun
+Set-Alias d docker
+Set-Alias dc docker-compose
+Set-Alias g git
+Set-Alias gfe gfetch
+Set-Alias gs gstatus
+Set-Alias j just
+Set-Alias ll eza
+Set-Alias m mingw32-make
+Set-Alias p podman
+Set-Alias t task
+Set-Alias v nvim
 
+# set zoxide
 & "$env:USERPROFILE\Documents\WindowsPowerShell\zoxide.ps1"
 
+# set completion for jj
 Invoke-Expression (& { (jj util completion power-shell | Out-String) })
