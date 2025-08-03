@@ -273,7 +273,7 @@ function ssh_with_firewall_off {
 }
 
 function gd {
-    git diff
+    git diff $args
 }
 
 # .. ALIASES
