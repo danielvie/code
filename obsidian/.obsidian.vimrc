@@ -9,6 +9,10 @@ nmap L $
 nmap Q @q
 nmap W @w
 
+" operators
+omap L $
+omap H ^
+
 " Quickly remove search highlights
 nmap <esc> :nohl<CR>
 
