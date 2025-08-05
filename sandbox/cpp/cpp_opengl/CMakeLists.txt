@@ -39,15 +39,11 @@ FetchContent_Declare(
 )
 
 
-# --- Make Dependencies Available ---
-# This command ensures the dependencies are downloaded and configured,
-# making their targets available for linking.
+# downloads and confures the FetchContent making their targets available 
+# for linking.
 FetchContent_MakeAvailable(glfw glad)
 
-
 # --- Create Executable ---
-
-# Add the main.cpp source file to create an executable
 add_executable(HelloOpenGL src/main.cpp) 
 
 # --- Configure Target ---
