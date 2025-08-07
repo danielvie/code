@@ -1,5 +1,3 @@
-
-```cmake
 cmake_minimum_required(VERSION 3.14)
 project(grpc_example CXX)
 
@@ -66,4 +64,3 @@ target_link_libraries(grpc_client
   protobuf::libprotobuf
   ${GRPC_PROTO_SOURCES}
 )
-```
