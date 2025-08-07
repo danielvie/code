@@ -16,6 +16,10 @@ $env:CXX="Path/to/clang++"
 $env:CC="Path/to/clang"   
 ```
 
+```bash
+cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build
+```
+
 or
 
 ```
