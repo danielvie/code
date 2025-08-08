@@ -1,4 +1,6 @@
 aliexpress
+"zona azul"
+from:"sem parar"
 from:auvp
 from:b3.com.br
 from:btgpactual.com
@@ -12,6 +14,8 @@ from:crunchyroll
 from:duolingo
 from:emirates
 from:flying blue
+from:github
+from:gitlab
 from:hotmilhas
 from:hoto tools
 from:icatu
@@ -39,4 +43,8 @@ from:swift
 from:tokio
 from:towards ai
 from:tripadvisor
+gha
+palmeiras
+sencon
 uber
+vituzzo
