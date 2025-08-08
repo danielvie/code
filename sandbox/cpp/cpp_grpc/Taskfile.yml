@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  main:
+    aliases: [m]
+    cmds:
+     - cmake -B build
+     - cmake --build build
+  
+  client:
+    aliases: [c]
+    cmds:
+     - ./build/Debug/greeter_client.exe
+
+  server:
+    aliases: [s]
+    cmds:
+      - ./build/Debug/greeter_server.exe
