@@ -22,14 +22,7 @@ import (
 )
 
 func build_query_command(query_list []string) string {
-	for i, qi := range query_list {
-		// query_list[i] = strings.ReplaceAll(qi, "\"", "\\\"")
-		query_list[i] = "\"" + qi + "\""
-	}
-
-	query_command := strings.Join(query_list, " OR ")
-	query_command = fmt.Sprintf("(%s)", query_command)
-
+	query_command := "{" + strings.Join(query_list, " ") + "}"
 	return query_command
 }
 
