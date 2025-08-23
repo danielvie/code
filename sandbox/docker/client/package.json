@@ -1,0 +1,21 @@
+{
+  "name": "grpc-client",
+  "version": "1.0.0",
+  "description": "",
+  "main": "client.ts",
+  "scripts": {
+    "start": "bun run client.ts",
+    "gen": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./gen --grpc_out=grpc_js:./gen --plugin=protoc-gen-grpc_js=`which grpc_tools_node_protoc_plugin` -I ./proto ./proto/service.proto"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@grpc/grpc-js": "^1.10.1",
+    "google-protobuf": "^3.21.2"
+  },
+  "devDependencies": {
+    "grpc-tools": "^1.12.4",
+    "typescript": "^5.4.5"
+  }
+}

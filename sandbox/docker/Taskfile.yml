@@ -1,0 +1,17 @@
+version: '3'
+
+tasks:
+  default:
+    deps: [main]
+
+
+  client_build:
+    aliases: [cb]
+    cmds:
+      - docker build -t grpc_client . 
+
+  client:
+    aliases: [c]
+    cmds:
+      # - docker run -it --rm grpc_client bash
+      - docker run --rm grpc_client

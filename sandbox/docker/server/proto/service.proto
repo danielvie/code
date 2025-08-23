@@ -1,0 +1,15 @@
+// The syntax declaration must be the first non-empty, non-comment line.
+syntax = "proto3";
+
+// Define your service and messages as before
+service MyService {
+  rpc SayHello (HelloRequest) returns (HelloReply);
+}
+
+message HelloRequest {
+  string name = 1;
+}
+
+message HelloReply {
+  string message = 1;
+}
