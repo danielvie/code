@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  back:
+    aliases: [b]
+    cmds:
+     - cd back && task
+
+  front:
+    aliases: [f]
+    cmds:
+     - cd front && task

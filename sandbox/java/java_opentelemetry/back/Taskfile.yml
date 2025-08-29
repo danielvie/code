@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+
+  build:
+    aliases: [b]
+    cmds:
+     - gradlew build
+
+  main:
+    aliases: [m]
+    cmds:
+     - mvnw spring-boot:run 
+
+  clean:
+    aliases: [c]
+    cmds:
+     - mvnw clean package
