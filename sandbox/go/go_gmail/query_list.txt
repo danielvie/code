@@ -1,7 +1,11 @@
 "zona azul"
 aliexpress
+from:"fast shop"
+from:"pague menos"
 from:"sem parar"
+from:aerosimulados
 from:auvp
+from:azul
 from:b3.com.br
 from:btgpactual.com
 from:bunq
@@ -19,6 +23,7 @@ from:gitlab
 from:hotmilhas
 from:hoto tools
 from:icatu
+from:insider
 from:inter
 from:investidor10
 from:ippg.sec@ita.br
