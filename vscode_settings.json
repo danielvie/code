@@ -677,4 +677,7 @@
   },
   "svelte.enable-ts-plugin": true,
   "workbench.colorTheme": "One Dark Pro",
+  "C_Cpp.clang_format_fallbackStyle": "{ BasedOnStyle: Google, IndentWidth: 4, ColumnLimit: 0 }",
+
 }
+
