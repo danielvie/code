@@ -19,6 +19,7 @@ def hsl_to_rgb(h: float, s: float, l: float) -> tuple[int, int, int]:
                                each ranging from 0 to 255.
     """
     # Normalize h to be within the range [0.0, 1.0] for the colorsys module
+
     h_normalized = h / 360.0
     
     # colorsys.hls_to_rgb expects h, l, s in the range [0.0, 1.0]
@@ -55,28 +56,42 @@ if __name__ == "__main__":
 
     # Example 1: A bright orange
     
-    light_gray   = [100, 90, 75, 60, 45, 30, 15, 0]
-    light_colors = [80, 70, 60, 50, 40, 30, 20]
-    
-    # gray
+    light_gray   = [80, 65, 50, 35, 15]
+    light_colors = [80, 65, 50, 35, 20]
+
     text = []
+
+    # black and white
+    text.append('255 255 255 #ffffff')
+    text.append('0 0 0 #000000')
+
+    # gray
     for l in light_gray:
-        r, g, b = hsl_to_rgb(0, 0, l/100)
+        r, g, b = hsl_to_rgb(0.0, 0.0, l/100)
         hex = rgb_to_hex(r,g,b)
 
         msg = f'{r} {g} {b} {hex}'
         text.append(msg)
-        print(msg)
-    
-    colors = [5, 50, 150, 200, 280, 336]
-    for c in colors:
+        # print(msg)
+
+
+    # [hs]
+    colors_base = [[0, 60], [60, 70], [130, 50], [207, 70], [312, 60]]
+    for h, s in colors_base:
         for l in light_colors:
-            r, g, b = hsl_to_rgb(c, 0.5, l/100)
+            r, g, b = hsl_to_rgb(h, s/100, l/100)
             hex = rgb_to_hex(r,g,b)
 
             msg = f'{r} {g} {b} {hex}'
             text.append(msg)
-            print(msg)
+            # print(msg)
     
     # copy
     copyclip('\n'.join(text))
+
+    # generate GIMP Palette file
+    with open('My Colors.gpl', 'w+') as f:
+        f.write('GIMP Palette\n')
+        f.write('Name: My Colors.gpl\n')
+        f.write('#\n')
+        f.write('\n'.join(text))
