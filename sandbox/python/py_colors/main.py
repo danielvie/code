@@ -61,6 +61,11 @@ if __name__ == "__main__":
 
     text = []
 
+    # header
+    text.append("GIMP Palette")
+    text.append("My Colors.gpl")
+    text.append("#")
+
     # black and white
     text.append('255 255 255 #ffffff')
     text.append('0 0 0 #000000')
@@ -76,7 +81,8 @@ if __name__ == "__main__":
 
 
     # [hs]
-    colors_base = [[0, 60], [60, 70], [130, 50], [207, 70], [312, 60]]
+    colors_base = [[0, 60], [27, 71], [60, 70], [130, 50], [207, 70], [312, 60]]
+    
     for h, s in colors_base:
         for l in light_colors:
             r, g, b = hsl_to_rgb(h, s/100, l/100)

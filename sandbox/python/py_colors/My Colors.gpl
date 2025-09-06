@@ -1,6 +1,9 @@
 GIMP Palette
 Name: My Colors.gpl
 #
+GIMP Palette
+My Colors.gpl
+#
 255 255 255 #ffffff
 0 0 0 #000000
 204 204 204 #cccccc
@@ -13,6 +16,11 @@ Name: My Colors.gpl
 204 50 50 #cc3232
 142 35 35 #8e2323
 81 20 20 #511414
+240 200 167 #f0c8a7
+229 159 102 #e59f66
+218 118 36 #da7624
+152 82 25 #985219
+87 47 14 #572f0e
 239 239 168 #efefa8
 228 228 103 #e4e467
 216 216 38 #d8d826
