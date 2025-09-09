@@ -121,7 +121,6 @@ function GetProjects {
     $documents = "C:\Users\daniel\Documents"
     $documents = ExpandFolders $documents -depth 3
 
-    $arduino = "$documents\Arduino"
     $downloads = "$env:USERPROFILE\Downloads"
     $nvim = "$env:LOCALAPPDATA\nvim"
     $alias = "C:\SANDBOX\ALIAS\"
@@ -138,12 +137,18 @@ function GetProjects {
         $nvim,
         $documents,
         $downloads,
-        $arduino,
         $localapp,
         $program_files
-    ) | Sort-Object -Unique
-    
+    ) | ForEach-Object { 
+        # Handle both directory objects and string paths
+        if ($_ -is [System.IO.DirectoryInfo]) {
+            $_.FullName
+        } else {
+            $_
+        }
+    } | Sort-Object -Unique
     return $projects
+
 }
 
 function FZF_go_to_projects {
