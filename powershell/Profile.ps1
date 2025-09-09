@@ -1,7 +1,7 @@
 Invoke-Expression (&starship init powershell)
 
-$sandbox  = "C:\SANDBOX\"
-$sandcode = "C:\SANDBOX\CODE\"
+$sandbox  = "C:/SANDBOX/"
+$sandcode = "C:/SANDBOX/CODE/"
 
 function desktop {
     Set-Location $env:USERPROFILE/Desktop
@@ -42,12 +42,18 @@ function w {
     (Get-Command $arg).Source
 }
 
-function e {
-    param (
-        [string]$arg
-    )
-    explorer $arg
+function pi {
+    C:\Users\daniel\AppData\Local\Voidstar\FilePilot\FPilot.exe $args
 }
+
+function ee {
+    explorer $args
+}
+
+function e {
+    pi $args
+}
+
 function we {
     param (
         [Parameter(Mandatory=$true)]
@@ -110,10 +116,10 @@ function GetProjects {
     $sandbox = ExpandFolders $sandbox -depth 5
 
     $doutorado = "C:\Users\daniel\Documents\DOUTORADO"
-    $doutorado = ExpandFolders $doutorado -depth 4
+    $doutorado = ExpandFolders $doutorado -depth 10
     
     $documents = "C:\Users\daniel\Documents"
-    $documents = ExpandFolders $documents -depth 1
+    $documents = ExpandFolders $documents -depth 3
 
     $arduino = "$documents\Arduino"
     $downloads = "$env:USERPROFILE\Downloads"
@@ -123,7 +129,7 @@ function GetProjects {
 
     $program_files_x86 = ExpandFolders ${env:ProgramFiles(x86)} -depth 3
     $program_files_ = ExpandFolders $env:ProgramFiles -depth 3
-    $program_files  = $program_files + $program_files_
+    $program_files  = $program_files_x86 + $program_files_
 
     $projects = @(
         $alias,
@@ -135,13 +141,14 @@ function GetProjects {
         $arduino,
         $localapp,
         $program_files
-    ) | Sort-Object
+    ) | Sort-Object -Unique
     
     return $projects
 }
 
 function FZF_go_to_projects {
     
+
     $search = GetProjects | fzf --tac
 
     if ($search) {
@@ -162,21 +169,22 @@ function FZF_open_project_with_vscode {
     }
 }
 
-function FZF_project_explore {
+function FZF_project_explorer {
     $search = GetProjects | fzf --tac
     
     if ($search) {
-        Invoke-Item -Path $search
+        # Invoke-Item -Path $search
+        pi $search
     }
 }
 
 # .. SET BEHAVIOR
 
-Import-Module PSFzf
-
-Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t'
-Set-PsFzfOption -PSReadlineChordReverseHistory 'Ctrl+r'
-Set-PSReadLineKeyHandler -Key Tab -ScriptBlock { Invoke-FzfTabCompletion }
+# Import-Module PSFzf
+#
+# Set-PsFzfOption -PSReadlineChordProvider 'Ctrl+t'
+# Set-PsFzfOption -PSReadlineChordReverseHistory 'Ctrl+r'
+# Set-PSReadLineKeyHandler -Key Tab -ScriptBlock { Invoke-FzfTabCompletion }
 
 Set-PSReadlineKeyHandler -Chord 'Ctrl+p' -ScriptBlock {
     FZF_go_to_projects
@@ -186,9 +194,10 @@ Set-PSReadlineKeyHandler -Chord 'Alt+p' -ScriptBlock {
     FZF_go_to_projects
 }
 
-Set-PSReadlineKeyHandler -Chord 'Ctrl+Alt+p' -ScriptBlock {
+Set-PSReadlineKeyHandler -Chord 'Ctrl+o' -ScriptBlock {
     FZF_open_project_with_vscode
 }
+
 Set-PSReadlineKeyHandler -Chord 'Ctrl+f' -ScriptBlock {
     $search = fd -t f -d 5 | fzf --tac --ansi --preview 'bat --color=always --style=numbers --line-range=:500 {}'
     if ($search) {
@@ -220,24 +229,24 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+u' -ScriptBlock {
     }
 }
 
-Set-PSReadlineKeyHandler -Chord 'Ctrl+o' -ScriptBlock {
-    $search = fd -t d -d 5 | fzf --tac
-    if ($search) {
-        # $command = "cd ""$search"""
-        Set-Location $search
-        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-        # [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
-    }
-}
+# Set-PSReadlineKeyHandler -Chord 'Ctrl+o' -ScriptBlock {
+#     $search = fd -t d -d 5 | fzf --tac
+#     if ($search) {
+#         # $command = "cd ""$search"""
+#         Set-Location $search
+#         [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
+#         # [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)
+#         [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+#     }
+# }
 
 # open project with explorer 
 Set-PSReadLineKeyHandler -Key "Ctrl+e" -ScriptBlock {
-    FZF_project_explore
+    FZF_project_explorer
 }
 
 Set-PSReadLineKeyHandler -Key "Alt+e" -ScriptBlock {
-    FZF_project_explore
+    FZF_project_explorer
 }
 
 function gstatus {
@@ -278,6 +287,15 @@ function gd {
 
 # .. ALIASES
 
+function dtodo {
+    code C:/Users/daniel/Documents/DOUTORADO/TODO
+}
+
+function web_douto {
+    . $env:USERPROFILE/Downloads/web_server_daniel-windows-amd64.exe
+}
+
+
 Set-Alias b bun
 Set-Alias c code
 Set-Alias cdvim cd_nvim
@@ -299,3 +317,4 @@ Set-Alias v nvim
 
 # set completion for jj
 Invoke-Expression (& { (jj util completion power-shell | Out-String) })
+
