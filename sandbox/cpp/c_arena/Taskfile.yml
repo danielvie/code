@@ -1,0 +1,23 @@
+version: '3'
+
+tasks:
+  default:
+    deps: ["main"]
+
+  build:
+    aliases: ["b"]
+    cmds:
+      - cmake -B build
+      - cmake --build build
+
+  main:
+    deps: ["build"]
+    cmds:
+      - ./build/debug/main.exe
+      
+  clean:
+    aliases: ["c"]
+    cmds: 
+      - 'if {{ eq OS "windows" }}; 
+        then powershell Remove-Item -Recurse -Force build; 
+        else rm -rf build; fi'
