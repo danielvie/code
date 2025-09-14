@@ -113,10 +113,12 @@
   "Editor@@h1-accent-color@@dark": "#66CC99",
   "Editor@@h2-accent-color@@dark": "#40BF80",
   "Editor@@h3-accent-color@@dark": "#339966",
-  "Editor@@h4-accent-color@@dark": "#52B1E0",
-  "Editor@@h5-accent-color@@dark": "#25F7F5",
+  "Editor@@h4-accent-color@@dark": "#269DD9",
+  "Editor@@h5-accent-color@@dark": "#52B1E0",
   "Editor@@h6-accent-color@@dark": "#59A2C5",
   "Editor@@callout-title-size": "\"\"",
   "Editor@@text-align-justify": false,
-  "Editor@@bold-color@@dark": "#ff9f84"
+  "Editor@@bold-color@@dark": "#ff9f84",
+  "Editor@@h4-text-transform": "text-decoration: underline",
+  "Editor@@h4-weight": 800
 }
