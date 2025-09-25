@@ -66,6 +66,7 @@
   "Appearance-dark@@interactive-hover@@dark": "#3F3F3F",
   "Appearance-dark@@background-activated-tab-header-dark": "#FFFFFF13",
   "Appearance-dark@@shadow-activated-tab-header-dark": "none",
+  "Editor@@italic-color@@dark": "#FF9F85",
   "Appearance-light@@link-external-color@@light": "#43B7D6",
   "Appearance-light@@link-external-color-hover@@light": "#2D8EC7",
   "Appearance-dark@@link-external-color-hover@@dark": "#2D8EC7",
@@ -100,6 +101,7 @@
   "Mobile@@drawer-phone-full-width": false,
   "Plugin@@Projects-bg-color": "Projects-bg-color-default",
   "Components@@colorful-folder": false,
+  "Editor@@bold-color@@dark": "#FF673D",
   "Editor@@codeblock-style-select": "codeblock-style-one-dark",
   "Components@@file-icon-remove": true,
   "Editor@@h1-size": "1.9em",
@@ -118,7 +120,6 @@
   "Editor@@h6-accent-color@@dark": "#59A2C5",
   "Editor@@callout-title-size": "\"\"",
   "Editor@@text-align-justify": false,
-  "Editor@@bold-color@@dark": "#ff9f84",
   "Editor@@h4-text-transform": "text-decoration: underline",
   "Editor@@h4-weight": 800
 }
