@@ -1,5 +1,7 @@
 ### terminal utils
 
+![fox](_fox.png)
+
 CLEAR terminal
 
 set env
