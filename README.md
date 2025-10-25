@@ -1,4 +1,4 @@
-![fox](_fox.svg)
+![fox](_fox.png)
 
 ### terminal utils
 
