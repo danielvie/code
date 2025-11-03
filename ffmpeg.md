@@ -8,6 +8,11 @@ cut time frame
 ffmpeg -i input.mp4 -ss 00:31:40 -to 00:33:00 -c:v copy -c:a copy -map 0:v -map 0:a -map 0:5 output.mp4
 ```
 
+```powershell
+ffmpeg -ss 00:00:46 -i .\input.mp4 -to 00:05:00 -c copy output.mp4
+```
+
+
 reduce bitrate
 ```powershell
 ffmpeg -i input.mp4 -vcodec libx264 -b:v 1000k -acodec mp3 output.mp4
