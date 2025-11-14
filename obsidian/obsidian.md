@@ -7,6 +7,7 @@
 - Iconize
 - Omnisearch
 - Paste Link
+- PlanUML
 - Recent Files
 - Style Settings
 - Tasks
