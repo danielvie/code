@@ -47,4 +47,7 @@ filter by function task.file.folder.includes("LTP")
 
 # filter by tag
 tags includes #important
+
+# filter by date
+done 2025-01-01 2025-12-20
 ```
