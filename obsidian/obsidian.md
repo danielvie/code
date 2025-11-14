@@ -41,4 +41,10 @@ sort by description
 
 # Optionally, ask Tasks to explain how it interpreted this query:
 explain
+
+# filter by function
+filter by function task.file.folder.includes("LTP")
+
+# filter by tag
+tags includes #important
 ```
