@@ -1,3 +1,4 @@
+"raul sena"
 "zona azul"
 aliexpress
 from:"fast shop"
@@ -51,5 +52,6 @@ from:tripadvisor
 gha
 palmeiras
 sencon
+tinder
 uber
 vituzzo

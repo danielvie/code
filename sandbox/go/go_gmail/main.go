@@ -179,13 +179,9 @@ func fetch_emails(srv *gmail.Service, query_command string) []string {
 		Q(query_command).
 		MaxResults(100).Do()
 
-	// r, err := srv.Users.Messages.List(user).Do()
 	if err != nil {
 		log.Fatalf("Unable to retrieve messages: %v", err)
 	}
-
-	// println("len messages")
-	// println(len(r.Messages))
 
 	var email_lines []string
 
