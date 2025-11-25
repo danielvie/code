@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  main:
+    aliases: [m]
+    cmds:
+     - bun run dev
+
+  # main:
+  #   aliases: [m]
+  #   deps: [b]
+  #   cmds:
+  #    - bun run preview
+
+  build:
+    aliases: [b]
+    cmds:
+     - bun run build
