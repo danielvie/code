@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  main:
+    aliases: [m]
+    cmds:
+     - uv run client.py
+
+  build:
+    aliases: [b]
+    cmds:
+     - uv run -m grpc_tools.protoc -I.. --python_out=. --grpc_python_out=. ../helloworld.proto
