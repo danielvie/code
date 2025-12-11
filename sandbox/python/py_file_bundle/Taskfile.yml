@@ -1,0 +1,21 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: ["main"]
+
+  main:
+    aliases: ["m"]
+    cmds:
+      - uv run server_run.py
+
+  build:
+    aliases: ["b"]
+    cmds:
+      - pyinstaller --onefile --name my_web_server --add-data "my_server/templates;my_server/templates" server_run.py 
+
+  clear:
+    aliases: ["c"]
+    cmds:
+      - 
