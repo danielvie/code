@@ -1,7 +1,7 @@
 // src/App.jsx
 import { useState } from 'react';
 import './App.css';
-import { helper_get_task3, helper_post_task1, helper_post_task2 } from './helpers/tasks';
+import { helper_get_task3, helper_post_task1, helper_post_task2, type FileUploadResponse, type TaskDataResponse } from './helpers/tasks';
 import { type Task1Response, type Task2Response, type Task3Response } from './helpers/tasks';
 import FileUploader from './components/FileUploader';
 
@@ -28,12 +28,16 @@ function App() {
             console.log('response task4:', data)
         });
     }
+    
+    function callback_file(data: FileUploadResponse) {
+        set_message(data.message)
+    }
 
     return (
-        <div className="App">
+        <div className="App w-125">
             <h1>testing FastAPI</h1>
 
-            <FileUploader className='mt-10'/>
+            <FileUploader className='mt-10' callback={callback_file}/>
 
             <div className='mt-4 flex flex-col gap-2'>
                 <button onClick={handle_post_task1}>Execute Task 1 (POST)</button>

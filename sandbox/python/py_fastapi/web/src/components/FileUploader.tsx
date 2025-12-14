@@ -6,10 +6,11 @@ import type { FileUploadResponse } from '../helpers/tasks';
 const API_BASE_URL = 'http://localhost:5000';
 
 interface FileUploadProps extends React.HTMLAttributes<HTMLDivElement> {
-
+    className: string;
+    callback: CallableFunction;
 }
 
-const FileUploader: React.FC<FileUploadProps> = ({ className }) => {
+const FileUploader: React.FC<FileUploadProps> = ({ className, callback }) => {
 
     const [file_to_upload, set_file_to_upload] = useState<File | null>(null);
     const [response, set_response] = useState<FileUploadResponse | null>(null);
@@ -55,6 +56,7 @@ const FileUploader: React.FC<FileUploadProps> = ({ className }) => {
             .then(data => {
                 console.log('response data: ', data)
                 set_is_loading(false);
+                callback(data);
             })
             .catch(e => console.error("FILE_UPLOAD Error:", e));
 
@@ -64,7 +66,7 @@ const FileUploader: React.FC<FileUploadProps> = ({ className }) => {
 
         // --- 2. Apply Dropzone Props to the Root Element ---
         <>
-            <div className={ `${className} flex gap-2` }>
+            <div className={ `${className} flex gap-2 items-center` }>
                 <div
                     {...getRootProps()} // Handles drag/drop events
                     className={`
@@ -81,8 +83,8 @@ const FileUploader: React.FC<FileUploadProps> = ({ className }) => {
             `}
                 >
 
-                    {!file_to_upload && (<p>Drag your file here</p>)}
-                    {file_to_upload && (<p>file: {file_to_upload.name}</p>)}
+                    {!file_to_upload && (<div>Drag your file here</div>)}
+                    {file_to_upload && (<div>file: {file_to_upload.name}</div>)}
 
                     <input
                         {...getInputProps()}
@@ -105,7 +107,7 @@ const FileUploader: React.FC<FileUploadProps> = ({ className }) => {
                 </div>
 
                 {file_to_upload && (
-                    <div className='p-5 bg-[hsl(0,0%,17%)] border-2 border-[hsl(0,0%,50%)] rounded-xl'>
+                    <div className='bg-[hsl(0,0%,17%)] border-2 border-[hsl(0,0%,50%)] rounded-xl'>
                         <button
                             onClick={handle_upload}
                             disabled={!file_to_upload || is_loading}
