@@ -66,28 +66,8 @@ async def execute_task2(payload: Task2Payload):
     return {"status": "Task 2 accepted", "target": payload.target_value}
 
 
-@router.post("/task3")
-async def execute_task3(payload: Task3Payload):
-    """
-    Starts a process that relies on a file and respects a timeout.
-    """
-    if not payload.file_path.endswith(".csv"):
-        raise HTTPException(status_code=400, detail="Only CSV files supported for Task 3.")
-
-    # Simulate work
-    # result = await start_file_job(payload.file_path)
-
-    return {
-        "status": "Task 3 initiated",
-        "path": payload.file_path,
-        "timeout": payload.timeout_seconds,
-    }
-
-
-# --- GET Endpoint (Task 4) ---
-
-
-@router.get("/task4")
+# --- GET Endpoint (Task 3) ---
+@router.get("/task3")
 async def get_task_info(job_id: str | None = None, status_filter: str = "active"):
     """
     Retrieves status or information about one or more tasks.
@@ -109,13 +89,12 @@ async def get_task_info(job_id: str | None = None, status_filter: str = "active"
     }
 
 
-@router.post("/uploadfile")
+@router.post("/task4")
 async def upload_file(file: UploadFile = File(...)):
     """
     Receives a file, saves it to the local UPLOAD_FOLDER, and returns metadata
     """
 
-    print("printing upload_file")
     try:
         file_path = os.path.join(UPLOAD_FOLDER, file.filename)
 

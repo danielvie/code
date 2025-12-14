@@ -34,7 +34,7 @@ export interface Task2Response {
     target: number;
 }
 
-export interface Task4Response {
+export interface Task3Response {
     status_filter: string,
     jobs: Job[],
 }
@@ -91,13 +91,13 @@ export function helper_post_task2(callback: CallableFunction) {
         .catch(e => console.error("POST Error:", e));
 }
 
-export function helper_get_task4(callback: CallableFunction) {
+export function helper_get_task3(callback: CallableFunction) {
     const endpoint = `${API_BASE_URL}/api/task4`; 
 
     fetch(endpoint, {
         method: 'GET',
     })
-        .then(response => response.json() as Promise<Task4Response>) // Type the POST response
+        .then(response => response.json() as Promise<Task3Response>) // Type the POST response
         .then(data => {
             callback(data)
         })
