@@ -1,0 +1,104 @@
+# app/routers/tasks.py
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
+
+# --- Pydantic Schemas for POST Request Bodies ---
+
+
+# Schema for Task 1: Simple payload
+class Task1Payload(BaseModel):
+    data_id: int = Field(..., description="Unique ID for the data to be processed.")
+    config: str
+
+
+# Schema for Task 2: More complex, nested data structure
+class Task2Payload(BaseModel):
+    user_token: str
+    target_value: float
+    parameters: dict
+
+
+# Schema for Task 3: Another simple payload
+class Task3Payload(BaseModel):
+    file_path: str
+    timeout_seconds: int = 60
+
+
+# --- APIRouter Initialization ---
+
+router = APIRouter(
+    prefix="/api",  # All routes will be /api/...
+    tags=["Tasks"],  # Grouping in documentation
+)
+
+# --- POST Endpoints (Task 1, 2, 3) ---
+
+
+@router.post("/task1")
+async def execute_task1(payload: Task1Payload):
+    """
+    Initiates processing for a specific data ID with a given configuration.
+    """
+    print(f"Executing Task 1 for ID: {payload.data_id} with config: {payload.config}")
+
+    # Simulate work
+    # result = await perform_complex_operation(payload.data_id)
+
+    return {"status": "Task 1 queued", "data_id": payload.data_id}
+
+
+@router.post("/task2")
+async def execute_task2(payload: Task2Payload):
+    """
+    Handles a complex request involving a user token and parameters.
+    """
+    if not payload.user_token.startswith("USR-"):
+        raise HTTPException(status_code=400, detail="Invalid user token format.")
+
+    # Simulate work
+    # result = await handle_token_based_request(payload.user_token, payload.parameters)
+
+    return {"status": "Task 2 accepted", "target": payload.target_value}
+
+
+@router.post("/task3")
+async def execute_task3(payload: Task3Payload):
+    """
+    Starts a process that relies on a file and respects a timeout.
+    """
+    if not payload.file_path.endswith(".csv"):
+        raise HTTPException(status_code=400, detail="Only CSV files supported for Task 3.")
+
+    # Simulate work
+    # result = await start_file_job(payload.file_path)
+
+    return {
+        "status": "Task 3 initiated",
+        "path": payload.file_path,
+        "timeout": payload.timeout_seconds,
+    }
+
+
+# --- GET Endpoint (Task 4) ---
+
+
+@router.get("/task4")
+async def get_task_info(job_id: str | None = None, status_filter: str = "active"):
+    """
+    Retrieves status or information about one or more tasks.
+
+    If job_id is provided, returns details for that job.
+    Otherwise, returns a list of jobs filtered by status.
+    """
+    if job_id:
+        # Simulate fetching single job details from a database
+        return {"job_id": job_id, "status": "completed", "result_url": f"/results/{job_id}"}
+
+    # Simulate fetching a list of jobs
+    return {
+        "status_filter": status_filter,
+        "jobs": [
+            {"id": "j-101", "status": "active"},
+            {"id": "j-102", "status": "completed"},
+        ],
+    }

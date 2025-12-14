@@ -99,3 +99,5 @@ WHERE {
     ?person3 foaf:name ?name3 .
 }
 ```
+
+# Relation with OSLC (Open Services for Lifecycle Collaboration)

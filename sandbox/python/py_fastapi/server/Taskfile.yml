@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: ["main"]
+
+  main:
+    aliases: ["m"]
+    cmds:
+      - uvicorn app.main:app --reload --port 5000
+
+  clear:
+    aliases: ["c"]
+    cmds:
+      - 
