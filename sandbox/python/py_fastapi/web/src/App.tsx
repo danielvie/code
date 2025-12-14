@@ -3,6 +3,7 @@ import { useState } from 'react';
 import './App.css';
 import { helper_get_task4, helper_post_task1, helper_post_task2 } from './helpers/tasks';
 import { type Task1Response, type Task2Response, type Task4Response } from './helpers/tasks';
+import FileUploader from './components/FileUploader';
 
 function App() {
     const [message, set_message] = useState<string | null>(".");
@@ -31,6 +32,8 @@ function App() {
     return (
         <div className="App">
             <h1>testing FastAPI</h1>
+
+            <FileUploader className='mt-10'/>
 
             <div className='mt-4 flex flex-col gap-2'>
                 <button onClick={handle_post_task1}>Execute Task 1 (POST)</button>

@@ -1,10 +1,15 @@
 # app/routers/tasks.py
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File
+import os
+import aiofiles
 from pydantic import BaseModel, Field
 
-# --- Pydantic Schemas for POST Request Bodies ---
+# .. CONSTANTS
+UPLOAD_FOLDER = "uploaded_files"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
+# .. SCHEMAS
 # Schema for Task 1: Simple payload
 class Task1Payload(BaseModel):
     data_id: int = Field(..., description="Unique ID for the data to be processed.")
@@ -102,3 +107,29 @@ async def get_task_info(job_id: str | None = None, status_filter: str = "active"
             {"id": "j-102", "status": "completed"},
         ],
     }
+
+
+@router.post("/uploadfile")
+async def upload_file(file: UploadFile = File(...)):
+    """
+    Receives a file, saves it to the local UPLOAD_FOLDER, and returns metadata
+    """
+
+    print("printing upload_file")
+    try:
+        file_path = os.path.join(UPLOAD_FOLDER, file.filename)
+
+        async with aiofiles.open(file_path, "wb") as out_file:
+            # read up to 1024 bytes
+            while content := await file.read(1024):
+                await out_file.write(content)
+
+        return {
+            "filename": file.filename,
+            "content_type": file.content_type,
+            "message": f"File '{file.filename}' successfully copied to '{UPLOAD_FOLDER}'.",
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"there was an error uploading the file: {e}")
+    finally:
+        await file.close()

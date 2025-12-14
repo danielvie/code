@@ -1,6 +1,6 @@
 
 // .. constants
-export const API_BASE_URL = 'http://localhost:8000';
+export const API_BASE_URL = 'http://localhost:5000';
 
 // .. interfaces
 export interface Job {
@@ -38,6 +38,13 @@ export interface Task4Response {
     status_filter: string,
     jobs: Job[],
 }
+
+export interface FileUploadResponse {
+    filename: string;
+    content_type: string;
+    message: string;
+}
+
 
 // .. functions
 
