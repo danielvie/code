@@ -90,6 +90,11 @@ git reflog expire --expire=now --all
 git gc --prune=now --aggressive
 ```
 
+Remove tag from repo
+```bash
+git push origin --delete <tagname>
+```
+
 Remove file from repo
 ```bash
 git filter-branch --tree-filter 'rm -f path/to/file' HEAD
