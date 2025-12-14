@@ -84,7 +84,7 @@ export function helper_post_task2(callback: CallableFunction) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     })
-        .then(response => response.json() as Promise<Task2Response>) // Type the POST response
+        .then(response => response.json() as Promise<Task2Response>)
         .then(data => {
             callback(data)
         })
@@ -97,7 +97,7 @@ export function helper_get_task3(callback: CallableFunction) {
     fetch(endpoint, {
         method: 'GET',
     })
-        .then(response => response.json() as Promise<Task3Response>) // Type the POST response
+        .then(response => response.json() as Promise<Task3Response>)
         .then(data => {
             callback(data)
         })
