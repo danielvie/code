@@ -4,6 +4,8 @@ import os
 import aiofiles
 from pydantic import BaseModel, Field
 
+from typing import Union
+
 # .. CONSTANTS
 UPLOAD_FOLDER = "uploaded_files"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -90,7 +92,7 @@ async def get_task_info(job_id: str | None = None, status_filter: str = "active"
 
 
 @router.post("/task4")
-async def upload_file(file: UploadFile = File(...)):
+async def task4_upload_file(file: UploadFile = File(...)):
     """
     Receives a file, saves it to the local UPLOAD_FOLDER, and returns metadata
     """
@@ -112,3 +114,12 @@ async def upload_file(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"there was an error uploading the file: {e}")
     finally:
         await file.close()
+
+
+@router.get("/task/{item_id}")
+async def task_n(item_id: int):
+    """
+    Receives a file, saves it to the local UPLOAD_FOLDER, and returns metadata
+    """
+
+    return {"item_id": item_id, "message": f"mijn id nummer is: {item_id}"}

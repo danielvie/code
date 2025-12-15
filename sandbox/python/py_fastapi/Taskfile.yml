@@ -1,0 +1,13 @@
+version: '3'
+
+tasks:
+
+  server:
+    aliases: [s]
+    cmds:
+     - cd server && task
+
+  client:
+    aliases: [c]
+    cmds:
+     - cd client && task
