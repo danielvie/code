@@ -9,3 +9,4 @@ export type MyNodeData = {
 
 // Create a single type for all your nodes
 export type CustomNode = Node<MyNodeData>;
+

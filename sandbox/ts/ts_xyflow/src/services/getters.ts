@@ -35,7 +35,7 @@ export function get_data() {
             type: 'groupNode',
             position: { x: 400, y: 0 }, // Placed to the right of Parent A
             data: { label: 'Phase 2: Execution' },
-            style: { width: 280, height: 400 },
+            style: { width: 200, height: 400 },
         },
         // Child 2.1
         {
@@ -53,7 +53,7 @@ export function get_data() {
             position: { x: 800, y: 0 },
             data: { label: 'Phase 3: Deployment' },
             // INCREASED HEIGHT HERE 👇
-            style: { width: 280, height: 500 },
+            style: { width: 230, height: 500 },
         },
 
         // Child 3.1
