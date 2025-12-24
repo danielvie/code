@@ -1,7 +1,13 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import type { MyNodeData } from '../common/types';
 
-export default memo(({ data, selected }) => {
+interface INodeProps {
+  data: MyNodeData;
+  selected: boolean;
+}
+
+export default memo(({ data, selected }: INodeProps) => {
   return (
     <div className={`
       h-full w-full 

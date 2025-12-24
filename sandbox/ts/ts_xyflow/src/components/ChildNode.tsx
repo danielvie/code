@@ -1,10 +1,16 @@
 import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
+import type { MyNodeData } from '../common/types';
 
-export default memo(({ data, selected }) => {
+interface ChildNodeProps {
+  data: MyNodeData;
+  selected: boolean;
+}
+
+export default memo(({ data, selected }: ChildNodeProps) => {
   return (
     <div className={`
-      group relative bg-white rounded-lg border-2 transition-all p-3 min-w-[150px] shadow-sm
+      group relative bg-white rounded-lg border-2 transition-all p-3 min-w-37.5 shadow-sm
       ${selected ? 'border-blue-500 shadow-lg' : 'border-slate-200'}
     `}>
       {/* Target Handle (Top) for incoming vertical connections */}
