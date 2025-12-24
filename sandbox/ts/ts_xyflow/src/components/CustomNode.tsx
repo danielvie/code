@@ -11,7 +11,7 @@ export default memo(({ data, selected }) => {
       <Handle 
         type="target" 
         position={Position.Left} 
-        className="!bg-slate-400 !w-2 !h-2 border-2 border-white" 
+        className="bg-white! w-3! h-3! border-2! border-sky-500!" 
       />
 
       <div className="flex flex-col gap-1">
@@ -26,7 +26,7 @@ export default memo(({ data, selected }) => {
       <Handle 
         type="source" 
         position={Position.Right} 
-        className="!bg-blue-500 !w-2 !h-2 border-2 border-white" 
+        className="bg-white! w-3! h-3! border-2! border-green-500!" 
       />
     </div>
   );
