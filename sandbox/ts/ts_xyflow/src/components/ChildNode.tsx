@@ -4,13 +4,13 @@ import { Handle, Position } from '@xyflow/react';
 export default memo(({ data, selected }) => {
   return (
     <div className={`
-      group relative bg-white rounded-lg border-2 transition-all p-3 min-w-[150px]
-      ${selected ? 'border-blue-500 shadow-lg' : 'border-slate-200 shadow-sm'}
+      group relative bg-white rounded-lg border-2 transition-all p-3 min-w-[150px] shadow-sm
+      ${selected ? 'border-blue-500 shadow-lg' : 'border-slate-200'}
     `}>
-      {/* Target Handle (Input) */}
+      {/* Target Handle (Top) for incoming vertical connections */}
       <Handle 
         type="target" 
-        position={Position.Left} 
+        position={Position.Top} 
         className="bg-white! w-3! h-3! border-2! border-sky-500!" 
       />
 
@@ -22,10 +22,10 @@ export default memo(({ data, selected }) => {
         <p className="text-xs text-slate-500">{data.description}</p>
       </div>
 
-      {/* Source Handle (Output) */}
+      {/* Source Handle (Bottom) for outgoing vertical connections */}
       <Handle 
         type="source" 
-        position={Position.Right} 
+        position={Position.Bottom} 
         className="bg-white! w-3! h-3! border-2! border-green-500!" 
       />
     </div>
