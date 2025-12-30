@@ -41,6 +41,11 @@ Set pager `delta`
     colorMoved = default
 ```
 
+Fetch a shallow repo
+```bash
+git fetch --unshallow
+```
+
 Make submodules update automatically
 ```bash
 git config --global submodule.recurse true
