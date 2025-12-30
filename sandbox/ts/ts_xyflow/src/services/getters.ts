@@ -113,7 +113,7 @@ export function get_data() {
             source: 'parent-2',
             target: 'parent-3',
             style: { stroke: '#94a3b8', strokeWidth: 2, strokeDasharray: '5,5' },
-            animated: true
+            animated: false
         },
 
         // Sequence inside Parent 3
