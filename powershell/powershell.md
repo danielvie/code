@@ -20,6 +20,13 @@ Append Path
 $env:Path += ";C:\Your\New\Path"
 ```
 
+ForEach
+```bash
+fd . | ForEach-Object { Remove-Item $_ }
+```
+
+
+
 # USEFUL bindings
 
 open history
