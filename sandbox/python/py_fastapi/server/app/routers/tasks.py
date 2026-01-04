@@ -4,8 +4,6 @@ import os
 import aiofiles
 from pydantic import BaseModel, Field
 
-from typing import Union
-
 # .. CONSTANTS
 UPLOAD_FOLDER = "uploaded_files"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)

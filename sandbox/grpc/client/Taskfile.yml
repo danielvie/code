@@ -8,9 +8,17 @@ tasks:
   main:
     aliases: [m]
     cmds:
-     - uv run client.py
+     - bun run dev
 
-  build:
-    aliases: [b]
+  proto:
+    aliases: [p]
     cmds:
-     - uv run -m grpc_tools.protoc -I.. --python_out=. --grpc_python_out=. ../helloworld.proto
+      - powershell "if (!(Test-Path 'src/generated')) {New-Item -ItemType Directory -Name 'src/generated'}"
+      - >
+        protoc -I=.. service.proto 
+        --js_out=import_style=commonjs,binary:./src/generated 
+        --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/generated
+
+  init:
+    cmds:
+     - bun create vite . --template react-ts
