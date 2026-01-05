@@ -1,4 +1,3 @@
-import { memo } from 'react';
 import { Handle, Position } from '@xyflow/react';
 import type { MyNodeData } from '../common/types';
 
@@ -7,7 +6,7 @@ interface INodeProps {
   selected: boolean;
 }
 
-export default memo(({ data, selected }: INodeProps) => {
+export default function GroupNode({ data, selected }: INodeProps) {
   return (
     <div className={`
       h-full w-full 
@@ -36,4 +35,4 @@ export default memo(({ data, selected }: INodeProps) => {
       />
     </div>
   );
-});
+}
