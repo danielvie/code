@@ -26,6 +26,15 @@ fd . | ForEach-Object { Remove-Item $_ }
 ```
 
 
+make the windows terminal open in starting directory:
+```json
+"profiles": {
+    "defaults": {
+       // Put settings here that you want to apply to all profiles
+       "startingDirectory": "."
+    }...
+```
+
 
 # USEFUL bindings
 
