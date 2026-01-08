@@ -7,5 +7,22 @@
     {
         "key": "alt+p",
         "command": "workbench.action.quickOpen"
+    },
+    {
+        "key": "ctrl+b",
+        "command": "-workbench.action.toggleSidebarVisibility"
+    },
+    {
+        "key": "alt+b",
+        "command": "workbench.action.toggleSidebarVisibility"
+    },
+    {
+        "key": "alt+x",
+        "command": "workbench.action.closeActiveEditor",
+        "when": "!editorTextFocus && !filesExplorerFocus && !searchViewletFocus && !terminalFocus && neovim.mode != 'cmdline'"
+    },
+    {
+        "key": "alt+t",
+        "command": "editor.action.selectAll"
     }
 ]
