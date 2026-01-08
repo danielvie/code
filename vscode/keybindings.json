@@ -19,7 +19,6 @@
     {
         "key": "alt+x",
         "command": "workbench.action.closeActiveEditor",
-        "when": "!editorTextFocus && !filesExplorerFocus && !searchViewletFocus && !terminalFocus && neovim.mode != 'cmdline'"
     },
     {
         "key": "alt+t",
