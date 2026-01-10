@@ -23,5 +23,11 @@
     {
         "key": "alt+t",
         "command": "editor.action.selectAll"
+    },
+    {
+        "key": "alt+d",
+        "command": "vscode-neovim.send",
+        "args": "<A-d>",
+        "when": "editorFocus && neovim.init"
     }
 ]
