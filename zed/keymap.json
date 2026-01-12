@@ -7,18 +7,6 @@
 // from the command palette.
 [
   {
-    "context": "Workspace",
-    "bindings": {
-      // "shift shift": "file_finder::Toggle"
-    },
-  },
-  {
-    "context": "Editor && vim_mode == insert",
-    "bindings": {
-      // "j k": "vim::NormalBefore"
-    },
-  },
-  {
     "context": "Editor && vim_mode == visual && !VimWaiting",
     "bindings": {
       "enter": "editor::SelectLargerSyntaxNode",
@@ -29,6 +17,93 @@
     "context": "Editor && vim_mode == normal && !VimWaiting",
     "bindings": {
       "space enter": "editor::SelectLargerSyntaxNode",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "ctrl-p": null,
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "alt-p": "file_finder::Toggle",
+    },
+  },
+  {
+    "context": "Workspace",
+    "bindings": {
+      "alt-x": "pane::CloseActiveItem",
+    },
+  },
+  {
+    "context": "Editor && vim_mode == normal && vim_operator == none && !VimWaiting",
+    "bindings": {
+      "space w": "workspace::Save",
+    },
+  },
+  {
+    "context": "Editor && showing_completions",
+    "bindings": {
+      "ctrl-y": "editor::ConfirmCompletionInsert",
+    },
+  },
+  {
+    "context": "Editor && vim_mode == operator",
+    "bindings": {
+      "shift-l": "vim::EndOfLine",
+      "shift-h": "vim::FirstNonWhitespace",
+    },
+  },
+  {
+    "context": "Editor && vim_mode == normal",
+    "bindings": {
+      "Alt-t": "editor::SelectAll",
+      "shift-h": "pane::ActivatePreviousItem",
+      "shift-l": "pane::ActivateNextItem",
+      "shift-r": "editor::ToggleFold",
+      "z m": "editor::FoldAll",
+      "z r": "editor::UnfoldAll",
+    },
+  },
+  {
+    "context": "Editor && vim_mode == visual",
+    "bindings": {
+      "shift-r": "editor::ToggleFold",
+    },
+  },
+  {
+    "context": "Editor && vim_mode == visual",
+    "bindings": {
+      "shift-j": "editor::MoveLineDown",
+      "shift-k": "editor::MoveLineUp",
+    },
+  },
+  {
+    "context": "vim_mode == visual",
+    "bindings": {
+      "shift-s": "vim::PushAddSurrounds",
+    },
+  },
+  {
+    "context": "vim_mode == normal || vim_mode == visual",
+    "bindings": {
+      "s": "vim::PushSneak",
+      "shift-s": "vim::PushSneakBackward",
+    },
+  },
+  {
+    "context": "((VimControl && !menu) || (!Editor && !Terminal))",
+    "bindings": {
+      "ctrl-l": "workspace::ActivatePaneRight",
+      "ctrl-h": "workspace::ActivatePaneLeft",
+    },
+  },
+  {
+    "context": "vim_mode == visual",
+    "bindings": {
+      "shift-s": "vim::PushAddSurrounds",
     },
   },
 ]
