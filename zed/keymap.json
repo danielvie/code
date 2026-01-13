@@ -46,11 +46,18 @@
       "alt-b": "workspace::CloseAllDocks",
       "ctrl-|": "pane::SplitAndMoveRight",
       "Alt-|": "pane::JoinIntoNext",
-      "shift-q": ["vim::ExecuteRegister", { "name": "q" }],
-      "shift-w": ["vim::ExecuteRegister", { "name": "w" }],
-      "shift-e": ["vim::ExecuteRegister", { "name": "e" }],
     },
   },
+  // macros
+  {
+    "context": "Editor && vim_mode == normal && !VimWaiting",
+    "bindings": {
+      "shift-q": ["vim::PushOperator", { "name": "@q" }],
+      "shift-w": ["vim::PushOperator", { "name": "@w" }],
+      "shift-e": ["vim::PushOperator", { "name": "@e" }],
+    },
+  },
+
   // visual
   {
     "context": "Editor && vim_mode == visual",
