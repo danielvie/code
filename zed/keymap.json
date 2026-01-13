@@ -44,6 +44,11 @@
       "z r": "editor::UnfoldAll",
       "Alt-t": "editor::SelectAll",
       "alt-b": "workspace::CloseAllDocks",
+      "ctrl-|": "pane::SplitAndMoveRight",
+      "Alt-|": "pane::JoinIntoNext",
+      "shift-q": ["vim::ExecuteRegister", { "name": "q" }],
+      "shift-w": ["vim::ExecuteRegister", { "name": "w" }],
+      "shift-e": ["vim::ExecuteRegister", { "name": "e" }],
     },
   },
   // visual
