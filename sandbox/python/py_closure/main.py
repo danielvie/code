@@ -4,6 +4,7 @@ def build_counter():
     def counter():
         nonlocal cont
         cont += 1
+
         return cont
 
     return counter
@@ -12,8 +13,6 @@ def build_counter():
 def main():
     ca = build_counter()
     cb = build_counter()
-    print(ca())
-    print(ca())
     print(ca())
     print(ca())
     print(cb())

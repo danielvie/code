@@ -14,11 +14,13 @@ tasks:
     aliases: [p]
     cmds:
       - powershell "if (!(Test-Path 'src/generated')) {New-Item -ItemType Directory -Name 'src/generated'}"
-      - >
-        protoc -I=.. service.proto 
-        --js_out=import_style=commonjs,binary:./src/generated 
-        --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/generated
+      # - >
+      #   protoc -I=.. service.proto 
+      #   --js_out=import_style=commonjs,binary:./src/generated 
+      #   --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/generated
+      - npx protoc --ts_out ./src/generated --proto_path ../ service.proto
 
   init:
     cmds:
      - bun create vite . --template react-ts
+

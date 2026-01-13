@@ -1,37 +1,47 @@
-// ./src/App.tsx
-
 import { useState } from 'react';
-// The TypeScript plugin usually capitalizes the S in Service
-import { GreeterClient } from './generated/ServiceServiceClientPb';
-import * as ServiceProto from './generated/service_pb';
+// 1. Import the Transport for the browser
+import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+// 2. Import the generated Client and Client Interface
+import { GreeterClient } from "./generated/service.client";
 
-const client = new GreeterClient('http://localhost:8080');
+// 3. Configure the Transport (Point to Envoy on 8080)
+const transport = new GrpcWebFetchTransport({
+  baseUrl: "http://localhost:8080"
+});
+
+// 4. Create the Client instance
+const client = new GreeterClient(transport);
 
 export default function App() {
   const [responseMsg, setResponseMsg] = useState("");
 
-  const callBackend = () => {
-    const request = new ServiceProto.HelloRequest();
-    request.setName('Bun User');
+  const callBackend = async () => {
+    try {
+      console.log("Sending request...");
+      
+      // 5. Make the Async Call (No more callbacks!)
+      const { response } = await client.sayHello({
+        name: "Bun User with protobuf-ts"
+      });
 
-    console.log("Calling gRPC via Envoy...");
-
-    client.sayHello(request, {}, (err, response: ServiceProto.HelloReply) => {
-      if (err) {
-        console.error("gRPC Error:", err.message);
-        setResponseMsg("Error: Check Console");
-        return;
-      }
-      const text = response.getMessage();
-      console.log("Response:", text);
-      setResponseMsg(text);
-    });
+      console.log("Success:", response.message);
+      setResponseMsg(response.message);
+      
+    } catch (e: any) {
+      console.error("Error:", e);
+      setResponseMsg(`Error: ${e.message}`);
+    }
   };
 
   return (
-    <div style={{ padding: '20px' }}>
-      <button onClick={callBackend}>Execute Backend Function</button>
-      <p>Result: {responseMsg}</p>
-    </div>
+    <>
+      <div className='flex w-screen h-screen items-center justify-center'>
+        <div className='flex flex-col items-center gap-2'>
+          <h1>Vite + protobuf-ts</h1>
+          <button onClick={callBackend}>Execute Backend Function</button>
+          <p>Result: {responseMsg}</p>
+        </div>
+      </div>
+    </>
   );
 }
