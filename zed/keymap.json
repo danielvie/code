@@ -8,7 +8,7 @@
 [
   {
     // run in terminal
-    "context": "Workspace",
+    "context": "Editor && vim_mode == normal",
     "bindings": {
       "space v": ["task::Spawn", { "task_name": "run in terminal" }],
     },
