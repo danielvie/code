@@ -7,15 +7,10 @@
 // from the command palette.
 [
   {
+    // run in terminal
     "context": "Workspace",
     "bindings": {
-      // "shift shift": "file_finder::Toggle"
-    },
-  },
-  {
-    "context": "Editor && vim_mode == insert",
-    "bindings": {
-      // "j k": "vim::NormalBefore"
+      "space v": ["task::Spawn", { "task_name": "run in terminal" }],
     },
   },
   // select syntax
@@ -34,7 +29,7 @@
   },
   // vim normal
   {
-    "context": "Editor && vim_mode == normal",
+    "context": "Editor && vim_mode == normal && !VimWaiting",
     "bindings": {
       "space w": "workspace::Save",
       "shift-h": "pane::ActivatePreviousItem",
@@ -44,22 +39,28 @@
       "z r": "editor::UnfoldAll",
       "Alt-t": "editor::SelectAll",
       "alt-b": "workspace::CloseAllDocks",
-      "ctrl-|": "pane::SplitAndMoveRight",
-      "Alt-|": "pane::JoinIntoNext",
+    },
+  },
+  // operators
+  {
+    "context": "Editor && vim_mode == operator && !VimWaiting",
+    "bindings": {
+      "shift-l": "vim::EndOfLine",
+      "shift-h": "vim::FirstNonWhitespace",
     },
   },
   // macros
   {
     "context": "Editor && vim_mode == normal && !VimWaiting",
     "bindings": {
-      "shift-q": ["vim::PushOperator", { "name": "@q" }],
-      "shift-w": ["vim::PushOperator", { "name": "@w" }],
-      "shift-e": ["vim::PushOperator", { "name": "@e" }],
+      "shift-q": ["vim::SelectRegister", "q"],
+      "shift-w": ["vim::SelectRegister", "w"],
+      "shift-e": ["vim::SelectRegister", "e"],
     },
   },
   // visual
   {
-    "context": "Editor && vim_mode == visual",
+    "context": "Editor && vim_mode == visual && !VimWaiting",
     "bindings": {
       "shift-j": "editor::MoveLineDown",
       "shift-k": "editor::MoveLineUp",
@@ -87,6 +88,12 @@
       "s": "vim::PushSneak",
     },
   },
+  {
+    "context": "vim_mode == normal",
+    "bindings": {
+      "S": "vim::PushSneakBackward",
+    },
+  },
   // confirm completion
   {
     "context": "Editor && showing_completions",
@@ -104,6 +111,18 @@
     "context": "Workspace",
     "bindings": {
       "alt-p": "file_finder::Toggle",
+    },
+  },
+  // run in terminal
+  {
+    "context": "Workspace",
+    "bindings": {},
+  },
+  {
+    "context": "(ProjectPanel && not_editing)",
+    "bindings": {
+      "a": "project_panel::NewFile",
+      "r": "project_panel::Rename",
     },
   },
 ]
