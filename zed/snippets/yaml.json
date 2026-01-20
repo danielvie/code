@@ -1,0 +1,24 @@
+{
+  // Each snippet must have a name and body, but the prefix and description are optional.
+  // The prefix is used to trigger the snippet, but when omitted then the name is used.
+  // Use placeholders like $1, $2 or ${1:defaultValue} to define tab stops.
+  // The $0 determines the final cursor position.
+  // Placeholders with the same value are linked.
+  "Taskfile Template": {
+    "prefix": "!task",
+    "body": [
+      "version: '3'",
+      "",
+      "tasks:",
+      "",
+      "  default:",
+      "    deps: [main]",
+      "",
+      "  main:",
+      "    aliases: [m]",
+      "    cmds:",
+      "     - $0"
+    ],
+    "description": "Creates a template for Taskfile"
+  }
+}
