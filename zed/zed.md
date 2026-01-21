@@ -6,3 +6,7 @@
 - Emmet
 - LOG
 - HTML Snippets
+
+
+# extension path
+$env:USERPROFILE\AppData\Local\Zed\extensions
