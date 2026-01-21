@@ -6,13 +6,6 @@
 // To see the default key bindings run `zed: open default keymap`
 // from the command palette.
 [
-  {
-    // run in terminal
-    "context": "Editor && vim_mode == normal",
-    "bindings": {
-      "space v": ["task::Spawn", { "task_name": "run in terminal" }],
-    },
-  },
   // select syntax
   {
     "context": "Editor && vim_mode == visual && !VimWaiting",
@@ -27,45 +20,76 @@
       "space enter": "editor::SelectLargerSyntaxNode",
     },
   },
-  // vim normal
+  // workspace
   {
-    "context": "Editor && vim_mode == normal && !VimWaiting",
+    "context": "Workspace",
     "bindings": {
-      "space w": "workspace::Save",
-      "shift-h": "pane::ActivatePreviousItem",
-      "shift-l": "pane::ActivateNextItem",
-      "shift-r": "editor::ToggleFold",
-      "z m": "editor::FoldAll",
-      "z r": "editor::UnfoldAll",
-      "Alt-t": "editor::SelectAll",
-      "alt-b": "workspace::CloseAllDocks",
+      "ctrl-p": null,
     },
   },
-  // operators
   {
-    "context": "Editor && vim_mode == operator && !VimWaiting",
+    "context": "Workspace",
+    "bindings": {
+      "alt-p": "file_finder::Toggle",
+      "alt-x": "pane::CloseActiveItem",
+      "alt-b": "workspace::ToggleLeftDock",
+    },
+  },
+  {
+    "context": "Terminal",
+    "bindings": {
+      "alt-b": "workspace::ToggleLeftDock",
+    },
+  },
+  // vim save
+  {
+    "context": "Editor && vim_mode == normal && vim_operator == none && !VimWaiting",
+    "bindings": {
+      "space w": "workspace::Save",
+    },
+  },
+  // vim completion
+  {
+    "context": "Editor && showing_completions",
+    "bindings": {
+      "ctrl-y": "editor::ConfirmCompletionInsert",
+    },
+  },
+  // vim operator
+  {
+    "context": "Editor && vim_mode == operator",
     "bindings": {
       "shift-l": "vim::EndOfLine",
       "shift-h": "vim::FirstNonWhitespace",
     },
   },
-  // macros
+  // vim normal
   {
-    "context": "Editor && vim_mode == normal && !VimWaiting",
+    "context": "Editor && vim_mode == normal",
     "bindings": {
+      "Alt-t": "editor::SelectAll",
+      "shift-h": "pane::ActivatePreviousItem",
+      "shift-l": "pane::ActivateNextItem",
+      "shift-r": "editor::ToggleFold",
+      "z m": "editor::FoldAll",
+      "z r": "editor::UnfoldAll",
+      "z o": "editor::UnfoldRecursive",
+      "z c": "editor::FoldRecursive",
+      "ctrl-|": "pane::SplitAndMoveRight",
+      "Alt-|": "pane::JoinIntoNext",
       "shift-q": ["vim::SelectRegister", "q"],
       "shift-w": ["vim::SelectRegister", "w"],
       "shift-e": ["vim::SelectRegister", "e"],
     },
   },
-  // visual
+  // vim visual
   {
-    "context": "Editor && vim_mode == visual && !VimWaiting",
+    "context": "Editor && vim_mode == visual",
     "bindings": {
+      "shift-r": "editor::ToggleFold",
       "shift-j": "editor::MoveLineDown",
       "shift-k": "editor::MoveLineUp",
       "shift-s": "vim::PushAddSurrounds",
-      "shift-r": "editor::ToggleFold",
     },
   },
   // navigate
@@ -74,12 +98,14 @@
     "bindings": {
       "ctrl-l": "workspace::ActivatePaneRight",
       "ctrl-h": "workspace::ActivatePaneLeft",
+      "ctrl-j": "workspace::ActivatePaneDown",
     },
   },
   {
-    "context": "Workspace",
+    "context": "Terminal",
     "bindings": {
-      "alt-x": "pane::CloseActiveItem",
+      "ctrl-j": null,
+      "ctrl-k": "workspace::ActivatePaneUp",
     },
   },
   {
@@ -94,35 +120,18 @@
       "S": "vim::PushSneakBackward",
     },
   },
-  // confirm completion
-  {
-    "context": "Editor && showing_completions",
-    "bindings": {
-      "ctrl-y": "editor::ConfirmCompletion",
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "ctrl-p": null,
-    },
-  },
-  {
-    "context": "Workspace",
-    "bindings": {
-      "alt-p": "file_finder::Toggle",
-    },
-  },
-  // run in terminal
-  {
-    "context": "Workspace",
-    "bindings": {},
-  },
   {
     "context": "(ProjectPanel && not_editing)",
     "bindings": {
       "a": "project_panel::NewFile",
       "r": "project_panel::Rename",
+      "p": "project_panel::Paste",
+    },
+  },
+  {
+    "context": "ProjectPanel && not_editing",
+    "bindings": {
+      "x": "project_panel::Cut",
     },
   },
 ]
