@@ -14,12 +14,46 @@
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "One Dark",
+    "dark": "One Dark Pro",
   },
   "diagnostics": {
     "inline": {
       "enabled": true,
       "max_severity": null, // same values as the `diagnostics_max_severity` from the editor settings
+    },
+  },
+  "which_key": { "enabled": true },
+
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        "typescript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always"
+          }
+        },
+        "javascript": {
+          "updateImportsOnFileMove": {
+            "enabled": "always"
+          }
+        }
+      },
+      "enable_lsp_tasks": true
+    },
+    "vscode-css-language-server": {
+      "settings": {
+        "css": {
+          "lint": {
+            "unknownAtRules": "ignore",
+          },
+        },
+      },
+    },
+  },
+
+  "languages": {
+    "Python": {
+      "language_servers": ["ruff", "pyright"],
     },
   },
 }
