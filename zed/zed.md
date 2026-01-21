@@ -9,4 +9,5 @@
 
 
 # extension path
-$env:USERPROFILE\AppData\Local\Zed\extensions
+
+$env:LOCALAPPDATA\Zed\extensions
