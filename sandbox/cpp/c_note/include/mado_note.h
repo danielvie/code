@@ -21,6 +21,9 @@ void mado_note_clear(NoteData *buffer);
 void mado_note_add_text(NoteData *buffer, const char *text_to_add);
 void mado_note_add_text_f(NoteData *buffer, const char *format, ...);
 
+void mado_note_add_array_u32(NoteData *buffer, const char *name, const uint32_t *data, size_t data_len);
+void mado_note_add_array_i32(NoteData *buffer, const char *name, const int32_t *data, size_t data_len);
+
 void mado_note_print(const NoteData *buffer);
 bool mado_note_print_file(const NoteData *nb, FILE *f);
 

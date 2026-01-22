@@ -63,6 +63,46 @@ void mado_note_add_text_f(NoteData *buffer, const char *format, ...) {
     mado_note_add_text(buffer, temp_buffer);
 }
 
+// Add array
+void mado_note_add_array_u32(NoteData *buffer, const char *name, const uint32_t *data, size_t data_len) {
+    if (buffer == NULL || name == NULL) {
+        return;
+    }
+    if (data_len == 0) {
+        mado_note_add_text_f(buffer, "%s: [];\n", name);
+        return;
+    }
+
+    mado_note_add_text_f(buffer, "%s: [", name);
+    for (size_t i = 0; i < data_len; ++i) {
+        if (i + 1 < data_len) {
+            mado_note_add_text_f(buffer, "%u,", (unsigned)data[i]);
+        } else {
+            mado_note_add_text_f(buffer, "%u];\n", (unsigned)data[i]);
+        }
+    }
+}
+
+// Add array
+void mado_note_add_array_i32(NoteData *buffer, const char *name, const int32_t *data, size_t data_len) {
+    if (buffer == NULL || name == NULL) {
+        return;
+    }
+    if (data_len == 0) {
+        mado_note_add_text_f(buffer, "%s: [];\n", name);
+        return;
+    }
+
+    mado_note_add_text_f(buffer, "%s: [", name);
+    for (size_t i = 0; i < data_len; ++i) {
+        if (i + 1 < data_len) {
+            mado_note_add_text_f(buffer, "%d,", (int)data[i]);
+        } else {
+            mado_note_add_text_f(buffer, "%d];\n", (int)data[i]);
+        }
+    }
+}
+
 // Print current text in the buffer
 void mado_note_print(const NoteData *buffer) {
     if (buffer == NULL) {

@@ -17,6 +17,7 @@ int main() {
     mado_note_add_text(&note, "Hello");
     mado_note_add_text_f(&note, ", %s!\n", "world");
     uint32_t arr[] = {1,2,3};
+    mado_note_add_array_u32(&note, "numbers", arr, 3);
     mado_note_print(&note);
 
     mado_note_print_file(&note, f);
