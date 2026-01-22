@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 
 tasks:
   default:
@@ -7,17 +7,17 @@ tasks:
   build:
     aliases: ["b"]
     cmds:
-      - cmake -B build
+      - cmake -G Ninja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -B build
       - cmake --build build
 
   main:
     deps: ["build"]
     cmds:
-      - ./build/debug/main.exe
-      
+      - ./build/main.exe
+
   clean:
     aliases: ["c"]
-    cmds: 
-      - 'if {{ eq OS "windows" }}; 
-        then powershell Remove-Item -Recurse -Force build; 
+    cmds:
+      - 'if {{ eq OS "windows" }};
+        then powershell Remove-Item -Recurse -Force build;
         else rm -rf build; fi'
