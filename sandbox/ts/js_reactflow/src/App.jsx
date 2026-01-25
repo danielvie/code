@@ -1,10 +1,9 @@
-import React from "react";
+import "@xyflow/react/dist/style.css";
+
 import { BrowserRouter, Routes, Route, Link } from "react-router-dom";
 import CustomNodeFlow from "./ExampleCustomNode";
 import ConnectionLineFlow from "./ExampleConnectionLine";
 import TailwindFlow from "./ExampleTailwind";
-
-import "@xyflow/react/dist/style.css";
 
 const routes = [
   {
