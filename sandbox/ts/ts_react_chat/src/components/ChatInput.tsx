@@ -7,18 +7,17 @@ interface ChatInputProps {
 export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
   const [text, setText] = useState("");
 
-  // using SyntheticEvent<HTMLFormElement> is the modern, safe generic
-  const handleSubmit = (e: SyntheticEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  function handle_submit(e: SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault(); // prevent the browser to reload on submit
     if (!text.trim()) return;
 
     onSendMessage(text);
     setText("");
-  };
+  }
 
   return (
     <form
-      onSubmit={handleSubmit}
+      onSubmit={handle_submit}
       className="p-4 bg-gray-900 border-t flex gap-2"
     >
       <input

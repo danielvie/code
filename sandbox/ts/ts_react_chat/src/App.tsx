@@ -12,7 +12,7 @@ function App() {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
-  const handleSendMessage = (text: string) => {
+  function handle_send_message(text: string) {
     const newUserMsg: Message = { id: Date.now(), text, sender: "user" };
     setMessages((prev) => [...prev, newUserMsg]);
 
@@ -25,7 +25,7 @@ function App() {
       };
       setMessages((prev) => [...prev, botReply]);
     }, 600);
-  };
+  }
 
   return (
     <div className="w-screen h-screen">
@@ -45,7 +45,7 @@ function App() {
           <div ref={scrollRef} />
         </div>
 
-        <ChatInput onSendMessage={handleSendMessage} />
+        <ChatInput onSendMessage={handle_send_message} />
       </div>
     </div>
   );
