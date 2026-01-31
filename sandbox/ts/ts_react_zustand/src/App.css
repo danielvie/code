@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+:root {
+    @apply m-2 text-gray-400;
+    background-color: oklch(0.13 0 0);
+}
+
+button {
+    @apply bg-sky-800 hover:bg-sky-700
+            p-2 rounded-sm cursor-pointer
+            hover:text-gray-300;
+}

@@ -1,0 +1,16 @@
+version: "3"
+
+tasks:
+  default:
+    deps: [maven]
+
+  main:
+    aliases: [m]
+    cmds:
+      - javac -cp "sikulix.jar;." src/main/java/DragDropBot.java
+      - java -cp "sikulix.jar;src/main/java" DragDropBot
+
+  maven:
+    aliases: [mv]
+    cmds:
+      - mvn compile exec:java -Dexec.mainClass="DragDropBot"

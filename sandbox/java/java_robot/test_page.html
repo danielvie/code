@@ -1,0 +1,135 @@
+<!doctype html>
+<html>
+    <head>
+        <style>
+            body {
+                font-family: sans-serif;
+                background-color: #f0f0f0;
+            }
+            .box {
+                width: 100px;
+                height: 100px;
+                position: absolute;
+                border: 2px solid #333;
+                cursor: grab;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: white;
+                user-select: none;
+            }
+            #greenBox {
+                background-color: #27ae60;
+                top: 150px;
+                left: 100px;
+                z-index: 10;
+            }
+            #blueBox {
+                background-color: #2980b9;
+                top: 150px;
+                left: 500px;
+            }
+            #status {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                font-size: 24px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="status">Status: Waiting...</div>
+        <div id="blueBox" class="box">DROP<br />ZONE</div>
+        <div id="greenBox" class="box">DRAG<br />ME</div>
+
+        <script>
+            const dragItem = document.getElementById("greenBox");
+            const dropZone = document.getElementById("blueBox");
+            const status = document.getElementById("status");
+            let active = false;
+            let currentX, currentY, initialX, initialY;
+            let xOffset = 0,
+                yOffset = 0;
+
+            dragItem.addEventListener("mousedown", dragStart);
+            document.addEventListener("mouseup", dragEnd);
+            document.addEventListener("mousemove", drag);
+
+            function randomPosition(element) {
+                // change the position of element to a random value in the screen
+                const maxX = window.innerWidth - element.offsetWidth;
+                const maxY = window.innerHeight - element.offsetHeight;
+
+                const randomX = Math.floor(Math.random() * maxX);
+                const randomY = Math.floor(Math.random() * maxY);
+                element.style.left = randomX + "px";
+                element.style.top = randomY + "px";
+            }
+
+            function dragStart(e) {
+                initialX = e.clientX - xOffset;
+                initialY = e.clientY - yOffset;
+                if (e.target === dragItem) active = true;
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+                active = false;
+                checkDrop();
+            }
+
+            function drag(e) {
+                if (active) {
+                    e.preventDefault();
+                    currentX = e.clientX - initialX;
+                    currentY = e.clientY - initialY;
+                    xOffset = currentX;
+                    yOffset = currentY;
+                    setTranslate(currentX, currentY, dragItem);
+                }
+            }
+
+            function setTranslate(xPos, yPos, el) {
+                el.style.transform =
+                    "translate3d(" + xPos + "px, " + yPos + "px, 0)";
+            }
+
+            function restoreBoxes() {
+                status.innerText = "Status: Waiting...";
+                status.style.color = "black";
+                dragItem.style.backgroundColor = "#27ae60";
+                dragItem.innerText = "DRAG\nME";
+                setTranslate(0, 0, dragItem);
+                xOffset = 0;
+                yOffset = 0;
+                randomPosition(dragItem);
+                randomPosition(dropZone);
+            }
+
+            function checkDrop() {
+                const r1 = dragItem.getBoundingClientRect();
+                const r2 = dropZone.getBoundingClientRect();
+                // Simple collision detection
+                if (
+                    !(
+                        r1.right < r2.left ||
+                        r1.left > r2.right ||
+                        r1.bottom < r2.top ||
+                        r1.top > r2.bottom
+                    )
+                ) {
+                    status.innerText = "Status: SUCCESS!";
+                    status.style.color = "green";
+                    dragItem.style.backgroundColor = "gold";
+                    dragItem.innerText = "DONE";
+
+                    setTimeout(restoreBoxes, 1000);
+                }
+            }
+
+            restoreBoxes();
+        </script>
+    </body>
+</html>

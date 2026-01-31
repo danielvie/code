@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+:root {
+    @apply text-gray-200 m-4;
+    background-color: oklch(0.13 0 0);
+}
+
+input {
+    @apply bg-gray-200 text-gray-950;
+}
