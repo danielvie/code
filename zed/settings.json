@@ -7,53 +7,120 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "relative_line_numbers": "enabled",
+  "edit_predictions": {
+    "mode": "subtle",
+  },
+  // "ui_font_family": "JetBrainsMono Nerd Font",
+  "terminal": {
+    "font_family": "JetBrainsMono Nerd Font",
+  },
+  "agent": {
+    "always_allow_tool_actions": true,
+    "default_model": {
+      "provider": "copilot_chat",
+      "model": "gemini-3-pro-preview",
+    },
+    "model_parameters": [],
+  },
+  "disable_ai": true,
+
+  "features": {
+    "edit_prediction_provider": "copilot",
+  },
+
   "vim_mode": true,
-  "ui_font_size": 16,
-  "buffer_font_size": 15,
+  "ui_font_size": 18.0,
+  "buffer_font_size": 15.0,
   "theme": {
     "mode": "system",
     "light": "One Light",
     "dark": "One Dark Pro",
   },
+  "vim": {
+    "toggle_relative_line_numbers": true,
+  },
+
   "diagnostics": {
     "inline": {
       "enabled": true,
-      "max_severity": null, // same values as the `diagnostics_max_severity` from the editor settings
     },
   },
-  "which_key": { "enabled": true },
+
+  "languages": {
+    "Python": {
+      "language_servers": ["pyright", "ruff"],
+    },
+    "CSS": {
+      "language_servers": [
+        "tailwindcss-intellisense-css",
+        "!vscode-css-language-server",
+      ],
+    },
+    "PowerShell": {
+      "format_on_save": "off",
+    },
+    "LaTeX": {
+      "format_on_save": "off",
+    },
+  },
 
   "lsp": {
     "vtsls": {
       "settings": {
         "typescript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
+            "enabled": "always",
+          },
         },
         "javascript": {
           "updateImportsOnFileMove": {
-            "enabled": "always"
-          }
-        }
+            "enabled": "always",
+          },
+        },
       },
-      "enable_lsp_tasks": true
+      "enable_lsp_tasks": true,
     },
-    "vscode-css-language-server": {
+    "texlab": {
       "settings": {
-        "css": {
-          "lint": {
-            "unknownAtRules": "ignore",
+        "texlab": {
+          // ...
+          "build": {
+            "onSave": true,
+            "forwardSearchAfter": true,
+          },
+          "forwardSearch": {
+            "executable": "SumatraPDF.exe",
+            "args": ["-reuse-instance", "%p", "-forward-search", "%f", "%l"],
           },
         },
       },
     },
-  },
-
-  "languages": {
-    "Python": {
-      "language_servers": ["ruff", "pyright"],
+    "tailwindcss-language-server": {
+      "settings": {
+        "classFunctions": ["cva", "cx"],
+        "experimental": {
+          "classRegex": ["[cls|className]\\s\\:\\=\\s\"([^\"]*)"],
+        },
+      },
+    },
+    "matlab-language-server": {
+      "settings": {
+        "installPath": "C:/Program Files/MATLAB/R2024a",
+        "indexWorkspace": true,
+        "matlabConnectionTiming": "onStart",
+        "telemetry": false,
+      },
+    },
+    "clangd": {
+      "initialization_options": {
+        "fallbackFlags": ["-I", "main/include"],
+        "compilationDatabasePath": "build",
+      },
+      "arguments": [
+        "--compile-commands-dir=build",
+        "--all-scopes-completion",
+        "--header-insertion=never",
+      ],
     },
   },
 }
