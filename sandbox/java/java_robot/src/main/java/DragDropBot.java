@@ -1,6 +1,5 @@
-import java.io.File;
+import org.sikuli.script.Location;
 import org.sikuli.script.Match;
-import org.sikuli.script.Pattern;
 import org.sikuli.script.Screen;
 
 public class DragDropBot {
@@ -8,65 +7,77 @@ public class DragDropBot {
     public static void main(String[] args) {
         Screen screen = new Screen();
 
-        String dragPath = new File("template_drag.png").getAbsolutePath();
-        String dropPath = new File("template_drop.png").getAbsolutePath();
+        // Visible text on screen
+        String sourceText = "ACTUATOR-SYS-1";
+        String targetText = "Working Set Info";
+
+        // Offsets relative to the CENTER of the matched text
+        int sourceOffsetX = 0; // e.g. move left to hit file icon
+        int sourceOffsetY = 0;
+
+        int targetOffsetX = 0; // e.g. move inside drop container
+        int targetOffsetY = 100;
 
         try {
-            Match[] boxes = detectBoxes(screen, dragPath, dropPath);
-            move(screen, boxes[0], boxes[1]);
+            // Find source
+            System.out.println("Searching for source text: ");
+            Match source = screen.find(sourceText);
+            source.highlight(2);
+            printMatchPosition("SOURCE", source);
+
+            // Find target
+            System.out.println("\nSearching for target text: ");
+            Match target = screen.find(targetText);
+            target.highlight(2);
+            printMatchPosition("TARGET", target);
+
+            // Apply offsets
+            Location dragFrom = source
+                .getCenter()
+                .offset(sourceOffsetX, sourceOffsetY);
+
+            Location dropTo = target
+                .getCenter()
+                .offset(targetOffsetX, targetOffsetY);
+
+            System.out.println(
+                "\nDrag from: (" +
+                    dragFrom.getX() +
+                    ", " +
+                    dragFrom.getY() +
+                    ")"
+            );
+
+            System.out.println(
+                "Drop to: (" + dropTo.getX() + ", " + dropTo.getY() + ")"
+            );
+
+            // Perform drag and drop
+            System.out.println("\nPerforming drag and drop...");
+            screen.dragDrop(dragFrom, dropTo);
+            System.out.println("Drag and drop completed.");
         } catch (Exception e) {
+            System.err.println(
+                "Action aborted: one or more elements not found."
+            );
             e.printStackTrace();
         }
 
         System.exit(0);
     }
 
-    private static Match[] detectBoxes(
-        Screen screen,
-        String dragPath,
-        String dropPath
-    ) throws Exception {
-        Pattern dragItem = new Pattern(dragPath).similar(0.80);
-        Pattern dropZone = new Pattern(dropPath).similar(0.80);
-
-        System.out.print("scanning for drag box... ");
-        Match source = screen.exists(dragItem, 1);
-
-        if (source != null) {
-            System.out.println("[FOUND]");
-            source.highlight(1);
-        } else {
-            System.err.println("[NOT FOUND]");
-        }
-
-        System.out.print("scanning for drop box...  ");
-        Match target = screen.exists(dropZone, 1);
-
-        if (target != null) {
-            System.out.println("[FOUND]");
-            target.highlight(1);
-        } else {
-            System.err.println("[NOT FOUND]");
-        }
-
-        return new Match[] { source, target };
-    }
-
-    private static void move(Screen screen, Match source, Match target)
-        throws Exception {
-        if (source != null && target != null) {
-            screen.dragDrop(source, target);
-            System.out.println("Done.");
-        } else {
-            System.err.println(
-                "\nACTION ABORTED: One or more elements were missing."
-            );
-            System.err.println(
-                "Tip: If the box is visible in 'debug_view.png' but says [NOT FOUND] here,"
-            );
-            System.err.println(
-                "you MUST crop new template images from that 'debug_view.png' file."
-            );
-        }
+    private static void printMatchPosition(String label, Match match) {
+        System.out.println(label + " FOUND");
+        System.out.println("X      = " + match.getX());
+        System.out.println("Y      = " + match.getY());
+        System.out.println("Width  = " + match.getW());
+        System.out.println("Height = " + match.getH());
+        System.out.println(
+            "Center = (" +
+                match.getCenter().getX() +
+                ", " +
+                match.getCenter().getY() +
+                ")"
+        );
     }
 }
