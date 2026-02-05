@@ -7,7 +7,6 @@ import org.sikuli.script.Screen;
 public class DragDropBot {
 
     public static void main(String[] args) {
-
         // runImageBasedDragDrop();
         runTextBasedDragDrop();
 
@@ -18,7 +17,6 @@ public class DragDropBot {
     // IMAGE-BASED DRAG & DROP (Template Matching)
     // ==========================================================
     private static void runImageBasedDragDrop() {
-
         Screen screen = new Screen();
 
         String dragPath = new File("template_drag.png").getAbsolutePath();
@@ -54,7 +52,6 @@ public class DragDropBot {
             } else {
                 System.err.println("\nACTION ABORTED: Missing elements.");
             }
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -62,7 +59,6 @@ public class DragDropBot {
 
     // TEXT-BASED DRAG & DROP (OCR)
     private static void runTextBasedDragDrop() {
-
         Screen screen = new Screen();
 
         String sourceText = "ACTUATOR-SYS-1";
@@ -94,7 +90,11 @@ public class DragDropBot {
                 .offset(targetOffsetX, targetOffsetY);
 
             System.out.println(
-                "\nDrag from: (" + dragFrom.getX() + ", " + dragFrom.getY() + ")"
+                "\nDrag from: (" +
+                    dragFrom.getX() +
+                    ", " +
+                    dragFrom.getY() +
+                    ")"
             );
             System.out.println(
                 "Drop to: (" + dropTo.getX() + ", " + dropTo.getY() + ")"
@@ -103,9 +103,10 @@ public class DragDropBot {
             System.out.println("\nPerforming drag and drop...");
             screen.dragDrop(dragFrom, dropTo);
             System.out.println("Drag and drop completed.");
-
         } catch (Exception e) {
-            System.err.println("Action aborted: one or more elements not found.");
+            System.err.println(
+                "Action aborted: one or more elements not found."
+            );
             e.printStackTrace();
         }
     }
