@@ -1,0 +1,23 @@
+local ollama model:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "provider": {
+    "ollama": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "Ollama (Local)",
+      "options": {
+        "baseURL": "http://localhost:11434/v1"
+      },
+      "models": {
+        "qwen3-vl:8b": {
+          "name": "QWEN 3 coder 8b",
+          "tools": true
+        }
+      }
+    }
+  },
+  "model": "ollama/qwen3-vl:8b"
+}
+```
