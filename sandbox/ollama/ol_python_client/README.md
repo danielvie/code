@@ -25,6 +25,16 @@ ollama serve
 
 *Note: If you get a "port already in use" error, the server is already running in the background.*
 
+*test connection*
+Test-NetConnection -ComputerName 10.191.234.51 -Port 11434
+
+
+*make ollama listen to all*
+```powershell
+$env:OLLAMA_HOST="0.0.0.0"
+```
+
+
 ### 2. Pull a Model
 
 Before running the code, you must download a model. This project uses `gemma3:4b`:

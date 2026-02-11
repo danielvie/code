@@ -1,40 +1,58 @@
 import json
-import sys
 
 import requests
 
+OLLAMA_URL = "http://10.191.234.51:11434"
+MODEL = "gemma3:4b"
 
-def ollama_post_request(message: str):
-    """Chat using a raw POST request to the Ollama REST API."""
-    print("\n--- Raw POST Request ---")
 
-    response = requests.post(
-        "http://localhost:11434/api/chat",
-        json={
-            "model": "gemma3:4b",
-            "messages": [{"role": "user", "content": message}],
-            "stream": True,
-        },
-        stream=True,
-    )
+def chat():
+    print("Connected to Ollama. Type 'q' to quit.\n")
 
-    print(f"prompt:\n{message}\n")
+    session = requests.Session()
+    session.trust_env = False  # ✅ Ignore system proxy settings
 
-    print("reply: ")
-    for line in response.iter_lines():
-        if line:
+    while True:
+        user_input = input("You: ").strip()
+
+        if user_input.lower() == "q":
+            print("Goodbye!")
+            break
+
+        if not user_input:
+            continue
+
+        print("Assistant: ", end="", flush=True)
+
+        response = session.post(
+            f"{OLLAMA_URL}/api/chat",
+            json={
+                "model": MODEL,
+                "messages": [{"role": "user", "content": user_input}],
+                "stream": True,
+            },
+            stream=True,
+            timeout=60,
+        )
+
+        response.raise_for_status()
+
+        for line in response.iter_lines():
+            if not line:
+                continue
+
             chunk = json.loads(line)
-            print(chunk["message"]["content"], end="", flush=True)
 
+            # Ollama sends multiple message chunks
+            if "message" in chunk:
+                print(chunk["message"]["content"], end="", flush=True)
 
-def main():
+            # End of stream
+            if chunk.get("done"):
+                break
 
-    msg = "hi"
-    if len(sys.argv) > 1:
-        msg = sys.argv[1]
-
-    ollama_post_request(msg)
+        print("\n")
 
 
 if __name__ == "__main__":
-    main()
+    chat()
