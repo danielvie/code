@@ -22,16 +22,19 @@
 - Open a terminal on another computer.
 - Use the command: ssh <username>@<windows_ip_address>.
 
-# Useful commands:
+# Start SSH:
 
+*check ssh service*
 ```powershell
 Get-Service | rg -i ssh
 ```
 
+*start ssh service*
 ```powershell
 Start-Service -Name sshd
 ```
 
+*stop ssh service*
 ```powershell
 Stop-Service -Name sshd
 ```
