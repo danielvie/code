@@ -100,3 +100,72 @@ response = chat(
 
 print(response.message.content)
 ```
+
+### Using Raw POST Requests
+
+You can also communicate with the Ollama server directly via its REST API using the `requests` library, without the `ollama` package. This is useful if you want full control over the HTTP request or are working in an environment where you can't install the Ollama client.
+
+First, install `requests`:
+
+```powershell
+uv add requests
+# OR
+pip install requests
+```
+
+**Non-streaming example:**
+
+```python
+import requests
+
+response = requests.post(
+    "http://localhost:11434/api/chat",
+    json={
+        "model": "gemma3:4b",
+        "messages": [
+            {"role": "user", "content": "Why is the sky blue? Answer in two sentences."}
+        ],
+        "stream": False,
+    },
+)
+
+data = response.json()
+print(data["message"]["content"])
+```
+
+**Streaming example:**
+
+```python
+import json
+import requests
+
+response = requests.post(
+    "http://localhost:11434/api/chat",
+    json={
+        "model": "gemma3:4b",
+        "messages": [
+            {"role": "user", "content": "Why is the sky blue? Answer in two sentences."}
+        ],
+        "stream": True,
+    },
+    stream=True,
+)
+
+for line in response.iter_lines():
+    if line:
+        chunk = json.loads(line)
+        print(chunk["message"]["content"], end="", flush=True)
+print()
+```
+
+### API Endpoints Reference
+
+| Endpoint | Method | Description |
+|---|---|---|
+| `/api/chat` | POST | Send a chat message and receive a reply |
+| `/api/generate` | POST | Generate a completion from a prompt (non-chat) |
+| `/api/tags` | GET | List all locally available models |
+| `/api/show` | POST | Show details of a specific model |
+| `/api/pull` | POST | Pull a model from the registry |
+
+For the full API reference, see the [Ollama API documentation](https://github.com/ollama/ollama/blob/main/docs/api.md).
