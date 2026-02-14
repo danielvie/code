@@ -1,14 +1,14 @@
 # useful commands
 
-```powershell
-while($true) { Clear-Host; nvidia-smi | select -first 12; Sleep 1 }
-```
-
+*create new model in ollama*
 ```powershell
 ollama create modelname:tag -f ./Modelfile
 ```
 
-
+*run nvidia-smi frequently*
+```powershell
+while($true) { Clear-Host; nvidia-smi | select -first 12; Sleep 1 }
+```
 
 **example Modelfile**
 ```dockerfile
