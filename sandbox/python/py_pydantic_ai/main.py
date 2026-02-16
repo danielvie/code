@@ -6,11 +6,8 @@ from pydantic_ai import Agent
 from pydantic_ai.models.openai import OpenAIChatModel
 from pydantic_ai.providers.openai import OpenAIProvider
 
-# 1. Setup
-provider = OpenAIProvider(base_url="http://127.0.0.1:8033/v1", api_key="not-needed")
-model = OpenAIChatModel("llama-3.1-8b-instruct", provider=provider)
 
-
+# ── 1. Data Model ──────────────────────────────────────────────
 class LanguageType(str, Enum):
     SYSTEMS = "systems"
     HIGH_LEVEL = "high_level"
@@ -45,11 +42,14 @@ class UserContext(BaseModel):
         return v
 
 
-# 2. Define Agent & Tools
+# ── 2. Agent & Tool ────────────────────────────────────────────
+provider = OpenAIProvider(base_url="http://127.0.0.1:8033/v1", api_key="not-needed")
+model = OpenAIChatModel("llama-3.1-8b-instruct", provider=provider)
+
 agent = Agent(
     model=model,
     output_type=UserContext,
-    retries=3,  # This allows the model to try again if the validator fails
+    retries=3,
     system_prompt=(
         "You are a system verification agent."
         "Your ONLY goal is to fill out the UserContext schema."
@@ -64,41 +64,41 @@ agent = Agent(
 def get_zig_version() -> str:
     """Check the system for the installed Zig version."""
     try:
-        # Running 'zig version' command
         print("log: calling get_zig_version tool...")
         result = subprocess.run(
             ["zig", "version"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
-    except subprocess.CalledProcessError, FileNotFoundError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         return "not installed"
 
 
-# 3. Execution
+# ── 3. Execution ───────────────────────────────────────────────
 def main():
     user_input = (
         "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
     )
 
-    print("Agent is analyzing and checking system tools...")
+    print("--- Running Pydantic-AI Agent ---")
 
     try:
-        # We use run_sync. If the validator fails, pydantic-ai automatically
-        # feeds the error back to the LLM so it can correct itself.
         result = agent.run_sync(user_input)
 
-        print("\n--- Final Extraction with System Verification ---")
-        data = result.output
-        print(f"Name: {data.name}")
-        print(f"Location: {data.location}")
-        print(f"Verified Zig Version: {data.zig_version}")
+        user_context = result.output
 
-        if data.zig_version == "0.14.0":
+        print("\n--- Final Structured Output ---")
+        print(f"  Name:        {user_context.name}")
+        print(f"  Age:         {user_context.age}")
+        print(f"  Location:    {user_context.location}")
+        print(f"  Zig Version: {user_context.zig_version}")
+
+        if user_context.zig_version == "0.14.0":
             print("✨ Environment matches your preferred Zig version!")
 
     except Exception as e:
-        print(f"Failed to complete agent loop: {e}")
+        print(f"Error: {e}")
 
 
 if __name__ == "__main__":
     main()
+
