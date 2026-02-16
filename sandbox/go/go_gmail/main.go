@@ -172,50 +172,125 @@ func edit_querylist_in_nvim(command_list []string) []string {
 	return filtered_list
 }
 
-func fetch_emails(srv *gmail.Service, query_command string) []string {
+type EmailMsg struct {
+	Id      string
+	From    string
+	Subject string
+	Date    string
+}
+
+func fetch_messages(srv *gmail.Service, query string) []EmailMsg {
 	user := "me"
+	// Increase MaxResults to fetch more emails from INBOX
+	const maxResults = 400
+
+	// If query is just label:INBOX, we might want to iterate pages?
+	// For now, let's just use MaxResults.
 	r, err := srv.Users.Messages.List(user).
-		LabelIds("INBOX").
-		Q(query_command).
-		MaxResults(100).Do()
+		Q(query).
+		MaxResults(maxResults).Do()
 
 	if err != nil {
 		log.Fatalf("Unable to retrieve messages: %v", err)
 	}
 
-	var email_lines []string
+	var msgs []EmailMsg
+	var mu sync.Mutex
+	var wg sync.WaitGroup
 
+	// Use a semaphore to limit concurrency
+	semaphore := make(chan struct{}, 20)
+
+	fmt.Printf("Fetching details for %d emails...\n", len(r.Messages))
+
+	// Fetch details in parallel
 	for _, m := range r.Messages {
-		msg, err := srv.Users.Messages.Get(user, m.Id).Do()
-		if err != nil {
-			log.Printf("Unable to retrieve message %v: %v", m.Id, err)
-			continue
-		}
+		wg.Add(1)
+		go func(m *gmail.Message) {
+			defer wg.Done()
+			semaphore <- struct{}{}        // Acquire token
+			defer func() { <-semaphore }() // Release token
 
-		var from, subject, date string
-		for _, header := range msg.Payload.Headers {
-			if header.Name == "From" {
-				from = header.Value
+			msgRes, err := srv.Users.Messages.Get(user, m.Id).Format("metadata").Do()
+			if err != nil {
+				log.Printf("Unable to retrieve message %v: %v", m.Id, err)
+				return
 			}
-			if header.Name == "Subject" {
-				subject = header.Value
-			}
-			if header.Name == "Date" {
-				date = header.Value
-			}
-		}
 
-		email_lines = append(email_lines, fmt.Sprintf("%s | %s | %s | %s", from, subject, date, m.Id))
+			var from, subject, date string
+			for _, header := range msgRes.Payload.Headers {
+				if header.Name == "From" {
+					from = header.Value
+				}
+				if header.Name == "Subject" {
+					subject = header.Value
+				}
+				if header.Name == "Date" {
+					date = header.Value
+				}
+			}
+
+			mu.Lock()
+			msgs = append(msgs, EmailMsg{
+				Id:      m.Id,
+				From:    from,
+				Subject: subject,
+				Date:    date,
+			})
+			mu.Unlock()
+		}(m)
 	}
-	// sorting emails
-	sort.Strings(email_lines)
+	wg.Wait()
+
+	return msgs
+}
+
+func matches_query(email EmailMsg, query string) bool {
+	query = strings.ToLower(query)
+	from := strings.ToLower(email.From)
+	subject := strings.ToLower(email.Subject)
+
+	// Clean up query quotes
+	clean_query := strings.Trim(query, "\"")
+
+	if strings.HasPrefix(query, "from:") {
+		target := strings.TrimPrefix(query, "from:")
+		target = strings.Trim(target, "\"")
+		return strings.Contains(from, target)
+	}
+
+	// Default match: from or subject
+	return strings.Contains(from, clean_query) || strings.Contains(subject, clean_query)
+}
+
+func filter_messages(emails []EmailMsg, queries []string) []EmailMsg {
+	var filtered []EmailMsg
+	for _, email := range emails {
+		for _, q := range queries {
+			if q == "" {
+				continue
+			}
+			if matches_query(email, q) {
+				filtered = append(filtered, email)
+				break // Match found, add once
+			}
+		}
+	}
+	return filtered
+}
+
+func messages_to_strings(emails []EmailMsg) []string {
+	var lines []string
+	for _, email := range emails {
+		lines = append(lines, fmt.Sprintf("%s | %s | %s | %s", email.From, email.Subject, email.Date, email.Id))
+	}
+	sort.Strings(lines)
 
 	// enumerating lines
-	for i, email := range email_lines {
-		email_lines[i] = fmt.Sprintf("%3d: %s", i+1, email)
+	for i, line := range lines {
+		lines[i] = fmt.Sprintf("%3d: %s", i+1, line)
 	}
-
-	return email_lines
+	return lines
 }
 
 func get_id_from_line(line string) string {
@@ -412,7 +487,6 @@ func process_messages(srv *gmail.Service, emails []string, query_command string)
 func main() {
 	// vars
 	reader := bufio.NewReader(os.Stdin)
-	break_forloop := false
 	commands_list := make([]string, 0)
 
 	// init gmail
@@ -434,41 +508,66 @@ func main() {
 	query_command := build_query_command(query_list)
 	println(query_command)
 
-	emails := fetch_emails(srv, query_command)
+	// Initial fetch
+	var emails []string
+
+	// Fetch INBOX messages
+	msgs := fetch_messages(srv, "label:INBOX")
+	// Filter locally against query list
+	spam_msgs := filter_messages(msgs, query_list)
+	emails = messages_to_strings(spam_msgs)
+
 	process_messages(srv, emails, query_command)
 	for {
 		// get command
 		command := select_command(reader)
+		command_trimmed := strings.TrimSpace(command)
 
-		switch strings.ToLower(command) {
-		case ".":
-			// should run all
-			query_list = read_query_file()
-			query_command = build_query_command(query_list)
-		case "":
-			// should break out
-			break_forloop = true
-		case "e":
+		// Exit conditions
+		if command_trimmed == "" || command_trimmed == "/bye" {
+			break
+		}
+
+		if command_trimmed == "e" {
 			// should edit the query_file
 			queries_updated := edit_querylist_in_nvim(commands_list)
 			edit_querylist_file(queries_updated)
 			commands_list = make([]string, 0)
+
+			// Reload query list
+			query_list = read_query_file()
 			continue
-		default:
+		}
+
+		// fetch and process
+		var emails []string
+
+		if command_trimmed == "." {
+			// should run all
+			// Reload query list to be sure
+			query_list = read_query_file()
+			query_command = build_query_command(query_list)
+
+			// Refresh logic: Fetch INBOX and filter locally
+			msgs := fetch_messages(srv, "label:INBOX")
+			spam_msgs := filter_messages(msgs, query_list)
+			emails = messages_to_strings(spam_msgs)
+
+		} else {
 			// should compute a custom query_command
-			query_command = build_query_command([]string{command})
-			commands_list = append(commands_list, command)
+			// Requirement: search in `inbox` for its value
+			// We append label:INBOX to ensure we scope it correctly
+			query_command = fmt.Sprintf("label:INBOX %s", command_trimmed)
+
+			commands_list = append(commands_list, command_trimmed)
+
+			// Fetch messages using the custom query
+			msgs := fetch_messages(srv, query_command)
+			emails = messages_to_strings(msgs)
 		}
 
-		// prompt for new input
-		if break_forloop {
-			break
-		}
-
-		emails := fetch_emails(srv, query_command)
 		process_messages(srv, emails, query_command)
-
-		println("Program terminated")
-
 	}
+
+	println("Program terminated")
 }
