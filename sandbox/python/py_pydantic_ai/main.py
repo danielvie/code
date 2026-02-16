@@ -80,8 +80,6 @@ def main():
         "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
     )
 
-    print("--- Running Pydantic-AI Agent ---")
-
     print("Agent is analyzing and checking system tools...")
 
     try:

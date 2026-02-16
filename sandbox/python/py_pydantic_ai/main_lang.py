@@ -1,7 +1,3 @@
-import warnings
-
-warnings.filterwarnings("ignore", message="Core Pydantic V1")
-
 import shutil
 import subprocess
 
@@ -48,7 +44,7 @@ def get_zig_version() -> str:
             timeout=5,
         )
         return result.stdout.strip()
-    except (subprocess.CalledProcessError, FileNotFoundError):
+    except subprocess.CalledProcessError, FileNotFoundError:
         return "not installed"
 
 
