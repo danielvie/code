@@ -1,0 +1,69 @@
+version: "3"
+
+tasks:
+  default:
+    deps: [main]
+
+  main:
+    aliases: [m]
+    cmds:
+      - uv run main.py
+
+  main_lang:
+    aliases: [ml]
+    cmds:
+      - uv run main_lang.py
+
+  # bartowski_Meta-Llama-3.1-8B-Instruct-GGUF_Meta-Llama-3.1-8B-Instruct-Q2_K.gguf
+
+  # --chat-template gemma3
+
+  # -hf bartowski/Meta-Llama-3.1-8B-Instruct-GGUF:Q4_K_M
+  # -m C:/Users/daniel/AppData/Local/llama.cpp/bartowski_Meta-Llama-3.1-8B-Instruct-GGUF_Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf
+  # -m C:/Users/daniel/AppData/Local/llama.cpp/unsloth_gemma-3-4b-it-GGUF_gemma-3-4b-it-UD-Q6_K_XL.gguf
+  # -m C:/Users/daniel/AppData/Local/llama.cpp/unsloth_gemma-3-4b-it-GGUF_gemma-3-4b-it-Q4_K_M.gguf
+  # -hf unsloth/Qwen3-VL-8B-Thinking-GGUF:Q4_K_M
+  # -hf unsloth/Qwen3-VL-8B-Thinking-GGUF:Q5_K_M
+  # -hf unsloth/gemma-3-4b-it-GGUF:Q4_K_M
+  # -m C:/Users/daniel/.ollama/models/blobs/sha256-aeda25e63ebd698fab8638ffb778e68bed908b960d39d0becc650fa981609d25
+  # -m C:/Users/daniel/.ollama/models/blobs/sha256-246c34feb713c8c19b9e84aee89ead4ae6df8fd675dd48c6c6fd4fc133e52b75
+
+  server:
+    aliases: [s]
+    cmds:
+      - llama-server
+        -m C:/Users/daniel/AppData/Local/llama.cpp/bartowski_Meta-Llama-3.1-8B-Instruct-GGUF_Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf
+        --port 8033
+        --ctx-size 4096
+        --n-gpu-layers 99
+        --temp 0.0
+        --repeat-penalty 1.1
+
+  test-hi:
+    desc: Send a simple Hi with a token limit
+    cmds:
+      - |
+        curl http://127.0.0.1:8033/v1/chat/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model": "llama-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": "Hi"}],
+            "temperature": 0.1,
+            "max_tokens": 30
+          }'
+
+  test-json:
+    desc: Test if Llama 3.1 Q2 can output raw JSON
+    cmds:
+      - |
+        curl http://127.0.0.1:8033/v1/chat/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model": "llama-3.1-8b-instruct",
+            "messages": [
+              {"role": "system", "content": "You are a JSON generator. Output ONLY raw JSON. No markdown. No chatter."},
+              {"role": "user", "content": "Return a JSON with name: Lucas, age: 39, location: SJC"}
+            ],
+            "temperature": 0.0,
+            "max_tokens": 100
+          }'
