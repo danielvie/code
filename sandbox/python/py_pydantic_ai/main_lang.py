@@ -1,7 +1,3 @@
-import warnings
-
-warnings.filterwarnings("ignore", message="Core Pydantic V1")
-
 import shutil
 import subprocess
 
