@@ -8,7 +8,6 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"regexp"
 	"sort"
 	"strings"
 	"sync"
@@ -61,12 +60,27 @@ func edit_emails_in_nvim(email_lines []string, query_command string, flag_query_
 	}
 	defer os.Remove(tmp_file.Name()) // Clean up after Neovim closes
 
-	// Write query_command on the file
-	if flag_query_command {
-		if _, err := tmp_file.WriteString("query_command: " + query_command + "\n\n"); err != nil {
+	// Write instructions header
+	header := []string{
+		"# Actions (prefix each line):",
+		"# A (or default) : Archive (Remove from Inbox)",
+		"# R, D           : Trash (Delete)",
+		"# I              : Ignore (Skip/Keep in Inbox)",
+		"# -----------------------------------------------------------",
+		"",
+	}
+	for _, h := range header {
+		if _, err := tmp_file.WriteString(h + "\n"); err != nil {
 			log.Fatalf("Unable to write to temporary file: %v", err)
 		}
 	}
+
+	// Write query_command on the file
+	// if flag_query_command {
+	// 	if _, err := tmp_file.WriteString("query_command: " + query_command + "\n\n"); err != nil {
+	// 		log.Fatalf("Unable to write to temporary file: %v", err)
+	// 	}
+	// }
 
 	// Write email list to the file
 	for _, line := range email_lines {
@@ -201,8 +215,6 @@ func fetch_messages(srv *gmail.Service, query string) []EmailMsg {
 	// Use a semaphore to limit concurrency
 	semaphore := make(chan struct{}, 20)
 
-	fmt.Printf("Fetching details for %d emails...\n", len(r.Messages))
-
 	// Fetch details in parallel
 	for _, m := range r.Messages {
 		wg.Add(1)
@@ -220,13 +232,13 @@ func fetch_messages(srv *gmail.Service, query string) []EmailMsg {
 			var from, subject, date string
 			for _, header := range msgRes.Payload.Headers {
 				if header.Name == "From" {
-					from = header.Value
+					from = sanitize_header(header.Value)
 				}
 				if header.Name == "Subject" {
-					subject = header.Value
+					subject = sanitize_header(header.Value)
 				}
 				if header.Name == "Date" {
-					date = header.Value
+					date = sanitize_header(header.Value)
 				}
 			}
 
@@ -243,6 +255,16 @@ func fetch_messages(srv *gmail.Service, query string) []EmailMsg {
 	wg.Wait()
 
 	return msgs
+}
+
+func sanitize_header(s string) string {
+	// Remove newlines and tabs
+	s = strings.ReplaceAll(s, "\r", "")
+	s = strings.ReplaceAll(s, "\n", " ")
+	s = strings.ReplaceAll(s, "\t", " ")
+	// Remove pipes as they are our separator
+	s = strings.ReplaceAll(s, "|", "-")
+	return strings.TrimSpace(s)
 }
 
 func matches_query(email EmailMsg, query string) bool {
@@ -287,27 +309,20 @@ func messages_to_strings(emails []EmailMsg) []string {
 	sort.Strings(lines)
 
 	// enumerating lines
+	// Default action is Archive (A)
+	// We prefix with 'A ' so user sees the default action
 	for i, line := range lines {
-		lines[i] = fmt.Sprintf("%3d: %s", i+1, line)
+		lines[i] = fmt.Sprintf("A %3d: %s", i+1, line)
 	}
 	return lines
 }
 
 func get_id_from_line(line string) string {
-	// regex the pattern
-	pattern := `^\s+\d+`
-	re := regexp.MustCompile(pattern)
-
-	// regex the pattern to find the message id
-	re_id := regexp.MustCompile(`.*\|`)
-
-	// find matches
-	var msg_id string
-	if matches := re.FindStringSubmatch(line); len(matches) > 0 {
-		msg_id = strings.TrimSpace(re_id.ReplaceAllString(line, ""))
+	parts := strings.Split(line, "|")
+	if len(parts) > 1 {
+		return strings.TrimSpace(parts[len(parts)-1])
 	}
-
-	return msg_id
+	return ""
 }
 
 func get_token_from_file(file string) (*oauth2.Token, error) {
@@ -372,17 +387,43 @@ func init_gmail_srv() (*gmail.Service, error) {
 	return srv, nil
 }
 
-func read_ids_from_email_list(content []string) []string {
-	ids_to_remove := make([]string, 0, len(content))
+func read_actions_from_email_list(content []string) (archive_ids []string, trash_ids []string) {
+	// Pattern to find the ID at the end of the line
+	// Based on get_id_from_line: uses regex to find ID
+	// But get_id_from_line takes the whole line.
 
-	for _, c := range content {
-		id := get_id_from_line(c)
-		if len(id) > 0 {
-			ids_to_remove = append(ids_to_remove, id)
+	for _, line := range content {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			continue
+		}
+
+		id := get_id_from_line(line)
+		if id == "" {
+			continue
+		}
+
+		// Check for prefixes
+		// Convention: 'R' at the start implies Trash (Remove)
+		// Everything else (or 'A') implies Archive.
+
+		// We check the first character or word
+		parts := strings.Fields(line)
+		if len(parts) > 0 {
+			action := strings.ToUpper(parts[0])
+			switch action {
+			case "R", "D":
+				trash_ids = append(trash_ids, id)
+			case "I":
+				// Ignore - do nothing
+				continue
+			default:
+				// Default to archive (A)
+				archive_ids = append(archive_ids, id)
+			}
 		}
 	}
-
-	return ids_to_remove
+	return
 }
 
 func read_query_file() []string {
@@ -405,43 +446,63 @@ func read_query_file() []string {
 	return result
 }
 
-func remove_messages(srv *gmail.Service, ids []string) {
+func trash_messages(srv *gmail.Service, ids []string) {
+	fmt.Printf("Trashing %d messages...\n", len(ids))
 	start := time.Now()
 
+	batch_modify_messages(srv, ids, []string{"TRASH"}, []string{"UNREAD", "INBOX"})
+
+	elapsed := time.Since(start).Seconds()
+	fmt.Printf("Time taken: %.2f sec\n", elapsed)
+}
+
+func archive_messages(srv *gmail.Service, ids []string) {
+	fmt.Printf("Archiving %d messages...\n", len(ids))
+	start := time.Now()
+
+	// Archive means removing from INBOX. We also remove UNREAD to keep it clean.
+	batch_modify_messages(srv, ids, []string{}, []string{"INBOX", "UNREAD"})
+
+	elapsed := time.Since(start).Seconds()
+	fmt.Printf("Time taken: %.2f sec\n", elapsed)
+}
+
+func batch_modify_messages(srv *gmail.Service, ids []string, addLabels []string, removeLabels []string) {
 	modify_request := &gmail.ModifyMessageRequest{
-		RemoveLabelIds: []string{"UNREAD", "INBOX"},
+		AddLabelIds:    addLabels,
+		RemoveLabelIds: removeLabels,
 	}
 
 	total := len(ids)
+	if total == 0 {
+		return
+	}
+
 	var wg sync.WaitGroup
-	semaphore := make(chan struct{}, 5) // limit to 5 parallel requests
+	semaphore := make(chan struct{}, 10) // limit parallel requests
 	var processed int32
 
 	for i, id := range ids {
 		wg.Add(1)
-		semaphore <- struct{}{} // acquire a slot in the semaphore
+		semaphore <- struct{}{}
 		go func(i int, id string) {
 			defer wg.Done()
-			defer func() { <-semaphore }() // release the slot
+			defer func() { <-semaphore }()
 
 			_, err := srv.Users.Messages.Modify("me", id, modify_request).Do()
 			if err != nil {
 				fmt.Printf("\nFailed to modify message %s: %v\n", id, err)
 			}
 
-			// increment the processed counter
+			// Report progress
 			current := atomic.AddInt32(&processed, 1)
-			fmt.Printf("\rProcessing: %d/%d", current, total)
-
+			if current%5 == 0 || current == int32(total) {
+				fmt.Printf("\rProcessing: %d/%d", current, total)
+			}
 		}(i, id)
 	}
-
 	wg.Wait()
-
-	println("\n\nAll messages processed!")
-
-	elapsed := time.Since(start).Seconds()
-	fmt.Printf("Time taken: %.2f sec\n", elapsed)
+	println("\nBatch process complete.")
 }
 
 func save_token(path string, token *oauth2.Token) {
@@ -468,16 +529,33 @@ func process_messages(srv *gmail.Service, emails []string, query_command string)
 		// edit nvim
 		flag_query_command := true
 		emails_edited := edit_emails_in_nvim(emails, query_command, flag_query_command)
-		emails_id := read_ids_from_email_list(emails_edited)
 
-		// confirm with the user to remove ids
-		user_response := confirm_removal(emails_id)
+		archive_ids, trash_ids := read_actions_from_email_list(emails_edited)
+
+		total_ops := len(archive_ids) + len(trash_ids)
+
+		if total_ops == 0 {
+			fmt.Println("No emails selected.")
+			return
+		}
+
+		// confirm with the user
+		fmt.Printf("Summary:\n - Archive: %d\n - Trash (Delete): %d\n", len(archive_ids), len(trash_ids))
+		fmt.Printf("Proceed? (yes/No): ")
+		var user_response string
+		fmt.Scanln(&user_response)
 		user_response_lower := strings.ToLower(user_response)
 
-		// remove emails
+		// execute
 		if user_response_lower == "y" || user_response_lower == "yes" {
-			fmt.Println("Proceeding with removal...")
-			remove_messages(srv, emails_id)
+			if len(trash_ids) > 0 {
+				trash_messages(srv, trash_ids)
+			}
+			if len(archive_ids) > 0 {
+				archive_messages(srv, archive_ids)
+			}
+		} else {
+			fmt.Println("Operation cancelled.")
 		}
 	} else {
 		fmt.Printf("emails len: %d\n", len(emails))
@@ -505,16 +583,29 @@ func main() {
 
 	// read query file
 	query_list := read_query_file()
-	query_command := build_query_command(query_list)
-	println(query_command)
+	// instructions
+	fmt.Println("Available actions in email list:")
+	fmt.Println("  A - Archive (Default)")
+	fmt.Println("  R, D - Trash (Delete)")
+	fmt.Println("  I - Ignore (Skip/Keep in Inbox)")
+	fmt.Println("\nLoop commands:")
+	fmt.Println("  e - Edit query list")
+	fmt.Println("  . - Refresh INBOX & Filter")
+	fmt.Println("  <term> - Search INBOX")
+
+	query_command := "" // Unused for initial local filter but needed for variable scope
 
 	// Initial fetch
 	var emails []string
 
 	// Fetch INBOX messages
 	msgs := fetch_messages(srv, "label:INBOX")
+	fmt.Printf("Fetched %d messages from INBOX search.\n", len(msgs))
+
 	// Filter locally against query list
 	spam_msgs := filter_messages(msgs, query_list)
+	fmt.Printf("Found %d matches against query_list.\n", len(spam_msgs))
+
 	emails = messages_to_strings(spam_msgs)
 
 	process_messages(srv, emails, query_command)
@@ -550,7 +641,11 @@ func main() {
 
 			// Refresh logic: Fetch INBOX and filter locally
 			msgs := fetch_messages(srv, "label:INBOX")
+			fmt.Printf("Fetched %d messages from INBOX.\n", len(msgs))
+
 			spam_msgs := filter_messages(msgs, query_list)
+			fmt.Printf("Found %d matches against query_list.\n", len(spam_msgs))
+
 			emails = messages_to_strings(spam_msgs)
 
 		} else {
@@ -563,6 +658,7 @@ func main() {
 
 			// Fetch messages using the custom query
 			msgs := fetch_messages(srv, query_command)
+			fmt.Printf("Found %d messages matching '%s'.\n", len(msgs), command_trimmed)
 			emails = messages_to_strings(msgs)
 		}
 

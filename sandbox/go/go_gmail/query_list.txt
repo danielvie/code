@@ -5,9 +5,12 @@ from:"fast shop"
 from:"pague menos"
 from:"sem parar"
 from:aerosimulados
+from:amazon.com
 from:auvp
 from:azul
 from:b3.com.br
+from:boots
+from:brabo
 from:btgpactual.com
 from:bunq
 from:casey muratori
@@ -17,10 +20,13 @@ from:comgas
 from:crea
 from:crunchyroll
 from:duolingo
+from:eindhoven
 from:emirates
+from:familysearch
 from:flying blue
 from:github
 from:gitlab
+from:growth
 from:hotmilhas
 from:hoto tools
 from:icatu
@@ -29,26 +35,37 @@ from:inter
 from:investidor10
 from:ippg.sec@ita.br
 from:kabum
+from:latam
+from:leela
 from:linkedin
+from:localiza
 from:marc at frontend
 from:masterclass
 from:medium
 from:mercado pago
 from:mercadolivre
+from:mussi
 from:nederlandse
+from:nordvpn
 from:nubank
+from:nuvemshop
 from:olivia from warp
 from:onedrive
 from:porto seguro
 from:printables
 from:promobit
+from:prusa
 from:reddit
+from:researchgate
 from:sam's
 from:strava
 from:swift
+from:three.js
+from:todoist
 from:tokio
 from:towards ai
 from:tripadvisor
+from:vivo.com
 gha
 palmeiras
 sencon
