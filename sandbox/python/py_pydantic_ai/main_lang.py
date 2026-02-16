@@ -1,28 +1,39 @@
+import warnings
+
+warnings.filterwarnings("ignore", message="Core Pydantic V1")
+
 import shutil
 import subprocess
 
-# 1. Updated Import based on your error message
 from langchain.agents import create_agent
-from langchain.agents.middleware.types import _InputAgentState
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field, SecretStr
+from pydantic import BaseModel, Field, SecretStr, field_validator
 
 
-# 2. Setup Data Models
+# ── 1. Data Model ──────────────────────────────────────────────
 class UserContext(BaseModel):
     name: str
     age: int
     location: str
     zig_version: str = Field(description="The verified Zig version.")
 
+    @field_validator("zig_version")
+    @classmethod
+    def must_be_real_version(cls, v: str) -> str:
+        if "get_zig_version" in v.lower() or "tool" in v.lower():
+            raise ValueError(
+                "You put the tool name instead of the version! "
+                "Call the get_zig_version tool first, then use the actual version number."
+            )
+        return v
 
-# 3. Define Tool
+
+# ── 2. Tool ────────────────────────────────────────────────────
 @tool
 def get_zig_version() -> str:
-    """
-    Checks the system for the installed Zig version.
-    Returns the version string or 'not instlled'
+    """Check the system for the installed Zig version.
+    Returns the version string or 'not installed'.
     """
     zig_path = shutil.which("zig")
     if not zig_path:
@@ -30,16 +41,19 @@ def get_zig_version() -> str:
 
     try:
         result = subprocess.run(
-            [zig_path, "version"], capture_output=True, text=True, check=True, timeout=5
+            [zig_path, "version"],
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=5,
         )
         return result.stdout.strip()
-    except subprocess.CalledProcessError, FileNotFoundError:
+    except (subprocess.CalledProcessError, FileNotFoundError):
         return "not installed"
 
 
-# 4. Execution
+# ── 3. Execution ───────────────────────────────────────────────
 def main():
-    # Setup LLM
     llm = ChatOpenAI(
         base_url="http://127.0.0.1:8033/v1",
         api_key=SecretStr("not-needed"),
@@ -47,33 +61,35 @@ def main():
         temperature=0,
     )
 
-    tools = [get_zig_version]
-
-    agent_runner = create_agent(llm, tools)
+    agent = create_agent(
+        model=llm,
+        tools=[get_zig_version],
+        system_prompt=(
+            "You are a system verification agent. "
+            "Your goal is to extract user information AND verify the local Zig version. "
+            "You MUST call the `get_zig_version` tool to check the installed version. "
+            "Do NOT guess the Zig version."
+        ),
+        response_format=UserContext,
+    )
 
     user_input = (
         "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
     )
+
     print("--- Running LangChain Agent ---")
 
     try:
-        # Invoke the agent
-        # inputs = {"messages": [("user", user_input)]}
-        inputs: _InputAgentState = {
-            "messages": [{"role": "user", "content": user_input}]
-        }
-        result = agent_runner.invoke(inputs)
+        result = agent.invoke({"messages": [("user", user_input)]})
 
-        print("my results:")
-        print(result)
+        # The structured response is in result["structured_response"]
+        user_context: UserContext = result["structured_response"]
 
-        # Extract response (structure depends on if it returns a dict or message list)
-        if isinstance(result, dict) and "messages" in result:
-            print(f"\nFinal Answer: {result['messages'][-1].content}")
-        elif isinstance(result, dict) and "output" in result:
-            print(f"\nFinal Answer: {result['output']}")
-        else:
-            print(f"\nFinal Answer: {result}")
+        print("\n--- Final Structured Output ---")
+        print(f"  Name:        {user_context.name}")
+        print(f"  Age:         {user_context.age}")
+        print(f"  Location:    {user_context.location}")
+        print(f"  Zig Version: {user_context.zig_version}")
 
     except Exception as e:
         print(f"Error: {e}")
