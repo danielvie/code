@@ -4,3 +4,6 @@ token.json
 
 # folders 
 .vscode/
+
+# binaries
+*.exe
