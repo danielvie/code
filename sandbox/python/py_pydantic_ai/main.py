@@ -44,7 +44,8 @@ class UserContext(BaseModel):
 
 # ── 2. Agent & Tool ────────────────────────────────────────────
 provider = OpenAIProvider(base_url="http://127.0.0.1:8033/v1", api_key="not-needed")
-model = OpenAIChatModel("llama-3.1-8b-instruct", provider=provider)
+# model = OpenAIChatModel("llama-3.1-8b-instruct", provider=provider)
+model = OpenAIChatModel("my-model", provider=provider)
 
 agent = Agent(
     model=model,

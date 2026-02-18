@@ -46,8 +46,20 @@ tasks:
         curl http://127.0.0.1:8033/v1/chat/completions \
           -H "Content-Type: application/json" \
           -d '{
-            "model": "llama-3.1-8b-instruct",
             "messages": [{"role": "user", "content": "Hi"}],
+            "temperature": 0.1,
+            "max_tokens": 30
+          }'
+
+  test-who:
+    desc: Send a simple Who with a token limit
+    cmds:
+      - |
+        curl http://127.0.0.1:11434/v1/chat/completions \
+          -H "Content-Type: application/json" \
+          -d '{
+            "model": "hf.co/Qwen/Qwen3-8B-GGUF:Q6_K",
+            "messages": [{"role": "user", "content": "Which model are you?"}],
             "temperature": 0.1,
             "max_tokens": 30
           }'

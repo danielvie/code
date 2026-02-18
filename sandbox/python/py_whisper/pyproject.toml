@@ -1,0 +1,31 @@
+[project]
+name = "python"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai-whisper>=20250625",
+    "pydantic>=2.12.5",
+    "pynput>=1.8.1",
+    "scipy>=1.17.0",
+    "sounddevice>=0.5.5",
+    "torch>=2.5.1",
+]
+
+[tool.uv.workspace]
+members = ["bla"]
+
+[[tool.uv.index]]
+name = "pytorch-cu121"
+url = "https://download.pytorch.org/whl/cu121"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu121", marker = "sys_platform == 'win32'" }
+
+[tool.uv]
+# This tells uv to ignore the 'linux' wheels it might find
+required-environments = [
+    "sys_platform == 'win32' and platform_machine == 'AMD64'"
+]
