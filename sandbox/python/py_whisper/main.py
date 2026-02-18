@@ -52,11 +52,11 @@ def audio_record_push_to_talk(fs=16000) -> np.ndarray:
     # Initialize the Stream
     stream = sd.InputStream(samplerate=fs, channels=1, callback=callback)
 
-    print("--- HOLD [L_CTRL] TO RECORD | [L_ALT] TO CANCEL | [ESC] TO QUIT --- ")
+    print("--- HOLD [L_CTRL] TO RECORD | [L_ALT] TO CANCEL | [ESC] or [Q] TO QUIT --- ")
 
     with stream, keyboard.Events() as events:
         for event in events:
-            if hasattr(event, "key") and event.key == keyboard.Key.esc:
+            if hasattr(event, "key") and (event.key == keyboard.Key.esc or event.key == keyboard.KeyCode.from_char("q")):
                 print("\nExiting...")
                 sys.exit(0)
             if hasattr(event, "key") and event.key == keyboard.Key.alt_l:
@@ -98,6 +98,10 @@ def audio_transcribe(recording: np.ndarray, fs: int) -> str:
 
     # result = model.transcribe(tmp_path, language="pt")
     context_prompt = "aircraft status, give me the aircraft status, closest airport, where is the closest airport, airport locations"
+    # context_prompt = "status da aeronave, aeroporto mais proximo, distancia até aeroporto"
+        
+    # en: english
+    # pt: portuguese
         
     result = model.transcribe(
         tmp_path,
@@ -114,7 +118,7 @@ def main():
 
     print("\n=== Push-to-Talk Transcriber ===")
     print("  HOLD [L_CTRL] to record")
-    print("  Press [ESC] to quit\n")
+    print("  Press [ESC] or [Q] to quit\n")
 
     while True:
         recording = audio_record_push_to_talk(fs=fs)
