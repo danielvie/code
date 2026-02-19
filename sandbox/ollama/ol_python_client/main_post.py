@@ -2,8 +2,12 @@ import json
 
 import requests
 
-OLLAMA_URL = "http://10.191.234.51:11434"
-MODEL = "gemma3:4b"
+# OLLAMA_URL = "http://A6505144:11434"
+OLLAMA_URL = "http://A6584349:11434"
+
+# MODEL = "gemma3:4b"
+# MODEL = "gemma3:27b"
+MODEL = "qwen3-coder-next:80b"
 
 
 def chat():

@@ -13,3 +13,8 @@ tasks:
     aliases: [p]
     cmds:
       - uv run main_post.py
+
+  zip:
+    aliases: [z]
+    cmds:
+      - uv run _zip.py
