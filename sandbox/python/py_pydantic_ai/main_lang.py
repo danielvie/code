@@ -15,7 +15,6 @@ class UserContext(BaseModel):
     location: str
     zig_version: str = Field(description="The verified Zig version.")
 
-
     @field_validator("zig_version")
     @classmethod
     def must_be_real_version(cls, v: str) -> str:
@@ -59,7 +58,7 @@ def main():
         base_url="http://127.0.0.1:8033/v1",
         # base_url="http://127.0.0.1:11434/v1",
         api_key=SecretStr("not-needed"),
-        model="hf.co/Qwen/Qwen3-8B-GGUF:Q6_K",
+        model="hf.co/bartowski/Nanbeige_Nanbeige4-3B-Thinking-2511-GGUF:Q8_0",
         temperature=0,
     )
 
@@ -75,9 +74,7 @@ def main():
         response_format=UserContext,
     )
 
-    user_input = (
-        "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
-    )
+    user_input = "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
 
     print("--- Running LangChain Agent ---")
 
