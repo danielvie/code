@@ -3,6 +3,7 @@ import shutil
 import subprocess
 
 from langchain.agents import create_agent
+from langchain_core.messages import HumanMessage
 from langchain_core.tools import tool
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field, SecretStr, field_validator
@@ -41,11 +42,7 @@ def get_zig_version() -> str:
 
     try:
         result = subprocess.run(
-            [zig_path, "version"],
-            capture_output=True,
-            text=True,
-            check=True,
-            timeout=5,
+            ["zig", "version"], capture_output=True, text=True, check=True
         )
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
@@ -74,12 +71,15 @@ def main():
         response_format=UserContext,
     )
 
-    user_input = "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
+    user_input = (
+        "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
+    )
 
     print("--- Running LangChain Agent ---")
 
     try:
-        result = agent.invoke({"messages": [("user", user_input)]})
+        # result = agent.invoke({"messages": [("user", user_input)]})
+        result = agent.invoke({"messages": [HumanMessage(content=user_input)]})
 
         # The structured response is in result["structured_response"]
         user_context: UserContext = result["structured_response"]

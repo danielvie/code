@@ -1,3 +1,4 @@
+import re
 import subprocess
 from enum import Enum
 
@@ -27,17 +28,12 @@ class UserContext(BaseModel):
     @classmethod
     def check_not_tool_name(cls, v: str) -> str:
         # Catch empty strings or single-character hallucinations
-        if "get_zig_version" in v or "tool" in v.lower():
+        if not re.match(r"^\d+\.\d+\.\d+", v):
             raise ValueError(
-                "The zig_version field is empty. You MUST call the 'get_zig_version' tool"
-                "to find the version before returning the final JSON"
-            )
-
-        # Catch the model just repeating the tool name
-        if "get_zig_version" in v.lower() or "tool" in v.lower():
-            raise ValueError(
-                "You put the tool name in the field! Call the tool first,"
-                "then put the actual version number here"
+                f"zig_version must be a real version number like '0.14.0', "
+                f"got '{v}'. You MUST call the `get_zig_version` tool first "
+                f"to retrieve the actual installed version, then put that "
+                f"version string here."
             )
         return v
 
@@ -45,7 +41,7 @@ class UserContext(BaseModel):
 # ── 2. Agent & Tool ────────────────────────────────────────────
 provider = OpenAIProvider(base_url="http://127.0.0.1:8033/v1", api_key="not-needed")
 # provider = OpenAIProvider(base_url="http://127.0.0.1:11434/v1", api_key="not-needed")
-# model = OpenAIChatModel("llama-3.1-8b-instruct", provider=provider)
+
 model = OpenAIChatModel(
     "hf.co/bartowski/Nanbeige_Nanbeige4-3B-Thinking-2511-GGUF:Q8_0", provider=provider
 )
@@ -55,11 +51,10 @@ agent = Agent(
     output_type=UserContext,
     retries=3,
     system_prompt=(
-        "You are a system verification agent."
-        "Your ONLY goal is to fill out the UserContext schema."
-        "CRITICAL: You are FORBIDDEN from guessing the zig_version"
-        "You MUST call the tool `get_zig_version` to check the local version. "
-        "If you do not have the tool output, you cannot finish the task."
+        "You are a system verification agent. "
+        "Your goal is to extract user information AND verify the local Zig version. "
+        "You MUST call the `get_zig_version` tool to check the installed version. "
+        "Do NOT guess the Zig version."
     ),
 )
 
