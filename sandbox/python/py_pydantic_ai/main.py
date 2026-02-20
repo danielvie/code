@@ -46,7 +46,9 @@ class UserContext(BaseModel):
 provider = OpenAIProvider(base_url="http://127.0.0.1:8033/v1", api_key="not-needed")
 # provider = OpenAIProvider(base_url="http://127.0.0.1:11434/v1", api_key="not-needed")
 # model = OpenAIChatModel("llama-3.1-8b-instruct", provider=provider)
-model = OpenAIChatModel("hf.co/bartowski/Nanbeige_Nanbeige4-3B-Thinking-2511-GGUF:Q8_0", provider=provider)
+model = OpenAIChatModel(
+    "hf.co/bartowski/Nanbeige_Nanbeige4-3B-Thinking-2511-GGUF:Q8_0", provider=provider
+)
 
 agent = Agent(
     model=model,
@@ -55,7 +57,7 @@ agent = Agent(
     system_prompt=(
         "You are a system verification agent."
         "Your ONLY goal is to fill out the UserContext schema."
-        "CRITICAL: You are FORBIDDEN from gressing the zig_version"
+        "CRITICAL: You are FORBIDDEN from guessing the zig_version"
         "You MUST call the tool `get_zig_version` to check the local version. "
         "If you do not have the tool output, you cannot finish the task."
     ),
@@ -103,4 +105,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

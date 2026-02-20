@@ -9,6 +9,11 @@ import scipy.io.wavfile as wav
 import sounddevice as sd
 import whisper
 from pynput import keyboard
+from static_ffmpeg import add_paths
+
+# adding folder for ffmpeg
+add_paths()
+
 
 # | Model              | Parameters | Required VRAM | Relative Speed | Accuracy                            |
 # | ------------------ | ---------- | ------------- | -------------- | ----------------------------------- |
@@ -56,7 +61,10 @@ def audio_record_push_to_talk(fs=16000) -> np.ndarray:
 
     with stream, keyboard.Events() as events:
         for event in events:
-            if hasattr(event, "key") and (event.key == keyboard.Key.esc or event.key == keyboard.KeyCode.from_char("q")):
+            if hasattr(event, "key") and (
+                event.key == keyboard.Key.esc
+                or event.key == keyboard.KeyCode.from_char("q")
+            ):
                 print("\nExiting...")
                 sys.exit(0)
             if hasattr(event, "key") and event.key == keyboard.Key.alt_l:
@@ -98,14 +106,14 @@ def audio_transcribe(recording: np.ndarray, fs: int) -> str:
 
     # result = model.transcribe(tmp_path, language="pt")
     context_prompt = "aircraft status, give me the aircraft status, closest airport, where is the closest airport, airport locations"
-    # context_prompt = "status da aeronave, aeroporto mais proximo, distancia até aeroporto"
-        
+    # context_prompt = ("status da aeronave, aeroporto mais proximo, distancia até aeroporto")
+
     # en: english
     # pt: portuguese
-        
+
     result = model.transcribe(
         tmp_path,
-        language="en",
+        language="pt",
         initial_prompt=context_prompt,
     )
     os.remove(tmp_path)
