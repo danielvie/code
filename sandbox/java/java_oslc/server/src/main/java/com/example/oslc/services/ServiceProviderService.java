@@ -31,7 +31,7 @@ public class ServiceProviderService {
     private static final List<Defect> defects = new ArrayList<>();
 
     @GET
-    @Produces({"application/rdf+xml", "application/ld+json", "application/xml"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml", "application/json"})
     public ServiceProvider getServiceProvider(@Context UriInfo uriInfo, @PathParam("id") String id) throws URISyntaxException {
         ServiceProvider provider = new ServiceProvider();
         provider.setAbout(uriInfo.getAbsolutePath());
@@ -42,7 +42,7 @@ public class ServiceProviderService {
 
     @GET
     @Path("defects")
-    @Produces({"application/rdf+xml", "application/ld+json", "application/xml"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml", "application/json"})
     @OslcQueryCapability(title = "Defect Query Capability", label = "Defect Query",
             resourceShape = "http://open-services.net/ns/cm#Defect",
             resourceTypes = {"http://open-services.net/ns/cm#Defect"}, usages = {"http://open-services.net/ns/core#default"})
@@ -52,12 +52,12 @@ public class ServiceProviderService {
 
     @POST
     @Path("defects")
-    @Consumes({"application/rdf+xml", "application/ld+json", "application/xml"})
-    @Produces({"application/rdf+xml", "application/ld+json", "application/xml"})
+    @Consumes({"application/rdf+xml", "application/ld+json", "application/xml", "application/json"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml", "application/json"})
     @OslcCreationFactory(title = "Defect Creation Factory", label = "Defect Creation",
             resourceShapes = {"http://open-services.net/ns/cm#Defect"},
             resourceTypes = {"http://open-services.net/ns/cm#Defect"}, usages = {"http://open-services.net/ns/core#default"})
-    public Response createDefect(Defect defect, @Context UriInfo uriInfo) throws URISyntaxException {
+    public Response createDefect(@PathParam("id") String id, Defect defect, @Context UriInfo uriInfo) throws URISyntaxException {
         defect.setIdentifier(UUID.randomUUID().toString());
         defect.setCreated(new Date());
         defect.setAbout(new URI(uriInfo.getAbsolutePath().toString() + "/" + defect.getIdentifier()));

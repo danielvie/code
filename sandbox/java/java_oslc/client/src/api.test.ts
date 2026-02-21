@@ -30,4 +30,37 @@ describe('OSLC Backend Connection', () => {
     expect(hasCatalog).toBe(true);
   });
 
+  it('should successfully create a Defect via POST', async () => {
+    const payload = {
+      "prefixes": {
+        "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+        "dcterms": "http://purl.org/dc/terms/",
+        "oslc": "http://open-services.net/ns/core#",
+        "oslc_cm": "http://open-services.net/ns/cm#"
+      },
+      "dcterms:title": "Vitest Sample Defect",
+      "dcterms:description": "This is an automated test defect."
+    };
+
+    const response = await fetch(`${SERVER_URL}/provider/1/defects`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/ld+json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    expect(response.status).toBe(201); // 201 Created
+    expect(response.ok).toBe(true);
+
+    const createdDefect = await response.json();
+    
+    // Validate the returned object
+    expect(createdDefect['dcterms:title']).toBe('Vitest Sample Defect');
+    expect(createdDefect['dcterms:description']).toBe('This is an automated test defect.');
+    expect(createdDefect['@type']).toBe('oslc_cm:Defect');
+    expect(createdDefect['dcterms:identifier']).toBeDefined();
+  });
+
 });

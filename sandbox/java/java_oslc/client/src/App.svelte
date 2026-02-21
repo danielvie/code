@@ -41,12 +41,18 @@
       const response = await fetch('/provider/1/defects', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/ld+json',
+          'Content-Type': 'application/json',
           'Accept': 'application/ld+json'
         },
         body: JSON.stringify({
-          title: "Sample Defect",
-          description: "This is a test defect created from the Svelte client."
+          "prefixes": {
+            "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+            "dcterms": "http://purl.org/dc/terms/",
+            "oslc": "http://open-services.net/ns/core#",
+            "oslc_cm": "http://open-services.net/ns/cm#"
+          },
+          "dcterms:title": "Sample Defect",
+          "dcterms:description": "This is a test defect created from the Svelte client."
         })
       });
       if (!response.ok) throw new Error('Failed to create defect');
