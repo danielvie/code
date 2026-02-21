@@ -13,7 +13,14 @@ tasks:
     aliases: [c]
     dir: client
     cmds:
-      - npm run dev
+      - bun run dev
+
+  test-client:
+    desc: "Run Vitest integration tests for SvelteKit OSLC Client"
+    aliases: [tc]
+    dir: client
+    cmds:
+      - bunx vitest run
 
   dev:
     desc: "Run both the Svelte client and Spring Boot server concurrently"

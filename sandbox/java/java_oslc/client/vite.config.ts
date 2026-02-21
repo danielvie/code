@@ -9,8 +9,14 @@ export default defineConfig({
     port: 3000,
     strictPort: false,
     proxy: {
-      '/catalog': 'http://127.0.0.1:8080',
-      '/provider': 'http://127.0.0.1:8080'
+      '/catalog': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true
+      },
+      '/provider': {
+        target: 'http://127.0.0.1:8080',
+        changeOrigin: true
+      }
     }
   }
 })

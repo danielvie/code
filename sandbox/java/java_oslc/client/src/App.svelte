@@ -10,9 +10,9 @@
   onMount(async () => {
     try {
       const response = await fetch('/catalog', {
-        headers: { 'Accept': 'application/json-ld' }
+        headers: { 'Accept': 'application/ld+json' }
       });
-      if (!response.ok) throw new Error('Failed to fetch catalog');
+      if (!response.ok) throw new Error(`Failed to fetch catalog: ${response.status} ${response.statusText}`);
       catalog = await response.json();
     } catch (err: any) {
       error = err.message || 'Error occurred while fetching Catalog';
@@ -25,9 +25,9 @@
     loadingDefects = true;
     try {
       const response = await fetch('/provider/1/defects', {
-        headers: { 'Accept': 'application/json-ld' }
+        headers: { 'Accept': 'application/ld+json' }
       });
-      if (!response.ok) throw new Error('Failed to fetch defects');
+      if (!response.ok) throw new Error(`Failed to fetch defects: ${response.status} ${response.statusText}`);
       defects = await response.json();
     } catch (err: any) {
       alert(err.message || 'Error querying defects');
@@ -41,8 +41,8 @@
       const response = await fetch('/provider/1/defects', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json-ld',
-          'Accept': 'application/json-ld'
+          'Content-Type': 'application/ld+json',
+          'Accept': 'application/ld+json'
         },
         body: JSON.stringify({
           title: "Sample Defect",
