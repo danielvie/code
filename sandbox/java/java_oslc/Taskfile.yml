@@ -22,6 +22,14 @@ tasks:
     cmds:
       - bunx vitest run
 
+  kill:
+    desc: "Kill all running processes"
+    aliases: [k]
+    cmds:
+      - taskkill /F /IM java.exe
+      - taskkill /F /IM bun.exe
+      - taskkill /F /IM node.exe
+
   dev:
     desc: "Run both the Svelte client and Spring Boot server concurrently"
     deps: [server, client]
