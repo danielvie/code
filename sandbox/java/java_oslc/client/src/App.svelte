@@ -61,6 +61,10 @@
       alert(err.message || 'Error creating defect');
     }
   }
+
+  function clearDefects() {
+    defects = null;
+  }
 </script>
 
 <main class="min-h-screen w-full bg-gray-dark text-gray-light font-sans selection:bg-primary/30 p-4 md:p-8">
@@ -87,7 +91,7 @@
         </p>
       </div>
     {:else if catalog}
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+      <div class="flex flex-col gap-6">
         
         <!-- Catalog Card (Left Column) -->
         <div class="bg-gray-dark/50 backdrop-blur-md rounded-md p-8 shadow-2xl border border-gray-mid/20 hover:border-secondary/50 transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
@@ -126,6 +130,17 @@
                   Query Defects
                 {/if}
               </button>
+
+              {#if defects}
+              <!-- Clear Action (Secondary) -->
+              <button 
+                class="bg-secondary" 
+                on:click={clearDefects} 
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                Clear Results
+              </button>
+              {/if}
             </div>
           </div>
         </div>
@@ -153,18 +168,11 @@
                   <p class="text-sm mt-1 text-center">The current query returned an empty dataset from the provider.</p>
                 </div>
               {:else}
-                <div class="bg-[#0b1121] p-5 rounded-md overflow-x-auto border border-gray-mid/10 shadow-inner flex-1 bg-opacity-80">
+                <div class="bg-[#0b1121] p-5 rounded-md overflow-x-auto border border-gray-mid/10 shadow-inner flex-1 bg-opacity-80 max-h-96 overflow-y-auto">
                   <pre class="text-sm font-mono text-primary/90 leading-relaxed tracking-wide">{JSON.stringify(defects, null, 2)}</pre>
                 </div>
               {/if}
             </div>
-          </div>
-        {:else}
-          <!-- Placeholder when defects haven't been queried yet -->
-          <div class="hidden lg:flex bg-gray-dark/30 rounded-3xl p-8 border-2 border-dashed border-gray-mid/20 flex-col items-center justify-center text-gray-mid/50 h-full">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-20 w-20 mb-6 opacity-30" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4" /></svg>
-            <p class="font-medium text-xl">Awaiting Query</p>
-            <p class="text-sm mt-2 max-w-xs text-center">Click 'Query Defects' to retrieve items from the OSLC Provider.</p>
           </div>
         {/if}
       </div>
