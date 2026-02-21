@@ -41,7 +41,7 @@ class UserContext(BaseModel):
 # ── 2. Agent & Tool ────────────────────────────────────────────
 provider = OpenAIProvider(base_url="http://127.0.0.1:8033/v1", api_key="not-needed")
 # provider = OpenAIProvider(base_url="http://127.0.0.1:11434/v1", api_key="not-needed")
-
+# model = OpenAIChatModel("llama-3.1-8b-instruct", provider=provider)
 model = OpenAIChatModel(
     "hf.co/bartowski/Nanbeige_Nanbeige4-3B-Thinking-2511-GGUF:Q8_0", provider=provider
 )
@@ -64,9 +64,7 @@ def get_zig_version() -> str:
     """Check the system for the installed Zig version."""
     try:
         print("log: calling get_zig_version tool...")
-        result = subprocess.run(
-            ["zig", "version"], capture_output=True, text=True, check=True
-        )
+        result = subprocess.run(["zig", "version"], capture_output=True, text=True, check=True)
         return result.stdout.strip()
     except (subprocess.CalledProcessError, FileNotFoundError):
         return "not installed"
@@ -74,9 +72,7 @@ def get_zig_version() -> str:
 
 # ── 3. Execution ───────────────────────────────────────────────
 def main():
-    user_input = (
-        "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
-    )
+    user_input = "Lucas is 39, from São José dos Campos. He's a developer working with Zig."
 
     print("--- Running Pydantic-AI Agent ---")
 
