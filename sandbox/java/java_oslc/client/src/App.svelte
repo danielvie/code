@@ -191,19 +191,19 @@
             
           <!-- Action Buttons Form -->
           <div class="relative z-10 flex flex-col md:flex-row gap-4 items-start shrink-0">
-            <div class="flex flex-col gap-2 w-full md:w-64 border-r border-gray-mid/10 md:pr-4">
+            <form on:submit|preventDefault={createDefect} class="flex flex-col gap-2 w-full md:w-64 border-r border-gray-mid/10 md:pr-4">
                <!-- Creation Form -->
                <input type="text" bind:value={newTitle} placeholder="Defect Title (optional)" class="bg-[#0b1121] border border-gray-mid/20 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent outline-none text-white w-full" />
                <input type="text" bind:value={newDesc} placeholder="Description (optional)" class="bg-[#0b1121] border border-gray-mid/20 rounded px-3 py-1.5 text-sm focus:ring-2 focus:ring-accent outline-none text-white w-full" />
                
                <button 
+                type="submit"
                 class="bg-accent/70 hover:bg-accent/90 px-4 py-2 text-sm w-full mt-1"
-                on:click={createDefect}
                >
                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
                  Create Defect
                </button>
-            </div>
+            </form>
             
             <div class="flex flex-col gap-2 w-full md:w-auto h-full justify-center">
               <!-- Query Action (Blue) -->
