@@ -8,7 +8,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class JerseyConfig extends ResourceConfig {
     public JerseyConfig() {
-        // Register OSLC Providers by package scanning instead of explicit class
+        // Register OSLC Providers by package scanning
         packages("org.eclipse.lyo.oslc4j.provider.jena", "org.eclipse.lyo.oslc4j.provider.json4j");
 
         // Register custom endpoints

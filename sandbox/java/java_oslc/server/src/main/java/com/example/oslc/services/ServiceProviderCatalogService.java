@@ -4,11 +4,11 @@ import org.eclipse.lyo.oslc4j.core.model.Publisher;
 import org.eclipse.lyo.oslc4j.core.model.ServiceProviderCatalog;
 import org.springframework.stereotype.Service;
 
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.UriInfo;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 
@@ -17,7 +17,7 @@ import java.net.URISyntaxException;
 public class ServiceProviderCatalogService {
 
     @GET
-    @Produces({"application/rdf+xml", "application/json-ld", "application/xml"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml"})
     public ServiceProviderCatalog getCatalog(@Context UriInfo uriInfo) throws URISyntaxException {
         ServiceProviderCatalog catalog = new ServiceProviderCatalog();
         catalog.setAbout(uriInfo.getAbsolutePath());

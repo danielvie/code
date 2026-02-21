@@ -7,15 +7,15 @@ import org.eclipse.lyo.oslc4j.core.annotation.OslcService;
 import org.eclipse.lyo.oslc4j.core.model.ServiceProvider;
 import org.springframework.stereotype.Service;
 
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.POST;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.UriInfo;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -31,7 +31,7 @@ public class ServiceProviderService {
     private static final List<Defect> defects = new ArrayList<>();
 
     @GET
-    @Produces({"application/rdf+xml", "application/json-ld", "application/xml"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml"})
     public ServiceProvider getServiceProvider(@Context UriInfo uriInfo, @PathParam("id") String id) throws URISyntaxException {
         ServiceProvider provider = new ServiceProvider();
         provider.setAbout(uriInfo.getAbsolutePath());
@@ -42,7 +42,7 @@ public class ServiceProviderService {
 
     @GET
     @Path("defects")
-    @Produces({"application/rdf+xml", "application/json-ld", "application/xml"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml"})
     @OslcQueryCapability(title = "Defect Query Capability", label = "Defect Query",
             resourceShape = "http://open-services.net/ns/cm#Defect",
             resourceTypes = {"http://open-services.net/ns/cm#Defect"}, usages = {"http://open-services.net/ns/core#default"})
@@ -52,8 +52,8 @@ public class ServiceProviderService {
 
     @POST
     @Path("defects")
-    @Consumes({"application/rdf+xml", "application/json-ld", "application/xml"})
-    @Produces({"application/rdf+xml", "application/json-ld", "application/xml"})
+    @Consumes({"application/rdf+xml", "application/ld+json", "application/xml"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml"})
     @OslcCreationFactory(title = "Defect Creation Factory", label = "Defect Creation",
             resourceShapes = {"http://open-services.net/ns/cm#Defect"},
             resourceTypes = {"http://open-services.net/ns/cm#Defect"}, usages = {"http://open-services.net/ns/core#default"})

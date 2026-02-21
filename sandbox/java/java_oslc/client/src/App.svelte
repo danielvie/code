@@ -10,7 +10,7 @@
   onMount(async () => {
     try {
       const response = await fetch('/catalog', {
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json-ld' }
       });
       if (!response.ok) throw new Error('Failed to fetch catalog');
       catalog = await response.json();
@@ -25,7 +25,7 @@
     loadingDefects = true;
     try {
       const response = await fetch('/provider/1/defects', {
-        headers: { 'Accept': 'application/json' }
+        headers: { 'Accept': 'application/json-ld' }
       });
       if (!response.ok) throw new Error('Failed to fetch defects');
       defects = await response.json();
@@ -41,8 +41,8 @@
       const response = await fetch('/provider/1/defects', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+          'Content-Type': 'application/json-ld',
+          'Accept': 'application/json-ld'
         },
         body: JSON.stringify({
           title: "Sample Defect",
