@@ -11,6 +11,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -72,5 +73,32 @@ public class ServiceProviderService {
     public Response deleteAllDefects(@PathParam("id") String id) {
         defects.clear();
         return Response.noContent().build();
+    }
+
+    @PUT
+    @Path("defects/{defectId}")
+    @Consumes({"application/rdf+xml", "application/ld+json", "application/xml", "application/json"})
+    @Produces({"application/rdf+xml", "application/ld+json", "application/xml", "application/json"})
+    public Response updateDefect(@PathParam("id") String id, @PathParam("defectId") String defectId, Defect updatedDefect) {
+        for (int i = 0; i < defects.size(); i++) {
+            Defect defect = defects.get(i);
+            if (defect.getIdentifier().equals(defectId)) {
+                defect.setTitle(updatedDefect.getTitle());
+                defect.setDescription(updatedDefect.getDescription());
+                return Response.ok(defect).build();
+            }
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
+    }
+
+    @DELETE
+    @Path("defects/{defectId}")
+    @Produces({"application/json"})
+    public Response deleteDefect(@PathParam("id") String id, @PathParam("defectId") String defectId) {
+        boolean removed = defects.removeIf(d -> d.getIdentifier().equals(defectId));
+        if (removed) {
+            return Response.noContent().build();
+        }
+        return Response.status(Response.Status.NOT_FOUND).build();
     }
 }

@@ -12,7 +12,7 @@
 
 button {
     @apply hover:brightness-120 active:brightness-90 text-white font-bold py-3.5 px-6 rounded-sm transition-all 
-            duration-200 focus:ring-4 focus:ring-accent/40 focus:outline-none shadow-lg shadow-accent/20 
+            duration-200 focus:ring-4 focus:ring-accent/40 focus:outline-none
             flex-1 flex items-center justify-center gap-2
             cursor-pointer
 }
