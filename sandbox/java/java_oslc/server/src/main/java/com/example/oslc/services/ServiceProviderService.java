@@ -8,6 +8,7 @@ import org.eclipse.lyo.oslc4j.core.model.ServiceProvider;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -63,5 +64,13 @@ public class ServiceProviderService {
         defect.setAbout(new URI(uriInfo.getAbsolutePath().toString() + "/" + defect.getIdentifier()));
         defects.add(defect);
         return Response.created(defect.getAbout()).entity(defect).build();
+    }
+
+    @DELETE
+    @Path("defects")
+    @Produces({"application/json"})
+    public Response deleteAllDefects(@PathParam("id") String id) {
+        defects.clear();
+        return Response.noContent().build();
     }
 }

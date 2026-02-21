@@ -7,6 +7,24 @@
   let loadingDefects = false;
   let error = '';
 
+  // Derived defect array to handle OSLC JSON-LD format variations
+  let defectItems: any[] = [];
+  $: {
+    if (defects) {
+      if (Array.isArray(defects)) {
+        defectItems = defects;
+      } else if (defects['@graph']) {
+        defectItems = defects['@graph'].filter((d: any) => d['@type'] === 'oslc_cm:Defect' || (Array.isArray(d['@type']) && d['@type'].includes('oslc_cm:Defect')));
+      } else if (defects['@type'] === 'oslc_cm:Defect') {
+        defectItems = [defects];
+      } else {
+        defectItems = [];
+      }
+    } else {
+      defectItems = [];
+    }
+  }
+
   onMount(async () => {
     try {
       const response = await fetch('/catalog', {
@@ -62,6 +80,19 @@
     }
   }
 
+  async function deleteAllDefects() {
+    try {
+      const response = await fetch('/provider/1/defects', {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to delete defects');
+      await queryDefects(); // refresh list to show empty state
+    } catch (err: any) {
+      alert(err.message || 'Error deleting defects');
+    }
+  }
+
   function clearDefects() {
     defects = null;
   }
@@ -93,59 +124,68 @@
     {:else if catalog}
       <div class="flex flex-col gap-6">
         
-        <!-- Catalog Card (Left Column) -->
-        <div class="bg-gray-dark/50 backdrop-blur-md rounded-md p-8 shadow-2xl border border-gray-mid/20 hover:border-secondary/50 transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
-          <!-- Ambient Blobs -->
-          <div class="absolute -top-16 -right-16 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700"></div>
+        <!-- Control Panel (Top Row) -->
+        <div class="bg-gray-dark/50 backdrop-blur-md rounded-md p-6 shadow-xl border border-gray-mid/20 hover:border-secondary/50 transition-all duration-300 flex flex-col md:flex-row gap-6 items-center justify-between relative overflow-hidden group">
+          <div class="absolute -top-16 -right-16 w-40 h-40 bg-primary/10 rounded-full blur-3xl group-hover:bg-primary/20 transition-all duration-700 pointer-events-none"></div>
 
-          <div class="relative z-10 flex flex-col flex-1">
-            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-wider mb-5 border border-secondary/20 self-start">
+          <!-- Catalog Information -->
+          <div class="relative z-10 flex-1 w-full text-center md:text-left">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-sm bg-secondary/10 text-secondary text-xs font-bold uppercase tracking-wider mb-2 border border-secondary/20">
               Service Provider
             </div>
+            <h2 class="text-2xl md:text-3xl font-bold mb-1 text-gray-light leading-tight">{catalog['dcterms:title'] || catalog.title || 'Service Provider Catalog'}</h2>
+            <p class="text-gray-mid text-sm md:text-base">{catalog['dcterms:description'] || catalog.description || 'OSLC Catalog'}</p>
+          </div>
             
-            <h2 class="text-3xl md:text-4xl font-bold mb-4 text-gray-light leading-tight">{catalog['dcterms:title'] || catalog.title || 'Service Provider Catalog'}</h2>
-            <p class="text-gray-mid mb-10 text-lg leading-relaxed flex-1">{catalog['dcterms:description'] || catalog.description || 'OSLC Catalog'}</p>
+          <!-- Action Buttons -->
+          <div class="relative z-10 flex flex-wrap justify-center gap-3 shrink-0">
+            <!-- Create Action (Orange) -->
+            <button 
+              class="bg-accent px-5 py-2 text-sm md:text-base min-w-[140px]"
+              on:click={createDefect}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
+              Create Defect
+            </button>
             
-            <div class="flex flex-col sm:flex-row gap-4 mt-auto">
-              <!-- Accent CTA (Orange) -->
-              <button 
-                class="bg-accent"
-                on:click={createDefect}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" /></svg>
-                Create Defect
-              </button>
-              
-              <!-- Primary Action (Blue) -->
-              <button 
-                class="bg-primary" 
-                on:click={queryDefects} 
-                disabled={loadingDefects}
-              >
-                {#if loadingDefects}
-                  <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-                  Querying...
-                {:else}
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
-                  Query Defects
-                {/if}
-              </button>
-
-              {#if defects}
-              <!-- Clear Action (Secondary) -->
-              <button 
-                class="bg-secondary" 
-                on:click={clearDefects} 
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
-                Clear Results
-              </button>
+            <!-- Query Action (Blue) -->
+            <button 
+              class="bg-primary px-5 py-2 text-sm md:text-base min-w-[140px]" 
+              on:click={queryDefects} 
+              disabled={loadingDefects}
+            >
+              {#if loadingDefects}
+                <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                Querying...
+              {:else}
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" /></svg>
+                Query Defects
               {/if}
-            </div>
+            </button>
+
+            <!-- Delete All Action (Red) -->
+            <button 
+              class="bg-red-600 hover:bg-red-500 hover:ring-red-500/40 shadow-red-600/20 px-5 py-2 text-sm md:text-base min-w-[140px]" 
+              on:click={deleteAllDefects} 
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+              Delete All
+            </button>
+
+            {#if defects}
+            <!-- Clear Action (Secondary) -->
+            <button 
+              class="bg-secondary px-5 py-2 text-sm md:text-base min-w-[140px]" 
+              on:click={clearDefects} 
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+              Hide Panel
+            </button>
+            {/if}
           </div>
         </div>
         
-        <!-- Defects Card (Right Column) -->
+        <!-- Defects Data (Bottom Full Width) -->
         {#if defects}
           <div class="bg-[#172338] rounded-sm p-8 shadow-2xl border border-gray-mid/20 hover:border-primary/50 transition-all duration-300 flex flex-col h-full relative overflow-hidden group">
             <div class="absolute -bottom-16 -left-16 w-40 h-40 bg-secondary/10 rounded-full blur-3xl group-hover:bg-secondary/20 transition-all duration-700"></div>
@@ -157,11 +197,11 @@
                   Results Pipeline
                 </h2>
                 <span class="bg-gray-mid/10 text-gray-mid text-xs font-bold px-3 py-1.5 rounded-sm border border-gray-mid/20 whitespace-nowrap">
-                  {Array.isArray(defects) ? defects.length : 0} items found
+                  {defectItems.length} items found
                 </span>
               </div>
               
-              {#if Array.isArray(defects) && defects.length === 0}
+              {#if defectItems.length === 0}
                 <div class="flex-1 flex flex-col items-center justify-center text-gray-mid opacity-80 border-2 border-dashed border-gray-mid/20 rounded-sm p-8 mt-2 min-h-[250px]">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14 mb-4 text-gray-mid/50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                   <p class="font-medium text-lg text-gray-light">No defects found</p>
@@ -169,7 +209,7 @@
                 </div>
               {:else}
                 <div class="bg-[#0b1121] p-5 rounded-md overflow-x-auto border border-gray-mid/10 shadow-inner flex-1 bg-opacity-80 max-h-96 overflow-y-auto">
-                  <pre class="text-sm font-mono text-primary/90 leading-relaxed tracking-wide">{JSON.stringify(defects, null, 2)}</pre>
+                  <pre class="text-sm font-mono text-primary/90 leading-relaxed tracking-wide">{JSON.stringify(defectItems, null, 2)}</pre>
                 </div>
               {/if}
             </div>
