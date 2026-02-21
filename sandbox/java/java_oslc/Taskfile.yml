@@ -1,0 +1,20 @@
+version: '3'
+
+tasks:
+  server:
+    desc: "Run the Spring Boot OSLC Server"
+    dir: server
+    aliases: [s]
+    cmds:
+      - mvn spring-boot:run
+
+  client:
+    desc: "Run the SvelteKit OSLC Client"
+    aliases: [c]
+    dir: client
+    cmds:
+      - npm run dev
+
+  dev:
+    desc: "Run both the Svelte client and Spring Boot server concurrently"
+    deps: [server, client]
