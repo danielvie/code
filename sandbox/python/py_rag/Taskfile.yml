@@ -1,0 +1,33 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: ["up"]
+
+  up:
+    desc: Start all services
+    cmds:
+      - docker compose up -d
+
+  down:
+    desc: Stop all services
+    cmds:
+      - docker compose down
+
+  dev-backend:
+    desc: Run the backend in dev mode locally (outside Docker)
+    dir: backend
+    cmds:
+      - uv run uvicorn main:app --reload --port 8000
+
+  dev-frontend:
+    desc: Run the frontend in dev mode locally (outside Docker)
+    dir: frontend
+    cmds:
+      - npm run dev
+
+  build:
+    desc: Build Docker images
+    cmds:
+      - docker compose build
