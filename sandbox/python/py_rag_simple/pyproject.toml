@@ -1,0 +1,15 @@
+[project]
+name = "py-rag-simple"
+version = "0.1.0"
+description = "A simple RAG system using Ollama and LangChain"
+readme = "docs/INTRO.md"
+requires-python = "==3.12.*"
+dependencies = [
+    "chromadb",
+    "docx2txt",
+    "langchain>=0.3.0,<0.4.0",
+    "langchain-chroma",
+    "langchain-community",
+    "langchain-ollama",
+    "pypdf",
+]

@@ -1,0 +1,24 @@
+version: '3'
+
+tasks:
+  default:
+    deps: [run]
+
+  setup:
+    desc: "Create virtual environment and sync dependencies using uv"
+    cmds:
+      - uv sync
+
+  run:
+    desc: "Run the simple RAG CLI"
+    aliases: [r]
+    cmds:
+      - uv run python main.py
+
+  clean:
+    desc: "Clean the project"
+    aliases: [c]
+    cmds:
+      - pwsh -Command "Remove-Item -Recurse -Force -ErrorAction SilentlyContinue .venv"
+      - pwsh -Command "Remove-Item -Recurse -Force -ErrorAction SilentlyContinue uv.lock"
+      - pwsh -Command "Remove-Item -Recurse -Force -ErrorAction SilentlyContinue chroma_db"
