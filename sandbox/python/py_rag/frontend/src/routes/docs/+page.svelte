@@ -11,7 +11,7 @@
         try {
             const apiUrl =
                 import.meta.env.VITE_API_URL || "http://localhost:8000";
-            const response = await fetch(`${apiUrl}/docs`);
+            const response = await fetch(`${apiUrl}/documents`);
             if (!response.ok) {
                 throw new Error("Failed to fetch documents");
             }
@@ -30,7 +30,7 @@
             const apiUrl =
                 import.meta.env.VITE_API_URL || "http://localhost:8000";
             const response = await fetch(
-                `${apiUrl}/docs/${encodeURIComponent(id)}`,
+                `${apiUrl}/documents/${encodeURIComponent(id)}`,
                 {
                     method: "DELETE",
                 },

@@ -39,12 +39,12 @@ async def ask_question(question: str):
     # Stub implementation for asking a question
     return {"question": question, "answer": "This is a placeholder answer."}
 
-@app.get("/docs")
+@app.get("/documents")
 async def list_documents() -> List[str]:
     files = os.listdir(DATA_DIR)
     return files
 
-@app.get("/docs/{id}")
+@app.get("/documents/{id}")
 async def get_document(id: str):
     file_path = os.path.join(DATA_DIR, id)
     if not os.path.exists(file_path):
@@ -52,7 +52,7 @@ async def get_document(id: str):
     # In a real app we might return the file content or metadata
     return {"filename": id, "path": file_path}
 
-@app.delete("/docs/{id}")
+@app.delete("/documents/{id}")
 async def delete_document(id: str):
     file_path = os.path.join(DATA_DIR, id)
     if not os.path.exists(file_path):
