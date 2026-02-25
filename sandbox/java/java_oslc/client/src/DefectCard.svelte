@@ -1,14 +1,16 @@
 <script lang="ts">
-  import { createEventDispatcher } from 'svelte';
-  
-  export let defect: any;
-  
-  let isEditing = false;
-  let showRawData = false;
-  let editTitle = '';
-  let editDesc = '';
+  interface Props {
+    defect: any;
+    onUpdateDefect?: (detail: { id: string; title: string; desc: string }) => void;
+    onDeleteDefect?: (detail: { id: string }) => void;
+  }
 
-  const dispatch = createEventDispatcher();
+  let { defect, onUpdateDefect, onDeleteDefect }: Props = $props();
+  
+  let isEditing = $state(false);
+  let showRawData = $state(false);
+  let editTitle = $state('');
+  let editDesc = $state('');
 
   function startEdit() {
     isEditing = true;
@@ -21,7 +23,7 @@
   }
 
   function handleSave() {
-    dispatch('updateDefect', { 
+    onUpdateDefect?.({ 
         id: defect['dcterms:identifier'], 
         title: editTitle, 
         desc: editDesc 
@@ -30,7 +32,7 @@
   }
 
   function handleDelete() {
-    dispatch('deleteDefect', { id: defect['dcterms:identifier'] });
+    onDeleteDefect?.({ id: defect['dcterms:identifier'] });
   }
 </script>
 

@@ -95,8 +95,8 @@
     }
   }
 
-  async function updateDefect(event: CustomEvent<any>) {
-    const { id: defectId, title: editTitle, desc: editDesc } = event.detail;
+  async function updateDefect(detail: { id: string; title: string; desc: string }) {
+    const { id: defectId, title: editTitle, desc: editDesc } = detail;
     try {
       const response = await fetch(`/provider/1/defects/${defectId}`, {
         method: 'PUT',
@@ -122,8 +122,8 @@
     }
   }
 
-  async function deleteDefect(event: CustomEvent<any>) {
-    const { id: defectId } = event.detail;
+  async function deleteDefect(detail: { id: string }) {
+    const { id: defectId } = detail;
     try {
       const response = await fetch(`/provider/1/defects/${defectId}`, {
         method: 'DELETE',
@@ -242,8 +242,8 @@
               {#each defectItems as defect}
                 <DefectCard 
                   {defect} 
-                  on:updateDefect={updateDefect} 
-                  on:deleteDefect={deleteDefect} 
+                  onUpdateDefect={updateDefect} 
+                  onDeleteDefect={deleteDefect} 
                 />
               {/each}
             </div>
