@@ -10,6 +10,11 @@ Install recomendation
 Install-Module -Name PSReadLine -Scope CurrentUser -Force -SkipPublisherCheck
 ```
 
+Script Zoxide
+```powershell
+Invoke-Expression (& { (zoxide init powershell | Out-String) })
+```
+
 Install PSFzf module
 ```powershell
 Install-Module PSFzf
