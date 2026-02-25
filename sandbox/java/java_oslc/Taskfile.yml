@@ -33,3 +33,7 @@ tasks:
   dev:
     desc: "Run both the Svelte client and Spring Boot server concurrently"
     deps: [server, client]
+
+  all:
+    deps: [server, client]
+    
