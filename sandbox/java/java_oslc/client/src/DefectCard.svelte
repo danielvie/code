@@ -4,6 +4,7 @@
   export let defect: any;
   
   let isEditing = false;
+  let showRawData = false;
   let editTitle = '';
   let editDesc = '';
 
@@ -58,6 +59,13 @@
       <!-- Action Row -->
       <div class="flex gap-2 justify-end mt-auto opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <button 
+          class="bg-secondary/20 hover:bg-secondary/40"
+          on:click={() => showRawData = !showRawData}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+          {showRawData ? 'Hide Raw' : 'Raw Data'}
+        </button>
+        <button 
           class="bg-blue-600/20 hover:bg-blue-600/40"
           on:click={startEdit}
         >
@@ -72,6 +80,24 @@
           Delete
         </button>
       </div>
+
+      <!-- Raw OSLC Data Panel -->
+      {#if showRawData}
+        <div class="mt-4 bg-[#0b1121] rounded-md border border-secondary/20 overflow-hidden">
+          <div class="flex items-center justify-between px-3 py-1.5 bg-secondary/10 border-b border-secondary/20">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-secondary">OSLC Raw Data (JSON-LD)</span>
+            <button 
+              class="text-[10px] text-gray-mid hover:text-white bg-transparent hover:bg-white/10 px-2 py-0.5 rounded transition-colors"
+              on:click={() => { navigator.clipboard.writeText(JSON.stringify(defect, null, 2)); }}
+            >
+              Copy
+            </button>
+          </div>
+          <div class="p-3 max-h-48 overflow-auto">
+            <pre class="text-[11px] font-mono text-primary/90 leading-relaxed whitespace-pre-wrap break-all">{JSON.stringify(defect, null, 2)}</pre>
+          </div>
+        </div>
+      {/if}
     </div>
   {/if}
 </div>
