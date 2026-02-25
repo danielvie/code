@@ -1,0 +1,80 @@
+<div class="container">
+  <div class="header">
+    <h1>Drag and Drop PoC</h1>
+    
+    <div class="mode-switcher">
+      <span>Mode: </span>
+      <button 
+        [class.active]="mode === 'both'" 
+        (click)="setMode('both')"
+        data-testid="mode-both"
+      >Both</button>
+      <button 
+        [class.active]="mode === 'drag-only'" 
+        (click)="setMode('drag-only')"
+        data-testid="mode-drag"
+      >Drag Only</button>
+      <button 
+        [class.active]="mode === 'drop-only'" 
+        (click)="setMode('drop-only')"
+        data-testid="mode-drop"
+      >Drop Only</button>
+      <button 
+        [class.active]="mode === 'random'" 
+        (click)="setMode('random')"
+        data-testid="mode-random"
+      >Random</button>
+    </div>
+  </div>
+  
+  <div class="drag-source-container" *ngIf="mode === 'both' || mode === 'drag-only'">
+    <h2>Source</h2>
+    <div 
+      class="draggable-item" 
+      draggable="true" 
+      (dragstart)="onDragStart($event, 'Item 1')"
+      data-testid="drag-item-1"
+    >
+      Drag Me! (Item 1)
+    </div>
+    <div 
+      class="draggable-item" 
+      draggable="true" 
+      (dragstart)="onDragStart($event, 'Item 2')"
+      data-testid="drag-item-2"
+    >
+      Drag Me! (Item 2)
+    </div>
+  </div>
+
+  <div class="random-container" *ngIf="mode === 'random'">
+    <h2>Find the Specific Element</h2>
+    <div class="random-area" data-testid="random-area">
+      <div 
+        *ngFor="let item of randomItems"
+        class="draggable-item random-item"
+        [style.top.%]="item.top"
+        [style.left.%]="item.left"
+        draggable="true" 
+        (dragstart)="onDragStart($event, item.text)"
+      >
+        {{ item.text }}
+      </div>
+    </div>
+  </div>
+
+  <div class="drop-target-container" *ngIf="mode !== 'drag-only'">
+    <h2>Target</h2>
+    <div 
+      class="drop-zone" 
+      (dragover)="onDragOver($event)" 
+      (drop)="onDrop($event)"
+      data-testid="drop-zone"
+    >
+      <p *ngIf="droppedItems.length === 0">Drop items here</p>
+      <ul *ngIf="droppedItems.length > 0" data-testid="dropped-items-list">
+        <li *ngFor="let item of droppedItems">{{ item }}</li>
+      </ul>
+    </div>
+  </div>
+</div>

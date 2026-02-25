@@ -1,0 +1,40 @@
+version: '3'
+
+tasks:
+
+  dev:
+    desc: Run the Angular dev server
+    cmds:
+      - npm start
+
+  test:
+    desc: Run Playwright tests
+    cmds:
+      - npx playwright test
+
+  test:ui:
+    desc: Run tests visually in Playwright UI debugger
+    cmds:
+      - npx playwright test --project="Microsoft Edge" --ui
+
+  test:debug:
+    desc: Run tests in debug mode to step through them one by one
+    cmds:
+      - npx playwright test --project="Microsoft Edge" --debug
+
+  test:headed:
+    desc: Run tests in a real browser at slow speeds to watch the animation
+    env:
+      SLOWMO: "true"
+    cmds:
+      - npx playwright test --project="Microsoft Edge" --headed
+
+  report:
+    desc: Generate Playwright report
+    cmds:
+      - npx playwright show-report --port=9324
+
+  install:
+    desc: Install dependencies
+    cmds:
+      - npm install

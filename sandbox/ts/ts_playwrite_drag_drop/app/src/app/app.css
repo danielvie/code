@@ -1,0 +1,104 @@
+.container {
+  font-family: sans-serif;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 10px;
+}
+
+.mode-switcher {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.mode-switcher button {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.mode-switcher button.active {
+  background-color: #00acc1;
+  color: white;
+  border-color: #00acc1;
+}
+
+.drag-source-container, .drop-target-container, .random-container {
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.random-area {
+  position: relative;
+  height: 400px;
+  border: 1px dashed #aaa;
+  background-color: #f0f8ff;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.random-item {
+  position: absolute;
+  font-size: 12px;
+  padding: 6px;
+  white-space: nowrap;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.draggable-item {
+  padding: 10px;
+  margin-bottom: 10px;
+  background-color: #e0f7fa;
+  border: 1px solid #00acc1;
+  border-radius: 4px;
+  cursor: grab;
+  user-select: none;
+}
+
+.draggable-item:active {
+  cursor: grabbing;
+}
+
+.drop-zone {
+  min-height: 150px;
+  border: 2px dashed #999;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fafafa;
+  transition: background-color 0.2s;
+}
+
+.drop-zone.drag-over {
+  background-color: #e8f5e9;
+  border-color: #4caf50;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  width: 100%;
+}
+
+li {
+  padding: 8px;
+  background-color: #fff;
+  border: 1px solid #ddd;
+  margin-bottom: 5px;
+  border-radius: 4px;
+}
