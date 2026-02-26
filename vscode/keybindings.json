@@ -1,33 +1,141 @@
 // Place your key bindings in this file to override the defaults
 [
-    {
-        "key": "ctrl+p",
-        "command": "-workbench.action.quickOpen"
-    },
-    {
-        "key": "alt+p",
-        "command": "workbench.action.quickOpen"
-    },
-    {
-        "key": "ctrl+b",
-        "command": "-workbench.action.toggleSidebarVisibility"
-    },
-    {
-        "key": "alt+b",
-        "command": "workbench.action.toggleSidebarVisibility"
-    },
-    {
-        "key": "alt+x",
-        "command": "workbench.action.closeActiveEditor",
-    },
-    {
-        "key": "alt+t",
-        "command": "editor.action.selectAll"
-    },
-    {
-        "key": "alt+d",
-        "command": "vscode-neovim.send",
-        "args": "<A-d>",
-        "when": "editorFocus && neovim.init"
-    }
+  {
+    "key": "ctrl+0",
+    "command": "-workbench.action.lastEditorInGroup"
+  },
+  {
+    "key": "ctrl+s",
+    "command": "workbench.action.files.save"
+  },
+  {
+    "key": "alt+space",
+    "command": "editor.action.triggerSuggest",
+    "when": "editorHasCompletionItemProvider && textInputFocus && !editorReadonly && !suggestWidgetVisible"
+  },
+  {
+    "key": "cmd+9",
+    "command": "workbench.action.terminal.focus"
+  },
+  {
+    "key": "ctrl+q",
+    "command": "-extension.vim_winCtrlQ",
+    "when": "editorTextFocus && vim.active && vim.use<C-q> && !inDebugRepl"
+  },
+  {
+    "key": "alt+p",
+    "command": "workbench.action.quickOpen"
+  },
+  {
+    "key": "alt+w",
+    "command": "workbench.action.closeActiveEditor"
+  },
+  {
+    "key": "alt+x",
+    "command": "workbench.action.closeActiveEditor"
+  },
+  {
+    "key": "alt+j",
+    "command": "vscode-harpoon.gotoEditor1",
+  },
+  {
+    "key": "alt+k",
+    "command": "vscode-harpoon.gotoEditor2",
+  },
+  {
+    "key": "alt+l",
+    "command": "vscode-harpoon.gotoEditor3",
+  },
+  {
+    "key": "alt+;",
+    "command": "vscode-harpoon.gotoEditor4",
+  },
+  {
+    "key": "ctrl+y",
+    "command": "acceptSelectedSuggestion",
+    "when": "suggestWidgetVisible && textInputFocus",
+  },
+  {
+    "key": "ctrl+y",
+    "command": "editor.action.inlineSuggest.commit",
+    "when": "editorTextFocus && inlineSuggestionVisible",
+  },
+  {
+    "key": "alt+o",
+    "command": "workbench.action.files.openFile",
+  },
+  {
+    "key": "alt+b",
+    "command": "workbench.action.toggleSidebarVisibility"
+  },
+  {
+    "key": "ctrl+p",
+    "command": "-workbench.action.quickOpen"
+  },
+  {
+    "key": "alt+r",
+    "command": "workbench.action.showAllSymbols"
+  },
+  {
+    "key": "ctrl+n",
+    "command": "-workbench.action.files.newUntitledFile"
+  },
+  {
+    "key": "alt+a",
+    "command": "-editor.action.accessibilityHelpConfigureAssignedKeybindings",
+    "when": "accessibilityHelpIsShown && accessibleViewHasAssignedKeybindings"
+  },
+  // navigation
+  {
+    "key": "ctrl+h",
+    "command": "workbench.action.focusLeftGroup",
+  },
+  {
+    "key": "ctrl+l",
+    "command": "workbench.action.focusRightGroup",
+  },
+  {
+    "key": "ctrl+k",
+    "command": "workbench.action.focusAboveGroup",
+  },
+  {
+    "key": "ctrl+j",
+    "command": "workbench.action.focusBelowGroup",
+  },
+  {
+    "key": "ctrl+j",
+    "command": "workbench.action.navigateDown",
+    "when": "!terminalFocus && neovim.mode != 'cmdline'"
+  },
+  {
+    "key": "ctrl+k",
+    "command": "workbench.action.navigateUp",
+    "when": "terminalFocus"
+  },
+
+  // neovim send
+  {
+    "key": "alt+t",
+    "command": "vscode-neovim.send",
+    "args": "<a-t>",
+    "when": "editorTextFocus && neovim.init"
+  },
+  {
+    "key": "j",
+    "command": "vscode-neovim.send",
+    "args": "gj",
+    "when": "editorTextFocus && neovim.init"
+  },
+  {
+    "key": "k",
+    "command": "vscode-neovim.send",
+    "args": "gk",
+    "when": "editorTextFocus && neovim.init"
+  },
+  {
+    "key": "alt+d",
+    "command": "vscode-neovim.send",
+    "args": "<A-d>",
+    "when": "editorFocus && neovim.init"
+  },
 ]
