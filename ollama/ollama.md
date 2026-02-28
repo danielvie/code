@@ -40,3 +40,6 @@ download model
 ```powershell
 curl -I https://registry.ollama.ai/v2/library/qwen3.5/blobs/sha256:7935de6e08f9444536d0edcacf19d2166b34bef8ddb4ac7ce9263ff5cad0693b
 ```
+```powershell
+curl -I https://registry.ollama.ai/v2/library/qwen3.5/blobs/sha256:7935de6e08f9444536d0edcacf19d2166b34bef8ddb4ac7ce9263ff5cad0693b
+```
