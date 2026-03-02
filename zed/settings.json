@@ -7,120 +7,220 @@
 // custom settings, run `zed: open default settings` from the
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
-  "edit_predictions": {
-    "mode": "subtle",
-  },
-  // "ui_font_family": "JetBrainsMono Nerd Font",
-  "terminal": {
-    "font_family": "JetBrainsMono Nerd Font",
-  },
-  "agent": {
-    "always_allow_tool_actions": true,
-    "default_model": {
-      "provider": "copilot_chat",
-      "model": "gemini-3-pro-preview",
-    },
-    "model_parameters": [],
-  },
-  "disable_ai": true,
-
-  "features": {
-    "edit_prediction_provider": "copilot",
-  },
-
-  "vim_mode": true,
-  "ui_font_size": 18.0,
-  "buffer_font_size": 15.0,
+  // --- UI and Appearance ---
   "theme": {
     "mode": "system",
     "light": "One Light",
-    "dark": "One Dark Pro",
+    "dark": "One Dark Pro"
   },
-  "vim": {
-    "toggle_relative_line_numbers": true,
+  "icon_theme": "Warm Charmed Icons",
+  "colorize_brackets": true,
+  "ui_font_size": 18.0,
+  "buffer_font_size": 15.0,
+  "buffer_font_features": { // ligatures
+    "calt": true
   },
+  "theme_overrides": {
+    "One Dark Pro": {
+      "border.variant": "#23272a",
+      "border": "#23272a",
+      // "players": [
+      //   {
+      //     "cursor": "#ae68ff",
+      //   }
+      // ]
+      "syntax": {
+        "comment": {
+          "font_style": "italic"
+        }
+      }
+    }
+  },
+  "title_bar": {
+    "show_onboarding_banner": false,
+    "show_sign_in": false,
+  },
+  "project_panel": {
+    "dock": "right"
+  },
+  "buffer_line_height": {
+    "custom": 2,
+  },
+  "agent_buffer_font_size": 17,
+  // "agent_ui_font_size": 20,
 
+  // --- Editor and Behavior ---
+  // --- Editor and Behavior ---
+  // --- Editor and Behavior ---
+  // --- Editor and Behavior ---
+  // --- Editor and Behavior ---
+  "vim_mode": true,
+  "multi_cursor_modifier": "cmd_or_ctrl",
+  "vim": {
+    "toggle_relative_line_numbers": true
+  },
   "diagnostics": {
     "inline": {
-      "enabled": true,
-    },
+      "enabled": true
+    }
+  },
+  "terminal": {
+    "font_family": "JetBrainsMono Nerd Font"
   },
 
+  // --- AI and Language Models ---
+  "agent": {
+    "default_profile": "ask",
+    "default_model": {
+      "provider": "copilot_chat",
+      "model": "gemini-3-flash-preview"
+    },
+    "favorite_models": [],
+    "model_parameters": []
+  },
+  "edit_predictions": {
+    "provider": "copilot",
+    "mode": "subtle",
+    "open_ai_compatible_api": {
+      "api_url": "http://localhost:11434/v1/completions",
+      "model": "deepseek-coder:6.7b",
+      "prompt_format": "infer",
+      "max_output_tokens": 64
+    }
+  },
+  "language_models": {
+    "openai_compatible": {
+      "llama.cpp": {
+        "api_url": "http://127.0.0.1:8033/v1",
+        "available_models": [
+          {
+            "name": "unsloth/Phi-4-mini-instruct-GGUF",
+            "max_tokens": 200000,
+            "max_output_tokens": 32000,
+            "max_completion_tokens": 200000,
+            "capabilities": {
+              "tools": true,
+              "images": false,
+              "parallel_tool_calls": false,
+              "prompt_cache_key": false,
+              "chat_completions": true
+            }
+          }
+        ]
+      },
+      "LM-Studio": {
+        "api_url": "http://localhost:1234/v1",
+        "available_models": [
+          {
+            "name": "qwen/qwen3-4b-thinking-2507",
+            "display_name": "Qwen3-4B-Thinking",
+            "max_tokens": 8192
+          }
+        ]
+      }
+    }
+  },
+
+  // --- Languages ---
   "languages": {
     "Python": {
-      "language_servers": ["pyright", "ruff"],
+      "language_servers": [
+        "pyright",
+        "ruff"
+      ],
+      "format_on_save": "on"
     },
     "CSS": {
       "language_servers": [
         "tailwindcss-intellisense-css",
-        "!vscode-css-language-server",
-      ],
+        "!vscode-css-language-server"
+      ]
+    },
+    "C": {
+      "format_on_save": "off"
+    },
+    "C++": {
+      "format_on_save": "off"
     },
     "PowerShell": {
-      "format_on_save": "off",
+      "format_on_save": "off"
     },
     "LaTeX": {
-      "format_on_save": "off",
-    },
+      "format_on_save": "off"
+    }
   },
 
+  // --- LSP Configuration ---
   "lsp": {
     "vtsls": {
       "settings": {
         "typescript": {
           "updateImportsOnFileMove": {
-            "enabled": "always",
-          },
+            "enabled": "always"
+          }
         },
         "javascript": {
           "updateImportsOnFileMove": {
-            "enabled": "always",
-          },
-        },
+            "enabled": "always"
+          }
+        }
       },
-      "enable_lsp_tasks": true,
+      "enable_lsp_tasks": true
     },
     "texlab": {
       "settings": {
         "texlab": {
-          // ...
           "build": {
             "onSave": true,
-            "forwardSearchAfter": true,
+            "forwardSearchAfter": true
           },
           "forwardSearch": {
             "executable": "SumatraPDF.exe",
-            "args": ["-reuse-instance", "%p", "-forward-search", "%f", "%l"],
-          },
-        },
-      },
+            "args": [
+              "-reuse-instance",
+              "%p",
+              "-forward-search",
+              "%f",
+              "%l"
+            ]
+          }
+        }
+      }
     },
     "tailwindcss-language-server": {
       "settings": {
-        "classFunctions": ["cva", "cx"],
+        "classFunctions": [
+          "cva",
+          "cx"
+        ],
         "experimental": {
-          "classRegex": ["[cls|className]\\s\\:\\=\\s\"([^\"]*)"],
-        },
-      },
+          "classRegex": [
+            "[cls|className]\\s\\:\\=\\s\"([^\"]*)"
+          ]
+        }
+      }
     },
     "matlab-language-server": {
       "settings": {
         "installPath": "C:/Program Files/MATLAB/R2024a",
         "indexWorkspace": true,
         "matlabConnectionTiming": "onStart",
-        "telemetry": false,
-      },
+        "telemetry": false
+      }
     },
     "clangd": {
       "initialization_options": {
-        "fallbackFlags": ["-I", "main/include"],
-        "compilationDatabasePath": "build",
+        "fallbackFlags": [
+          "-I",
+          "main/include"
+        ],
+        "compilation_databasePath": "build"
       },
-      "arguments": [
-        "--compile-commands-dir=build",
-        "--all-scopes-completion",
-        "--header-insertion=never",
-      ],
-    },
-  },
+      "binary": {
+        "arguments": [
+          "--header-insertion=never"
+        ]
+      }
+    }
+  }
 }
