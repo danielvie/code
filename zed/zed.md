@@ -7,6 +7,11 @@
 - LOG
 - HTML Snippets
 
+# useful
+json prettier:
+```
+alt+shift+f
+```
 
 # extension path
 
