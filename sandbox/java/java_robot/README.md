@@ -31,7 +31,12 @@ included HTML test page.
 ├── Taskfile.yml
 ├── template_drag.png
 ├── template_drop.png
-└── test_page.html
+├── debug_view.png
+├── test_page.html
+└── java_robot.zip
+
+Notes:
+- `DragDropBot.class` is a compiled artifact checked into `src/main/java`. It is not required to build/run via Maven.
 
 ---
 
@@ -39,47 +44,64 @@ included HTML test page.
 
 - Java JDK 17
 - Maven 3.6+
-- SikuliX 2.0.5
-
-## How the Automation Works
-
-The DragDropBot supports two automation modes.
-
-### 1. Image-Based Drag & Drop
-
-- Uses template_drag.png and template_drop.png
-- Matches elements visually using similarity thresholds
-- Best for icons, buttons, and non-text UI
-
-Method used:
-
-runImageBasedDragDrop()
+- SikuliX 2.0.5 (`com.sikulix:sikulixapi:2.0.5`)
 
 ---
 
-### 2. Text-Based Drag & Drop (OCR)
+## How the Automation Works
 
-- Uses SikuliX OCR to locate text on screen
-- Offsets can be applied for precise drop locations
-- Best for labels, tables, and dynamic UI text
+`DragDropBot` uses SikuliX to find UI elements on the current screen and perform a drag-and-drop via `Screen.dragDrop(...)`.
 
-Method used:
+The bot supports two automation modes:
 
-runTextBasedDragDrop()
+### 1) Image-Based Drag & Drop (Template Matching)
+
+- Uses `template_drag.png` and `template_drop.png`
+- Searches the desktop for visual matches using similarity thresholds (currently `0.80`)
+- Highlights matches briefly and prints basic status
+- Best for icons, buttons, and non-text UI
+
+Method:
+- `runImageBasedDragDrop()`
+
+### 2) Text-Based Drag & Drop (OCR)
+
+- Uses SikuliX OCR via `screen.find("<text>")` to locate text on screen
+- Highlights matches and prints match coordinates (X/Y/Width/Height/Center)
+- Uses configurable offsets to compute exact drag/drop points
+
+Method:
+- `runTextBasedDragDrop()`
+
+Current defaults in code:
+- Source text: `ACTUATOR-SYS-1`
+- Target text: `Working Set Info`
+- Target offset: `+100` on Y (drops below the matched target text)
+
+---
+
+## Switching Modes
+
+In `DragDropBot.main(...)`, you enable one mode by calling:
+- `runImageBasedDragDrop()` (currently commented out), or
+- `runTextBasedDragDrop()` (currently enabled)
 
 ---
 
 ## Test Page
 
-The test_page.html file provides a simple drag-and-drop UI for testing.
+`test_page.html` provides a simple drag-and-drop UI for testing image-based automation.
 
 Behavior:
-- A green draggable box
-- A blue drop zone
-- Both elements randomly reposition themselves
-- Success is detected via collision logic
+- A green draggable box (“DRAG ME”)
+- A blue drop zone (“DROP ZONE”)
+- Both elements randomly reposition
+- Success is detected via collision logic and resets after a short delay
 
-Open test_page.html in a browser before running the bot.
+Usage:
+1. Open `test_page.html` in a browser.
+2. Ensure the window is visible (not minimized/covered).
+3. Run the bot using the image-based mode with the provided templates.
 
 ---
 
@@ -87,8 +109,26 @@ Open test_page.html in a browser before running the bot.
 
 ### Option 1: Run Using Maven (Recommended)
 
+From the project directory:
+
 mvn compile exec:java -Dexec.mainClass="DragDropBot"
 
-Using Taskfile alias:
+Or via Taskfile alias:
 
 task mv
+
+### Option 2: Run Using Taskfile (local jar)
+
+The `task main` / `task m` task compiles and runs using a locally available `sikulix.jar` on the classpath:
+
+- `task m`
+
+This path assumes `sikulix.jar` is present alongside the project (it is not provided by Maven and may not exist in this repository checkout).
+
+---
+
+## Troubleshooting Tips
+
+- SikuliX operates on what’s actually visible on the screen. Keep the target UI unobstructed.
+- If image matching fails, re-capture templates (`template_drag.png`, `template_drop.png`) for your display scaling/theme and adjust similarity thresholds in code.
+- If OCR matching fails, confirm the exact on-screen text and consider applying offsets or switching to image templates for more reliability.

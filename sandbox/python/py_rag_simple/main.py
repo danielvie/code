@@ -2,18 +2,19 @@ import os
 import sys
 from pathlib import Path
 
-from langchain_community.document_loaders import TextLoader, PyPDFLoader, Docx2txtLoader
-from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_chroma import Chroma
-from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_chroma import Chroma
+from langchain_community.document_loaders import Docx2txtLoader, PyPDFLoader, TextLoader
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_ollama import ChatOllama, OllamaEmbeddings
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 DATA_DIR = Path("data")
 DB_DIR = Path("chroma_db")
 MODEL_NAME = "hf.co/Qwen/Qwen3-8B-GGUF:Q6_K"
-EMBEDDING_MODEL = "nomic-embed-text"
+EMBEDDING_MODEL = "hf.co/nomic-ai/nomic-embed-text-v1.5-GGUF:Q8_0"
+
 
 def get_loader(file_path):
     ext = file_path.suffix.lower()
@@ -24,6 +25,7 @@ def get_loader(file_path):
     elif ext == ".docx":
         return Docx2txtLoader(str(file_path))
     return None
+
 
 def sync_documents(vector_store):
     indexed_files = set()
@@ -47,7 +49,7 @@ def sync_documents(vector_store):
         print(f"\nFound {len(new_files)} new document(s) in '{DATA_DIR}':")
         for f in new_files:
             print(f"  - {f.name}")
-            
+
         ans = input("Do you want to add them to the RAG system? [y/N] ")
         if ans.lower() in ["y", "yes"]:
             documents = []
@@ -62,12 +64,14 @@ def sync_documents(vector_store):
                         documents.extend(docs)
                     except Exception as e:
                         print(f"Failed to load {f.name}: {e}")
-            
+
             if documents:
                 print("Splitting documents...")
-                text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=1000, chunk_overlap=200
+                )
                 splits = text_splitter.split_documents(documents)
-                
+
                 print(f"Adding {len(splits)} chunks to vector store...")
                 vector_store.add_documents(documents=splits)
                 print("Documents added successfully.")
@@ -78,6 +82,7 @@ def sync_documents(vector_store):
     else:
         print("\nNo new documents found. Everything is up to date.")
 
+
 def list_documents(vector_store):
     try:
         db_data = vector_store.get()
@@ -86,7 +91,7 @@ def list_documents(vector_store):
             for meta in db_data["metadatas"]:
                 if meta and "source" in meta:
                     indexed_files.add(meta["source"])
-        
+
         if not indexed_files:
             print("\nNo documents currently indexed in the database.")
         else:
@@ -95,6 +100,7 @@ def list_documents(vector_store):
                 print(f"  - {Path(f).name}")
     except Exception as e:
         print(f"Error listing documents: {e}")
+
 
 def main():
     if not DATA_DIR.exists():
@@ -107,7 +113,7 @@ def main():
     vector_store = Chroma(
         collection_name="rag_collection",
         embedding_function=embeddings,
-        persist_directory=str(DB_DIR)
+        persist_directory=str(DB_DIR),
     )
 
     sync_documents(vector_store)
@@ -128,10 +134,12 @@ def main():
         "{context}"
     )
 
-    prompt = ChatPromptTemplate.from_messages([
-        ("system", system_prompt),
-        ("human", "{input}"),
-    ])
+    prompt = ChatPromptTemplate.from_messages(
+        [
+            ("system", system_prompt),
+            ("human", "{input}"),
+        ]
+    )
 
     question_answer_chain = create_stuff_documents_chain(llm, prompt)
     retriever = vector_store.as_retriever()
@@ -146,18 +154,18 @@ def main():
         except (KeyboardInterrupt, EOFError):
             print()
             break
-            
+
         if query.lower().strip() in ["exit", "quit", "q"]:
             break
 
         if query.lower().strip() == "/sync":
             sync_documents(vector_store)
             continue
-            
+
         if query.lower().strip() == "/list":
             list_documents(vector_store)
             continue
-            
+
         if not query.strip():
             continue
 
@@ -167,6 +175,7 @@ def main():
             print(f"A: {response['answer']}")
         except Exception as e:
             print(f"Error generating answer: {e}")
+
 
 if __name__ == "__main__":
     main()
