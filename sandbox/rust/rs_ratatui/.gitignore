@@ -1,0 +1,5 @@
+# ignore for rust
+
+
+target/
+**/*.rs.bk

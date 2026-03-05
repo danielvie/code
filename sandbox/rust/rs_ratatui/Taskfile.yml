@@ -1,0 +1,16 @@
+version: '3'
+
+tasks:
+
+  default:
+    deps: [main]
+
+  main:
+    aliases: [m]
+    cmds:
+     - cargo run 
+
+  build:
+    aliases: [b]
+    cmds:
+     - cargo build

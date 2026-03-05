@@ -1,0 +1,10 @@
+[package]
+name = "rs_ratatui"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+crossterm = "0.29.0"
+log = "0.4.29"
+ratatui = "0.30.0"
+tui-logger = { version = "0.18.1", features = ["crossterm"] }
