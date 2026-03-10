@@ -38,6 +38,11 @@ check ollama is listenning
 netstat -an | rg 11434
 ```
 
+send message to test
+```bash
+curl http://localhost:11434/api/generate -d '{"model": "qwen3.5:2b", "prompt": "Hi!", "stream": false}'
+```
+
 example:
 
 download manifest
