@@ -1,5 +1,3 @@
-import os
-import sys
 from pathlib import Path
 
 from langchain.chains import create_retrieval_chain
@@ -10,17 +8,21 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_ollama import ChatOllama, OllamaEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-DATA_DIR = Path("data")
-DB_DIR = Path("chroma_db")
-MODEL_NAME = "qwen3.5:2b"
+# ==========================================
+# 1. CONFIGURATION
+# ==========================================
+DATA_DIR = Path("data")          # Where your PDF, TXT, etc. files are located
+DB_DIR = Path("chroma_db")        # Where the vector store will be saved
+MODEL_NAME = "qwen3.5:2b"         # Model used for answering questions
+EMBEDDING_MODEL = "bge-m3:latest" # Model used to transform text into numbers (vectors)
 # EMBEDDING_MODEL = "nomic-embed-text:v1.5"
-EMBEDDING_MODEL = "bge-m3:latest"
 
-# MODEL_NAME = "hf.co/Qwen/Qwen3-8B-GGUF:Q6_K"
-# EMBEDDING_MODEL = "hf.co/nomic-ai/nomic-embed-text-v1.5-GGUF:Q8_0"
-
+# ==========================================
+# 2. DOCUMENT PROCESSING (Ingestion)
+# ==========================================
 
 def get_loader(file_path):
+    """Selects the correct loader based on the file extension."""
     ext = file_path.suffix.lower()
     if ext in [".txt", ".md"]:
         return TextLoader(str(file_path), encoding="utf-8")
@@ -30,160 +32,146 @@ def get_loader(file_path):
         return Docx2txtLoader(str(file_path))
     return None
 
+def ingest_documents(vector_store):
+    """Educational process: Load -> Split -> Add to Vector Store."""
+    
+    # Identify local files
+    available_files = [f for f in DATA_DIR.glob("**/*") 
+                       if f.is_file() and f.suffix.lower() in [".txt", ".md", ".pdf", ".docx"]]
+    
+    if not available_files:
+        print(f"Warning: No compatible files found in {DATA_DIR}")
+        return
 
-def sync_documents(vector_store):
-    indexed_files = set()
-    try:
-        db_data = vector_store.get()
-        if db_data and "metadatas" in db_data and db_data["metadatas"]:
-            for meta in db_data["metadatas"]:
-                if meta and "source" in meta:
-                    indexed_files.add(meta["source"])
-    except Exception as e:
-        print(f"Warning checking db: {e}")
+    # Ask before indexing (for user control)
+    print(f"\nFiles found: {[f.name for f in available_files]}")
+    ans = input("Do you want to (re)index these documents? [y/N] ")
+    if ans.lower() not in ["y", "yes"]:
+        return
 
-    available_files = []
-    for f in DATA_DIR.glob("**/*"):
-        if f.is_file() and f.suffix.lower() in [".txt", ".md", ".pdf", ".docx"]:
-            available_files.append(f)
+    documents = []
+    for f in available_files:
+        print(f"-> Loading: {f.name}")
+        loader = get_loader(f)
+        if loader:
+            try:
+                # Load file content
+                docs = loader.load()
+                # Add metadata to know the source later
+                for d in docs:
+                    d.metadata["source"] = f.name
+                documents.extend(docs)
+            except Exception as e:
+                print(f"Error loading {f.name}: {e}")
 
-    new_files = [f for f in available_files if str(f.absolute()) not in indexed_files]
+    if documents:
+        # CHUNKING: Break large texts into smaller pieces
+        # This helps the model focus only on relevant parts.
+        print("-> Splitting documents into chunks...")
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=800, 
+            chunk_overlap=100
+        )
+        splits = text_splitter.split_documents(documents)
 
-    if new_files:
-        print(f"\nFound {len(new_files)} new document(s) in '{DATA_DIR}':")
-        for f in new_files:
-            print(f"  - {f.name}")
+        # STORAGE: Send to ChromaDB
+        # Embeddings are automatically generated here by Chroma using Ollama
+        print(f"-> Adding {len(splits)} chunks to the vector store...")
+        vector_store.add_documents(documents=splits)
+        print("Success: Documents indexed.")
 
-        ans = input("Do you want to add them to the RAG system? [y/N] ")
-        if ans.lower() in ["y", "yes"]:
-            documents = []
-            for f in new_files:
-                loader = get_loader(f)
-                if loader:
-                    print(f"Loading {f.name}...")
-                    try:
-                        docs = loader.load()
-                        for d in docs:
-                            d.metadata["source"] = str(f.absolute())
-                        documents.extend(docs)
-                    except Exception as e:
-                        print(f"Failed to load {f.name}: {e}")
+# ==========================================
+# 3. RAG CORE (Retrieval & Generation Chain)
+# ==========================================
 
-            if documents:
-                print("Splitting documents...")
-                text_splitter = RecursiveCharacterTextSplitter(
-                    chunk_size=1000, chunk_overlap=200
-                )
-                splits = text_splitter.split_documents(documents)
+def setup_rag_chain(vector_store):
+    """Sets up the 'chain' that unites Retrieval and Generation."""
+    
+    # Initialize the Language Model (LLM)
+    # On macOS, we use streaming to prevent the app from appearing frozen.
+    llm = ChatOllama(
+        model=MODEL_NAME, 
+        temperature=0, 
+        streaming=True, # Response appears bit by bit
+        reasoning=False # Disable internal "thinking" mode if supported
+    )
 
-                print(f"Adding {len(splits)} chunks to vector store...")
-                vector_store.add_documents(documents=splits)
-                print("Documents added successfully.")
-            else:
-                print("No documents were loaded.")
-        else:
-            print("Skipped adding new documents.")
-    else:
-        print("\nNo new documents found. Everything is up to date.")
+    # Define the assistant's BEHAVIOR (Prompt)
+    system_prompt = (
+        "You are a helpful assistant. Use the CONTEXT below to answer the question.\n"
+        "If you don't know the answer, say you couldn't find the information.\n"
+        "Be direct and answer in at most 3 sentences.\n\n"
+        "CONTEXT:\n{context}"
+    )
 
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        ("human", "{input}"),
+    ])
 
-def list_documents(vector_store):
-    try:
-        db_data = vector_store.get()
-        indexed_files = set()
-        if db_data and "metadatas" in db_data and db_data["metadatas"]:
-            for meta in db_data["metadatas"]:
-                if meta and "source" in meta:
-                    indexed_files.add(meta["source"])
+    # Create the document processing chain
+    combine_docs_chain = create_stuff_documents_chain(llm, prompt)
+    
+    # Turn the vector store into a Retriever
+    retriever = vector_store.as_retriever(search_kwargs={"k": 3}) # Retrieve the 3 most similar chunks
 
-        if not indexed_files:
-            print("\nNo documents currently indexed in the database.")
-        else:
-            print(f"\nFound {len(indexed_files)} document(s) in the database:")
-            for f in sorted(list(indexed_files)):
-                print(f"  - {Path(f).name}")
-    except Exception as e:
-        print(f"Error listing documents: {e}")
+    # Join everything into a Retrieval Chain
+    return create_retrieval_chain(retriever, combine_docs_chain)
 
+# ==========================================
+# 4. INTERFACE AND EXECUTION (Main Loop)
+# ==========================================
 
 def main():
-    if not DATA_DIR.exists():
-        DATA_DIR.mkdir()
+    # Ensure directories exist
+    DATA_DIR.mkdir(exist_ok=True)
 
-    print("Initializing embeddings...")
+    print(f"--- Simple RAG System ---")
+    print(f"Model: {MODEL_NAME} | Embeddings: {EMBEDDING_MODEL}")
+
+    # Initialize LangChain components
     embeddings = OllamaEmbeddings(model=EMBEDDING_MODEL)
-
-    print("Initializing vector store...")
+    
     vector_store = Chroma(
-        collection_name="rag_collection",
+        collection_name="rag_learning_collection",
         embedding_function=embeddings,
         persist_directory=str(DB_DIR),
     )
 
-    sync_documents(vector_store)
+    # Initial ingestion
+    ingest_documents(vector_store)
 
-    print("\nInitializing model...")
-    # Initialize the LLM
-    try:
-        llm = ChatOllama(model=MODEL_NAME, temperature=0)
-    except Exception as e:
-        print(f"Failed to initialize LLM: {e}")
-        return
+    # Prepare the response chain
+    rag_chain = setup_rag_chain(vector_store)
 
-    system_prompt = (
-        "You are an assistant for question-answering tasks. "
-        "Use the following pieces of retrieved context to answer the question. "
-        "If you don't know the answer, say that you don't know. "
-        "Use three sentences maximum and keep the answer concise. "
-        "IMPORTANT: Do not include any internal reasoning, thinking process, or <thought> tags in your response.\n\n"
-        "{context}"
-    )
-
-    prompt = ChatPromptTemplate.from_messages(
-        [
-            ("system", system_prompt),
-            ("human", "{input}"),
-        ]
-    )
-
-    question_answer_chain = create_stuff_documents_chain(llm, prompt)
-    retriever = vector_store.as_retriever()
-    rag_chain = create_retrieval_chain(retriever, question_answer_chain)
-
-    print("\n--- RAG System Ready ---")
-    print("Available commands:")
-    print("  /sync         - Check for new documents in 'data/' and add them")
-    print("  /list         - List currently indexed documents")
-    print("  exit, quit, q - Stop the program")
-    print("\nType your questions below.")
-
+    print("\nReady! Type your question or 'exit' to quit.")
+    
     while True:
         try:
-            query = input("\nQ: ")
-        except (KeyboardInterrupt, EOFError):
-            print()
+            query = input("\nYOU: ").strip()
+        except EOFError:
             break
-
-        if query.lower().strip() in ["exit", "quit", "q"]:
+            
+        if query.lower() in ["exit", "quit", "q", "sair"]:
             break
-
-        if query.lower().strip() == "/sync":
-            sync_documents(vector_store)
+        if not query:
             continue
 
-        if query.lower().strip() == "/list":
-            list_documents(vector_store)
-            continue
-
-        if not query.strip():
-            continue
-
+        print("ASSISTANT: ", end="", flush=True)
+        
         try:
-            response = rag_chain.invoke({"input": query})
-            print(f"A: {response['answer']}")
+            # The 'for' loop allows printing each piece of the response as it arrives.
+            full_response = ""
+            for chunk in rag_chain.stream({"input": query}):
+                # The streaming response comes in chunks
+                if "answer" in chunk:
+                    content = chunk["answer"]
+                    print(content, end="", flush=True)
+                    full_response += content
+            print() # New line at the end
+            
         except Exception as e:
-            print(f"Error generating answer: {e}")
-
+            print(f"\nError generating answer: {e}")
 
 if __name__ == "__main__":
     main()
