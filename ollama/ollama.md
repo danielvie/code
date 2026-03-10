@@ -43,6 +43,11 @@ send message to test
 curl http://localhost:11434/api/generate -d '{"model": "qwen3.5:2b", "prompt": "Hi!", "stream": false}'
 ```
 
+send message to test (powershell)
+```powershell
+Invoke-RestMethod -Uri "http://localhost:11434/api/generate" -Method Post -Body (@{model="qwen3.5:2b"; prompt="Hi!"; stream=$false} | ConvertTo-Json) -ContentType "application/json"
+```
+
 example:
 
 download manifest
