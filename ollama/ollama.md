@@ -28,6 +28,10 @@ $env:HTTPS_PROXY = "https://your-proxy:port"
 $env:NO_PROXY = "127.0.0.1,localhost"
 ```
 
+check ollama is listenning
+```powershell
+netstat -an | rg 11434
+```
 
 example:
 
