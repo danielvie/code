@@ -1,8 +1,4 @@
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
-
-/** @type {import("@sveltejs/vite-plugin-svelte").SvelteConfig} */
-export default {
-  // Consult https://svelte.dev/docs#compile-time-svelte-preprocess
-  // for more information about preprocessors
-  preprocess: vitePreprocess(),
-}
+// Svelte has been removed from this client project.
+// This file is intentionally kept as a no-op to avoid tooling/scripts
+// that may still reference `svelte.config.js` from failing.
+export default {};

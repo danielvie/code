@@ -1,26 +1,24 @@
-import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import tailwindcss from '@tailwindcss/vite'
+/// <reference types="vitest" />
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tailwindcss from "@tailwindcss/vite";
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    svelte(),
-    tailwindcss()
-  ],
+  plugins: [react(), tailwindcss()],
   server: {
-    host: '127.0.0.1',
+    host: "127.0.0.1",
     port: 3000,
     strictPort: false,
     proxy: {
-      '/catalog': {
-        target: 'http://127.0.0.1:8080',
-        changeOrigin: true
+      "/catalog": {
+        target: "http://127.0.0.1:8080",
+        changeOrigin: true,
       },
-      '/provider': {
-        target: 'http://127.0.0.1:8080',
-        changeOrigin: true
-      }
-    }
-  }
-})
+      "/provider": {
+        target: "http://127.0.0.1:8080",
+        changeOrigin: true,
+      },
+    },
+  },
+});
