@@ -12,8 +12,12 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 DATA_DIR = Path("data")
 DB_DIR = Path("chroma_db")
-MODEL_NAME = "hf.co/Qwen/Qwen3-8B-GGUF:Q6_K"
-EMBEDDING_MODEL = "hf.co/nomic-ai/nomic-embed-text-v1.5-GGUF:Q8_0"
+MODEL_NAME = "qwen3.5:2b"
+# EMBEDDING_MODEL = "nomic-embed-text:v1.5"
+EMBEDDING_MODEL = "bge-m3:latest"
+
+# MODEL_NAME = "hf.co/Qwen/Qwen3-8B-GGUF:Q6_K"
+# EMBEDDING_MODEL = "hf.co/nomic-ai/nomic-embed-text-v1.5-GGUF:Q8_0"
 
 
 def get_loader(file_path):
@@ -130,7 +134,8 @@ def main():
         "You are an assistant for question-answering tasks. "
         "Use the following pieces of retrieved context to answer the question. "
         "If you don't know the answer, say that you don't know. "
-        "Use three sentences maximum and keep the answer concise.\n\n"
+        "Use three sentences maximum and keep the answer concise. "
+        "IMPORTANT: Do not include any internal reasoning, thinking process, or <thought> tags in your response.\n\n"
         "{context}"
     )
 
@@ -146,7 +151,11 @@ def main():
     rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
     print("\n--- RAG System Ready ---")
-    print("Type your questions below. Type 'exit' or 'quit' to stop.")
+    print("Available commands:")
+    print("  /sync         - Check for new documents in 'data/' and add them")
+    print("  /list         - List currently indexed documents")
+    print("  exit, quit, q - Stop the program")
+    print("\nType your questions below.")
 
     while True:
         try:
@@ -169,7 +178,6 @@ def main():
         if not query.strip():
             continue
 
-        print("Thinking...")
         try:
             response = rag_chain.invoke({"input": query})
             print(f"A: {response['answer']}")
