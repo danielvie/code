@@ -11,8 +11,8 @@
     "context": "Workspace",
     "bindings": {
       "alt-x": "pane::CloseActiveItem",
-      "alt-v": "workspace::ToggleLeftDock",
-      "alt-b": "workspace::ToggleRightDock",
+      "alt-b": "workspace::ToggleLeftDock",
+      "alt-n": "workspace::ToggleRightDock",
       "ctrl-p": null,
       "alt-p": "file_finder::Toggle"
     }
@@ -46,10 +46,16 @@
     "context": "!Editor && !Terminal",
     "bindings": {
       "shift-h": "pane::ActivatePreviousItem",
-      "shift-l": "pane::ActivateNextItem"
+      "shift-l": "pane::ActivateNextItem",
     }
   },
-
+  {
+    "context": "AgentPanel",
+    "bindings": {
+      "ctrl-h": "workspace::ActivatePaneLeft"
+    }
+  },
+  
   // Vim Normal Mode
   {
     "context": "Editor && vim_mode == normal && !VimWaiting",
@@ -135,8 +141,8 @@
     "context": "Terminal",
     "bindings": {
       "ctrl-k": "workspace::ActivatePaneUp",
-      "ctrl-h": "pane::ActivatePreviousItem",
-      "ctrl-l": "pane::ActivateNextItem",
+      "alt-h": "pane::ActivatePreviousItem",
+      "alt-l": "pane::ActivateNextItem",
       "alt-b": "workspace::ToggleLeftDock",
       "shift-down": "pane::ActivatePreviousItem",
       "shift-up": "pane::ActivateNextItem"
