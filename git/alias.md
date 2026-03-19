@@ -30,7 +30,8 @@
     getbr       = "!f() { git co -b temp_Branch_D0nV1; git co $1; git res temp_Branch_D0nV1; git br -D temp_Branch_D0nV1; }; f"
     gettag      = "!f() { git tag -d $1; git tag $1; }; f"
     li          = ll -n 1
-    ll          = log --pretty=tformat:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr, %cs) %C(bold blue)<%an>%Creset' --abbrev-commit --decorate=full
+    ll          = log --pretty=tformat:'%Cred%h%Creset - %C(yellow)%d%Creset %s %Cgreen(%cd, %cr) %C(bold blue)<%an>%Creset' --abbrev-commit --decorate=full --date=format:'%Y-%m-%d %H:%M'
+
     lla         = log --color --graph --all --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
     new         = ll origin/main..HEAD
     last        = log -1 HEAD --stat
