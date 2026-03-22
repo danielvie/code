@@ -1,0 +1,8 @@
+{
+  "name": "calculator",
+  "dependencies": {
+    "@math/add": "workspace:*",
+    "@math/sub": "workspace:*",
+    "@math/mult": "workspace:*"
+  }
+}

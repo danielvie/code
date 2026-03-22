@@ -1,0 +1,16 @@
+[project]
+name = "calculator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "add",
+    "mult",
+    "sub",
+]
+
+[tool.uv.sources]
+add = { workspace = true }
+sub = { workspace = true }
+mult = { workspace = true }

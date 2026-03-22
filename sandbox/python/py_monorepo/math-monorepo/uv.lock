@@ -1,0 +1,49 @@
+version = 1
+revision = 3
+requires-python = ">=3.14"
+
+[manifest]
+members = [
+    "add",
+    "calculator",
+    "math-monorepo",
+    "mult",
+    "sub",
+]
+
+[[package]]
+name = "add"
+version = "0.1.0"
+source = { editable = "packages/add" }
+
+[[package]]
+name = "calculator"
+version = "0.1.0"
+source = { virtual = "apps/calculator" }
+dependencies = [
+    { name = "add" },
+    { name = "mult" },
+    { name = "sub" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "add", editable = "packages/add" },
+    { name = "mult", editable = "packages/mult" },
+    { name = "sub", editable = "packages/sub" },
+]
+
+[[package]]
+name = "math-monorepo"
+version = "0.1.0"
+source = { editable = "." }
+
+[[package]]
+name = "mult"
+version = "0.1.0"
+source = { editable = "packages/mult" }
+
+[[package]]
+name = "sub"
+version = "0.1.0"
+source = { editable = "packages/sub" }
