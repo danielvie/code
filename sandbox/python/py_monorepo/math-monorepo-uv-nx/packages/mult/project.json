@@ -1,0 +1,13 @@
+{
+  "name": "math-mult",
+  "projectType": "library",
+  "sourceRoot": "packages/mult/src",
+  "targets": {
+    "test": {
+      "command": "uv run pytest",
+      "options": {
+        "cwd": "packages/mult"
+      }
+    }
+  }
+}

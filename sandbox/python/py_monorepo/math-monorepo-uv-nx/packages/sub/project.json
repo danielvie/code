@@ -1,0 +1,13 @@
+{
+  "name": "math-sub",
+  "projectType": "library",
+  "sourceRoot": "packages/sub/src",
+  "targets": {
+    "test": {
+      "command": "uv run pytest",
+      "options": {
+        "cwd": "packages/sub"
+      }
+    }
+  }
+}

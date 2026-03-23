@@ -1,0 +1,11 @@
+{
+  "name": "math-monorepo-python",
+  "private": true,
+  "scripts": {
+    "build": "nx run-many --target=build",
+    "test": "nx run-many --target=test"
+  },
+  "devDependencies": {
+    "nx": "latest"
+  }
+}

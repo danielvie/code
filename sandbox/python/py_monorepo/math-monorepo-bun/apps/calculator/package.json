@@ -4,5 +4,8 @@
     "@math/add": "workspace:*",
     "@math/sub": "workspace:*",
     "@math/mult": "workspace:*"
+  },
+  "scripts": {
+    "start": "bun run index.ts"
   }
 }

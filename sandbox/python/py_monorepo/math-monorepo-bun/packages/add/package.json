@@ -1,5 +1,8 @@
 {
   "name": "@math/add",
   "version": "0.1.0",
-  "main": "index.ts"
+  "main": "index.ts",
+  "scripts": {
+    "test": "bun test"
+  }
 }

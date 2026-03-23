@@ -1,0 +1,13 @@
+{
+  "name": "math-add",
+  "projectType": "library",
+  "sourceRoot": "packages/add/src",
+  "targets": {
+    "test": {
+      "command": "uv run pytest",
+      "options": {
+        "cwd": "packages/add"
+      }
+    }
+  }
+}

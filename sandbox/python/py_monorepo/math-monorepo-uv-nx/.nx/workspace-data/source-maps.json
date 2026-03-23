@@ -1,0 +1,170 @@
+{
+  "apps/calculator": {
+    "root": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run.options": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run.executor": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run.options.cwd": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.run.options.command": [
+      "apps/calculator/project.json",
+      "nx/core/project-json"
+    ]
+  },
+  "packages/add": {
+    "root": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.cwd": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.command": [
+      "packages/add/project.json",
+      "nx/core/project-json"
+    ]
+  },
+  "packages/mult": {
+    "root": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.cwd": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.command": [
+      "packages/mult/project.json",
+      "nx/core/project-json"
+    ]
+  },
+  "packages/sub": {
+    "root": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "name": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "projectType": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "sourceRoot": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "targets": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.executor": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.cwd": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ],
+    "targets.test.options.command": [
+      "packages/sub/project.json",
+      "nx/core/project-json"
+    ]
+  }
+}

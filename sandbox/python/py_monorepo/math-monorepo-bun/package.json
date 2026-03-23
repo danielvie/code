@@ -8,7 +8,8 @@
     "apps/*"
   ],
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "nx": "^22.6.1"
   },
   "peerDependencies": {
     "typescript": "^5"

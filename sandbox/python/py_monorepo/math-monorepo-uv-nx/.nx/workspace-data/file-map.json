@@ -1,0 +1,137 @@
+{
+  "version": "6.0",
+  "nxVersion": "22.6.1",
+  "pathMappings": {},
+  "nxJsonPlugins": [],
+  "fileMap": {
+    "nonProjectFiles": [
+      {
+        "file": ".gitignore",
+        "hash": "15279700598832703138"
+      },
+      {
+        "file": "README.md",
+        "hash": "3817158084611301019"
+      },
+      {
+        "file": "bun.lock",
+        "hash": "4046284818176288754"
+      },
+      {
+        "file": "nx.json",
+        "hash": "15341175318510063427"
+      },
+      {
+        "file": "package.json",
+        "hash": "18394512070717657547"
+      },
+      {
+        "file": "pyproject.toml",
+        "hash": "14308275460239048579"
+      },
+      {
+        "file": "src/math_monorepo/__init__.py",
+        "hash": "1964217751167712602"
+      },
+      {
+        "file": "src/math_monorepo/py.typed",
+        "hash": "3244421341483603138"
+      },
+      {
+        "file": "uv.lock",
+        "hash": "74799457391949510"
+      }
+    ],
+    "projectFileMap": {
+      "math-sub": [
+        {
+          "file": "packages/sub/README.md",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/sub/project.json",
+          "hash": "963003718134953920"
+        },
+        {
+          "file": "packages/sub/pyproject.toml",
+          "hash": "17276266279296698687"
+        },
+        {
+          "file": "packages/sub/src/sub/__init__.py",
+          "hash": "13250857560565357717"
+        },
+        {
+          "file": "packages/sub/src/sub/py.typed",
+          "hash": "3244421341483603138"
+        }
+      ],
+      "math-add": [
+        {
+          "file": "packages/add/README.md",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/add/project.json",
+          "hash": "14050023509933737878"
+        },
+        {
+          "file": "packages/add/pyproject.toml",
+          "hash": "14064857516093703037"
+        },
+        {
+          "file": "packages/add/src/add/__init__.py",
+          "hash": "12550501205153973294"
+        },
+        {
+          "file": "packages/add/src/add/logic.py",
+          "hash": "2921146721178595516"
+        },
+        {
+          "file": "packages/add/src/add/py.typed",
+          "hash": "3244421341483603138"
+        }
+      ],
+      "calculator": [
+        {
+          "file": "apps/calculator/README.md",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "apps/calculator/main.py",
+          "hash": "2986834792312174108"
+        },
+        {
+          "file": "apps/calculator/project.json",
+          "hash": "15408838874228467216"
+        },
+        {
+          "file": "apps/calculator/pyproject.toml",
+          "hash": "16212744479043671302"
+        }
+      ],
+      "math-mult": [
+        {
+          "file": "packages/mult/README.md",
+          "hash": "3244421341483603138"
+        },
+        {
+          "file": "packages/mult/project.json",
+          "hash": "8961342019118945917"
+        },
+        {
+          "file": "packages/mult/pyproject.toml",
+          "hash": "3812497100873463673"
+        },
+        {
+          "file": "packages/mult/src/mult/__init__.py",
+          "hash": "5200687754020218495"
+        },
+        {
+          "file": "packages/mult/src/mult/py.typed",
+          "hash": "3244421341483603138"
+        }
+      ]
+    }
+  },
+  "externalNodesHash": "3309321836654793037"
+}

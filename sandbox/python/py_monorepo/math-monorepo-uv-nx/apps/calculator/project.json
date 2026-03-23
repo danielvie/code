@@ -1,0 +1,14 @@
+{
+  "name": "calculator",
+  "projectType": "application",
+  "sourceRoot": "apps/calculator/src",
+  "targets": {
+    "run": {
+      "command": "uv run main.py",
+      "options": {
+        "cwd": "apps/calculator"
+      }
+    }
+  }
+}
+
