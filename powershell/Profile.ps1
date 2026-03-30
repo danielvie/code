@@ -8,7 +8,6 @@
 
 # Starship Prompt
 Invoke-Expression (&starship init powershell)
-$env:STARSHIP_ASYNC = $false
 
 # Zoxide (using zz for navigation, leaving z for zed)
 if (Get-Command zoxide -ErrorAction SilentlyContinue) {
@@ -131,8 +130,7 @@ function FZF_go_to_projects {
     $search = GetProjects | fzf --tac
     if ($search) {
         zz $search
-        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
     }
 }
 
@@ -176,10 +174,7 @@ Set-PSReadlineKeyHandler -Chord 'Ctrl+o' -ScriptBlock { FZF_open_project_with_ze
 Set-PSReadlineKeyHandler -Chord 'Ctrl+f' -ScriptBlock {
     $search = fd -t f -d 5 | fzf --tac --ansi --preview 'bat --color=always --style=numbers --line-range=:500 {}'
     if ($search) {
-        $command = "v $search"
-        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-        [Microsoft.PowerShell.PSConsoleReadLine]::Insert($command)
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        nvim $search
     }
 }
 
@@ -188,8 +183,7 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+d' -ScriptBlock {
     $search = fd -t d -d 8 | fzf --tac
     if ($search) {
         Set-Location $search
-        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
     }
 }
 
@@ -198,8 +192,7 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+u' -ScriptBlock {
     $search = fd -t d -d 4 -u | fzf --tac
     if ($search) {
         Set-Location $search
-        [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
-        [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
+        [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
     }
 }
 
@@ -249,4 +242,3 @@ function a         { . .venv/Scripts/activate.ps1 }
 function lserver   { llama-server $args -ngl 99 --port 8033 }
 function cr_fun    { code -r . }
 function zr_fun    { zed -r . }
-
