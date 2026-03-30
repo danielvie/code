@@ -67,6 +67,9 @@
     }
   },
   
+  "experimental.theme_overrides": {
+    "terminal.ansi.blue": "#297F96",
+  },
   "terminal": {
     "font_family": "JetBrainsMono Nerd Font",
     "toolbar": {
