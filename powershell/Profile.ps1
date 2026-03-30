@@ -49,7 +49,7 @@ function gmail {
 # ------------------------------------------------------------------------------
 
 # File exploration & search
-function pilot { C:\Users\daniel\AppData\Local\Voidstar\FilePilot\FPilot.exe $args }
+function pilot { & $env:LOCALAPPDATA/Voidstar/FilePilot/FPilot.exe $args }
 function e     { pilot $args }
 function ee    { explorer $args }
 
