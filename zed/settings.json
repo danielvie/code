@@ -8,6 +8,12 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   // --- UI and Appearance ---
+  "git_panel": {
+    "tree_view": true
+  },
+  "agent_servers": {
+    
+  },
   "theme": {
     "mode": "system",
     "light": "One Light",
@@ -22,13 +28,13 @@
   },
   "theme_overrides": {
     "One Dark Pro": {
-      "border.variant": "#23272a",
-      "border": "#23272a",
+      "border.variant": "#15181c",
+      "border": "#15181c",
       // "players": [
       //   {
       //     "cursor": "#ae68ff",
       //   }
-      // ]
+      // ],
       "syntax": {
         "comment": {
           "font_style": "italic"
@@ -38,10 +44,10 @@
   },
   "title_bar": {
     "show_onboarding_banner": false,
-    "show_sign_in": false,
+    // "show_sign_in": false,
   },
   "project_panel": {
-    "dock": "right"
+    "dock": "left"
   },
   "buffer_line_height": {
     "custom": 2,
@@ -49,10 +55,6 @@
   "agent_buffer_font_size": 17,
   // "agent_ui_font_size": 20,
 
-  // --- Editor and Behavior ---
-  // --- Editor and Behavior ---
-  // --- Editor and Behavior ---
-  // --- Editor and Behavior ---
   // --- Editor and Behavior ---
   "vim_mode": true,
   "multi_cursor_modifier": "cmd_or_ctrl",
@@ -64,20 +66,81 @@
       "enabled": true
     }
   },
+  
   "terminal": {
-    "font_family": "JetBrainsMono Nerd Font"
+    "font_family": "JetBrainsMono Nerd Font",
+    "toolbar": {
+      "breadcrumbs": true,
+    },
+    "shell": {
+      "with_arguments": {
+        "program": "pwsh.exe",
+        "args": ["-nologo"],
+        "title_override": "terminal",
+      },
+    },
   },
 
   // --- AI and Language Models ---
   "agent": {
-    "default_profile": "ask",
-    "default_model": {
-      "provider": "copilot_chat",
-      "model": "gemini-3-flash-preview"
+    "tool_permissions": {
+      "default": "allow",
+      "tools": {
+        "terminal": {
+          "always_confirm": [
+            {
+              "pattern": "^rm\\b"
+            },
+          ]
+        }
+      }
     },
-    "favorite_models": [],
+    "default_profile": "write",
+    "default_model": {
+      "enable_thinking": true,
+      "provider": "openrouter",
+      "model": "moonshotai/kimi-k2.5"
+    },
+    "favorite_models": [
+      {
+        "provider": "openrouter",
+        "model": "moonshotai/kimi-k2.5",
+        "enable_thinking": false
+      },
+      {
+        "provider": "zed.dev",
+        "model": "claude-haiku-4-5",
+        "enable_thinking": false
+      },
+      {
+        "provider": "openrouter",
+        "model": "anthropic/claude-haiku-4.5",
+        "enable_thinking": false
+      },
+      {
+        "provider": "openrouter",
+        "model": "anthropic/claude-sonnet-4.6",
+        "enable_thinking": false
+      },
+      {
+        "provider": "openrouter",
+        "model": "xiaomi/mimo-v2-pro",
+        "enable_thinking": false
+      },
+      {
+        "provider": "openrouter",
+        "model": "openai/gpt-5.4",
+        "enable_thinking": false
+      },
+      {
+        "provider": "zed.dev",
+        "model": "gpt-5.3-codex",
+        "enable_thinking": false
+      }
+    ],
     "model_parameters": []
   },
+  
   "edit_predictions": {
     "provider": "copilot",
     "mode": "subtle",
@@ -86,38 +149,6 @@
       "model": "deepseek-coder:6.7b",
       "prompt_format": "infer",
       "max_output_tokens": 64
-    }
-  },
-  "language_models": {
-    "openai_compatible": {
-      "llama.cpp": {
-        "api_url": "http://127.0.0.1:8033/v1",
-        "available_models": [
-          {
-            "name": "unsloth/Phi-4-mini-instruct-GGUF",
-            "max_tokens": 200000,
-            "max_output_tokens": 32000,
-            "max_completion_tokens": 200000,
-            "capabilities": {
-              "tools": true,
-              "images": false,
-              "parallel_tool_calls": false,
-              "prompt_cache_key": false,
-              "chat_completions": true
-            }
-          }
-        ]
-      },
-      "LM-Studio": {
-        "api_url": "http://localhost:1234/v1",
-        "available_models": [
-          {
-            "name": "qwen/qwen3-4b-thinking-2507",
-            "display_name": "Qwen3-4B-Thinking",
-            "max_tokens": 8192
-          }
-        ]
-      }
     }
   },
 
@@ -222,5 +253,5 @@
         ]
       }
     }
-  }
+  },
 }
