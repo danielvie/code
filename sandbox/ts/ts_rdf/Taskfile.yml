@@ -1,0 +1,36 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task hi
+
+  hi:
+    cmds:
+      - echo hi
+
+  step-01:
+    desc: Step 1 Introduction to Triples
+    cmds:
+      - bun src/01_triples.ts
+
+  step-02:
+    desc: Step 2 Basic SPARQL Queries
+    cmds:
+      - bun src/02_sparql.ts
+
+  step-03:
+    desc: Step 3 CRUD Operations
+    cmds:
+      - bun src/03_crud.ts
+
+  step-04:
+    desc: Step 4 Ontology and OWL basics
+    cmds:
+      - bun src/04_owl.ts
+
+  dashboard:
+    desc: Start the interactive Learning Path Dashboard
+    cmds:
+      - echo Opening dashboard at http://localhost:3000
+      - bun run src/server.ts

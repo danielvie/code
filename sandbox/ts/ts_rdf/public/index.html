@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RDF Learning Path Explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&family=Space+Mono&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <span class="symbol">◈</span>
+                <h1>SemanticLabs</h1>
+            </div>
+            <nav>
+                <button class="nav-item active" data-step="1">
+                    <span class="num">01</span>
+                    <span class="label">Triples & Graphs</span>
+                </button>
+                <button class="nav-item" data-step="2">
+                    <span class="num">02</span>
+                    <span class="label">SPARQL Querying</span>
+                </button>
+                <button class="nav-item" data-step="3">
+                    <span class="num">03</span>
+                    <span class="label">CRUD Operations</span>
+                </button>
+                <button class="nav-item" data-step="4">
+                    <span class="num">04</span>
+                    <span class="label">OWL & Reasoning</span>
+                </button>
+            </nav>
+            <div class="footer">
+                <p>Learning Path Guide</p>
+                <div class="tech-stack">Bun • TS • N3 • Comunica</div>
+            </div>
+        </aside>
+
+        <main class="content">
+            <header>
+                <h2 id="step-title">Introduction to Triples</h2>
+                <div class="status-badge">Step Active</div>
+            </header>
+
+            <section class="explanation-box">
+                <p id="step-description">RDF stores data as triples: <strong>Subject → Predicate → Object</strong>. Think of it as a set of facts forming a web of data.</p>
+            </section>
+
+            <div class="grid-layout">
+                <div class="card code-card">
+                    <h3>Source Snippet</h3>
+                    <pre><code id="code-display">import * as N3 from 'n3';
+const store = new N3.Store();
+// Triple: Alice knows Bob
+store.addQuad(
+  namedNode(':Alice'), 
+  namedNode('foaf:knows'), 
+  namedNode(':Bob')
+);</code></pre>
+                </div>
+
+                <div class="card result-card">
+                    <h3>Live Result / Table</h3>
+                    <div id="output-view" class="output-container">
+                        <table id="result-table">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Predicate</th>
+                                    <th>Object</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-body">
+                                <!-- Data injected here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <section class="terminal-card">
+                <h3>Terminal Simulation</h3>
+                <div class="terminal-window">
+                    <div class="term-header">
+                        <span class="dot red"></span>
+                        <span class="dot yellow"></span>
+                        <span class="dot green"></span>
+                        <span class="path">~/ts_rdf > bun src/01_triples.ts</span>
+                    </div>
+                    <pre id="terminal-output" class="terminal-body">> Parsing Turtle file...
+> Quad: Alice type Person
+> Quad: Alice knows Bob
+> Parsing complete. Total triples: 5</pre>
+                </div>
+            </section>
+        </main>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
