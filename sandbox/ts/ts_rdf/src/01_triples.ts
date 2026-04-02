@@ -95,4 +95,20 @@ alicesStuff.forEach(quad => {
     }
 });
 
+// --- QUERY 5: Get all itens Alice owns and print a list of the item and its category
+console.log("\nAll items owned by Alice and their categories:");
+alicesStuff.forEach(quad => {
+    const itemUri = quad.object.id;
+
+    // get the list of quads matching the type
+    const typeQuads = store.getQuads(itemUri, typePredicate, null, null);
+
+    // get the first one and get its ID
+    const itemType = typeQuads[0]?.object.id.split('/').pop() || "Unknown";
+    const itemName = itemUri.split('/').pop();
+    
+    console.log(`- ${itemName} is a ${itemType}`);
+});
+
+
 console.log("\nTIP: By using 'await', we no longer need to nest our queries inside deep callbacks!");

@@ -4,7 +4,7 @@
 :Alice a foaf:Person ;
        foaf:name "Alice" ;
        foaf:knows :Bob ;
-       :owns :TeddyBear, :RubiksCube, :Laptop, :DinosaurModel, :Bicycle, :LegoSet, :WaterBottle .
+       :owns :TeddyBear, :RubiksCube, :Laptop, :DinosaurModel, :Bicycle, :LegoSet, :WaterBottle.
 
 :Bob a foaf:Person ;
      foaf:name "Bob" .
