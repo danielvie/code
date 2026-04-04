@@ -1,0 +1,35 @@
+version: '3'
+
+vars:
+  MODEL: gemma4:e4b
+
+tasks:
+  default:
+    desc: "Show available tasks"
+    cmds:
+      - task --list
+
+  setup:
+    desc: "Install dependencies and sync the environment"
+    cmds:
+      - uv sync
+
+  run:
+    desc: "Execute the Native Audio Command listener"
+    cmds:
+      - uv run python main.py
+
+  pull:
+    desc: "Ensure the Gemma 4 model is pulled and ready in Ollama"
+    cmds:
+      - ollama pull {{.MODEL}}
+
+  clean:
+    desc: "Clean up any residual audio recordings"
+    cmds:
+      - cmd /c del /f /q *.wav 2>nul || exit 0
+
+  status:
+    desc: "Check if Ollama and the model are available"
+    cmds:
+      - ollama list | findstr "{{.MODEL}}"

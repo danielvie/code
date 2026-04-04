@@ -1,0 +1,14 @@
+[project]
+name = "py-gemma4-listen"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "colorama>=0.4.6",
+    "keyboard>=0.13.5",
+    "numpy>=2.4.4",
+    "ollama>=0.6.1",
+    "scipy>=1.17.1",
+    "sounddevice>=0.5.5",
+]
