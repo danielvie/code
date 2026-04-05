@@ -7,12 +7,13 @@
   "Taskfile Template": {
     "prefix": "!task",
     "body": [
-      "version: '3'",
+      "version: \"3\"",
       "",
       "tasks:",
       "",
       "  default:",
-      "    deps: [main]",
+      "    cmds:",
+      "     - task --list",
       "",
       "  main:",
       "    aliases: [m]",
@@ -22,3 +23,4 @@
     "description": "Creates a template for Taskfile"
   }
 }
+
