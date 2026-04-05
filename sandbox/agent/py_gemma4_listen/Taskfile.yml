@@ -33,3 +33,13 @@ tasks:
     desc: "Check if Ollama and the model are available"
     cmds:
       - ollama list | findstr "{{.MODEL}}"
+
+  record:
+    desc: "Record a 5 second sample audio to sample.wav"
+    cmds:
+      - uv run python record_sample.py
+
+  test_audio:
+    desc: "Test raw payload submission to the LLM model"
+    cmds:
+      - uv run python test_audio.py

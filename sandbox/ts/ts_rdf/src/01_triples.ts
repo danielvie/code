@@ -111,4 +111,23 @@ alicesStuff.forEach(quad => {
 });
 
 
+// --- QUERY 6: Get the cars of each person
+console.log("\nAll cars owned by people:");
+
+const carType = 'http://example.org/Car';
+
+const ownerships = store.getQuads(null, ownsPredicate, null, null);
+const ownedCars = ownerships.filter(q => {
+    const uri = q.object.id
+    return store.getQuads(uri, typePredicate, carType, null).length > 0
+})
+
+ownedCars.forEach(q => {
+    const uri = q.object.id
+    const ownerName = q.subject.id.split('/').pop()
+    const carName = uri.split('/').pop()
+    console.log(`- ${ownerName} owns a ${carName}`)
+})
+
+console.log("\n-----------------------------------------------------------------------------------");
 console.log("\nTIP: By using 'await', we no longer need to nest our queries inside deep callbacks!");

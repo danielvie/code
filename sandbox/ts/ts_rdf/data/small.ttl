@@ -4,10 +4,12 @@
 :Alice a foaf:Person ;
        foaf:name "Alice" ;
        foaf:knows :Bob ;
-       :owns :TeddyBear, :RubiksCube, :Laptop, :DinosaurModel, :Bicycle, :LegoSet, :WaterBottle.
+       :owns :TeddyBear, :RubiksCube, :Laptop, :DinosaurModel, :Bicycle, :LegoSet, :WaterBottle;
+       :owns :Tracker.
 
 :Bob a foaf:Person ;
-     foaf:name "Bob" .
+     foaf:name "Bob";
+     :owns :Golf .
 
 # Definitions for items
 :TeddyBear a :Toy .
@@ -17,3 +19,10 @@
 :Bicycle a :Vehicle .
 :LegoSet a :Toy .
 :WaterBottle a :Utility .
+
+
+# Definitions for items
+:Peugeot a :Car .
+:Tracker a :Car .
+:Golf a :Car .
+:Honda a :Motorcycle .
