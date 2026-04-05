@@ -6,17 +6,20 @@ import numpy as np
 import sounddevice as sd
 import keyboard
 import threading
+import warnings
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 from colorama import init, Fore, Style
 from scipy.io.wavfile import write
-from pydantic import BaseModel, Field
 
-# Google ADK Imports
-from google.adk.agents.llm_agent import Agent
-from google.adk import Runner
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from google.genai import types
-from google.adk.models.lite_llm import LiteLlm
+warnings.filterwarnings("ignore", module="langgraph.*")
+warnings.filterwarnings("ignore", module="langchain.*")
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+# LangChain Imports
+from langchain_ollama import ChatOllama
+from langchain_core.messages import HumanMessage
+from langchain_core.tools import tool
+from langgraph.prebuilt import create_react_agent
 
 # Set local model environment
 os.environ["OLLAMA_API_BASE"] = "http://localhost:11434"
@@ -30,15 +33,12 @@ SAMPLE_RATE = 16000
 CHANNELS = 1
 TIMEOUT_SECONDS = 10 
 
-# Tool Definitions for ADK
-class TerminalCommand(BaseModel):
-    command: str = Field(description="The formal terminal command to execute (PowerShell/CMD).")
-
-def execute_terminal_command(params: TerminalCommand) -> str:
-    """Executes a local PC command and returns the output."""
-    print(f"{Fore.BLUE}Executing: {Style.BRIGHT}{params.command}{Style.RESET_ALL}")
+@tool
+def execute_terminal_command(command: str) -> str:
+    """Executes a formal terminal command (PowerShell or CMD) on the local PC."""
+    print(f"{Fore.BLUE}Executing (PowerShell): {Style.BRIGHT}{command}{Style.RESET_ALL}")
     try:
-        result = subprocess.run(params.command, shell=True, capture_output=True, text=True)
+        result = subprocess.run(["powershell", "-Command", command], capture_output=True, text=True)
         output = result.stdout or result.stderr or "Execution successful."
         return f"Output: {output}"
     except Exception as e:
@@ -46,38 +46,22 @@ def execute_terminal_command(params: TerminalCommand) -> str:
 
 class HotPTTGemma:
     def __init__(self):
-        print(f"{Fore.CYAN}Ready (ADK Powered Loop).{Style.RESET_ALL}")
+        print(f"{Fore.CYAN}Ready (LangChain Powered Loop).{Style.RESET_ALL}")
         
-        # Override LiteLLM defaults to stop it from silently dropping multimodal payloads
-        import litellm
-        litellm.model_cost[f"ollama_chat/{MODEL_NAME}"] = {"supports_vision": True, "supports_audio": True}
+        self.llm = ChatOllama(model=MODEL_NAME, base_url="http://localhost:11434")
         
-        # Initialize ADK Agent
-        model = LiteLlm(model=f"ollama_chat/{MODEL_NAME}")
-        self.agent = Agent(
-            name="PCAssistant",
-            model=model,
-            instruction=(
-                "You are a local PC automation assistant. "
-                "Analyze the user's intent from the provided audio/text and execute the correct tool command.\n"
-                "- If asked a question, use your knowledge.\n"
-                "- If told to perform a PC task, use the execute_terminal_command tool.\n"
-                "Respond naturally after executing tools."
-            ),
-            tools=[execute_terminal_command]
-        )
-
-        self.session_service = InMemorySessionService()
-        self.runner = Runner(
-            app_name="PCAssistant",
-            agent=self.agent,
-            session_service=self.session_service,
-            auto_create_session=True
+        self.system_instruction = (
+            "You are a local PC automation assistant. "
+            "Analyze the user's intent from the provided text and execute the correct tool command.\n"
+            "- If asked a question, use your knowledge.\n"
+            "- If told to perform a PC task, use the execute_terminal_command tool.\n"
+            "Respond naturally after executing tools."
         )
 
         self.recorded_chunks = []
         self.is_recording = False
         self.is_processing = False
+        self.active_threads = []
         self.executor = ThreadPoolExecutor(max_workers=1)
         
         try:
@@ -125,44 +109,49 @@ class HotPTTGemma:
                 audio_bytes = f.read()
                 audio_base64 = base64.b64encode(audio_bytes).decode("utf-8")
 
-            print(f"{Fore.YELLOW}Transcribing audio natively to bypass LiteLLM format filters...{Style.RESET_ALL}")
-            import ollama
-            transcription = ollama.chat(
-                model=MODEL_NAME,
-                messages=[{
-                    'role': 'user',
-                    'content': 'Transcribe this audio precisely. Output only the raw transcript without any other dialogue.',
-                    'images': [audio_bytes]
-                }]
-            )['message']['content'].strip()
-            
-            print(f"{Fore.GREEN}[Transcription]: {transcription}{Style.RESET_ALL}")
+            # Phase 1: Pure Voice Transcription 
+            prompt_stage1 = "Transcribe the attached audio exactly. Output only the transcription."
+            transcribe_message = HumanMessage(
+                content=[
+                    {"type": "text", "text": prompt_stage1},
+                    {"type": "image_url", "image_url": f"data:image/wav;base64,{audio_base64}"}
+                ]
+            )
 
-            if not transcription:
-                print(f"{Fore.RED}Transcription was empty or unintelligible.{Style.RESET_ALL}")
+            print(f"{Fore.GREEN}Starting Phase 1 (Transcription Pipeline)...{Style.RESET_ALL}")
+            
+            transcription = ""
+            try:
+                transcription_res = self.llm.invoke([transcribe_message])
+                transcription = transcription_res.content.strip()
+            except Exception as e:
+                print(f"{Fore.RED}Transcription error: {e}{Style.RESET_ALL}")
+                
+            print(f"{Fore.YELLOW}Transcribed: '{transcription}'{Style.RESET_ALL}")
+            
+            if not transcription or "you have not provided" in transcription.lower():
+                print(f"{Fore.RED}Transcription Phase empty.{Style.RESET_ALL}")
                 return
 
-            # Formulating a pure text request for the ADK Agent handling logic
-            prompt = f"Please analyze and execute the following task using your tools: {transcription}"
-            new_message = types.Content(role="user", parts=[types.Part.from_text(text=prompt)])
-
+            # Phase 2: Execution based on extracted intent
+            print(f"{Fore.CYAN}--- Phase 2 (Execution Pipeline) Start ---{Style.RESET_ALL}")
+            
             try:
-                # ADK executes the reasoning loop and tool-calling automatically via Runner
-                print(f"{Fore.CYAN}--- ADK Interaction Start ---{Style.RESET_ALL}")
-                for event in self.runner.run(
-                    user_id="local_user",
-                    session_id="local_session",
-                    new_message=new_message
-                ):
-                    if getattr(event, "content", None) and getattr(event.content, "parts", None):
-                        for part in event.content.parts:
-                            if getattr(part, "thought", False) and part.text:
-                                print(f"{Fore.LIGHTBLACK_EX}[Thought]: {part.text.replace(chr(10), ' ')}{Style.RESET_ALL}")
-                            elif getattr(part, "text", None):
-                                print(f"{Fore.MAGENTA}Response: {part.text}{Style.RESET_ALL}")
-                    elif getattr(event, "actions", None) and getattr(event.actions, "state_delta", None):
-                        pass # Ignore verbose internal state events for visual output
-                print(f"{Fore.CYAN}--- ADK Interaction End ---{Style.RESET_ALL}")
+                # We use create_react_agent to handle tool calling, with our agent tool logic.
+                agent = create_react_agent(self.llm, tools=[execute_terminal_command])
+                
+                res = agent.invoke({"messages": [("system", self.system_instruction), ("user", f"Task generated from audio: {transcription}")]})
+                
+                for message in res["messages"]:
+                    if message.type == "ai":
+                        if getattr(message, "tool_calls", None):
+                            print(f"{Fore.LIGHTBLACK_EX}[Thought]: Calling tool {message.tool_calls[0]['name']}{Style.RESET_ALL}")
+                        if message.content:
+                            print(f"{Fore.MAGENTA}Response: {message.content}{Style.RESET_ALL}")
+                    elif message.type == "tool":
+                        print(f"{Fore.CYAN}Tool Output: {message.content}{Style.RESET_ALL}")
+
+                print(f"{Fore.CYAN}--- Interaction End ---{Style.RESET_ALL}")
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -192,12 +181,19 @@ class HotPTTGemma:
                     if not keyboard.is_pressed('ctrl') and self.is_recording:
                         audio_file = self.stop_recording()
                         if audio_file:
-                            threading.Thread(target=self.process_with_model, args=(audio_file,)).start()
+                            t = threading.Thread(target=self.process_with_model, args=(audio_file,))
+                            self.active_threads.append(t)
+                            t.start()
                     
                     sd.sleep(10)
             except KeyboardInterrupt:
                 pass
             
+        print(f"\n{Fore.CYAN}Waiting for any active processes to finish...{Style.RESET_ALL}")
+        for t in self.active_threads:
+            if t.is_alive():
+                t.join(timeout=1.0) # Force a clean exit without hanging forever
+                
         self.executor.shutdown(wait=False)
         print(f"\n{Fore.CYAN}Shutting down...{Style.RESET_ALL}")
 

@@ -6,9 +6,10 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "colorama>=0.4.6",
-    "google-adk>=1.28.1",
     "keyboard>=0.13.5",
-    "litellm>=1.83.2",
+    "langchain>=1.2.15",
+    "langchain-core>=1.2.26",
+    "langchain-ollama>=1.0.1",
     "numpy>=2.4.4",
     "ollama>=0.6.1",
     "pydantic>=2.12.5",
