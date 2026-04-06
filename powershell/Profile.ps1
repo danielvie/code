@@ -104,8 +104,8 @@ function ssh_setup {
 # ------------------------------------------------------------------------------
 
 function ExpandFolders {
-    param ([string]$path, [int]$depth = 2)
-    $search = (fd -t d -d $depth -a --base-directory $path) + $path
+    param ([string]$path, [int]$depth = 2, [string]$fd_params)
+    $search = (fd $fd_params -t d -d $depth -a --base-directory $path) + $path
     return $search
 }
 
@@ -117,7 +117,7 @@ function GetProjects {
         "$env:USERPROFILE\Downloads",
         "$env:LOCALAPPDATA\nvim",
         (ExpandFolders "$env:LOCALAPPDATA" -depth 4),
-        (ExpandFolders "$env:USERPROFILE" -depth 4),
+        (ExpandFolders "$env:USERPROFILE" -depth 4 -fd_params "-u"),
         (ExpandFolders ${env:ProgramFiles(x86)} -depth 3),
         (ExpandFolders $env:ProgramFiles -depth 3)
     ) | ForEach-Object {
