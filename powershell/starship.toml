@@ -9,6 +9,7 @@ $git_state\
 $git_status\
 $python\
 $java\
+$nodejs\
 $cmd_duration\
 $line_break\
 $character"""
@@ -35,6 +36,7 @@ modified = "!"
 staged = "+"
 renamed = "»"
 deleted = "✘"
+stashed = ""
 
 [git_state]
 style = "bold fg:#a3be8c"
@@ -46,8 +48,12 @@ style = "bold fg:#f3d97b"
 
 [python]
 format = "[\\[py $version( )\\]]($style) [\\($virtualenv\\)]($style)"
-style = "bright-black"
+style = "fg:#758199"
 
 [java]
 format = "[\\[java $version\\]]($style) "
-style = "bright-black"
+style = "fg:#758199"
+
+[nodejs]
+format = "[\\[node $version\\]]($style) "
+style = "fg:#758199"
