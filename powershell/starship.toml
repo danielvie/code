@@ -47,7 +47,7 @@ format = "[ $duration]($style) "
 style = "bold fg:#f3d97b"
 
 [python]
-format = "[\\[py $version( )\\]]($style) [\\($virtualenv\\)]($style)"
+format = "[\\[py $version( )\\]]($style)([ \\($virtualenv\\)]($style))"
 style = "fg:#758199"
 
 [java]
