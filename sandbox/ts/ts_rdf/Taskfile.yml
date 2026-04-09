@@ -3,28 +3,24 @@ version: '3'
 tasks:
   default:
     cmds:
-      - task hi
+      - task --list-all
 
-  hi:
-    cmds:
-      - echo hi
-
-  step-01:
+  step1:
     desc: Step 1 Introduction to Triples
     cmds:
       - bun src/01_triples.ts
 
-  step-02:
+  step2:
     desc: Step 2 Basic SPARQL Queries
     cmds:
       - bun src/02_sparql.ts
 
-  step-03:
+  step3:
     desc: Step 3 CRUD Operations
     cmds:
       - bun src/03_crud.ts
 
-  step-04:
+  step4:
     desc: Step 4 Ontology and OWL basics
     cmds:
       - bun src/04_owl.ts
