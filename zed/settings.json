@@ -295,10 +295,4 @@
       ]
     }
   },
-  "context_servers": {
-      "blender-mcp": {
-        "command": "uvx",
-        "args": ["--python", "3.13", "python", "C:/Users/daniel/.agents/skills/blender-bridge.py"]
-      }
-    }
 }
