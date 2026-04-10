@@ -8,11 +8,14 @@
 // command palette (cmd-shift-p / ctrl-shift-p)
 {
   // --- UI and Appearance ---
+  "buffer_font_family": "JetBrainsMono Nerd Font",
   "git_panel": {
     "tree_view": true
   },
   "agent_servers": {
-    
+    "pi-acp": {
+      "type": "registry"
+    }
   },
   "theme": {
     "mode": "system",
@@ -29,7 +32,7 @@
   "theme_overrides": {
     "One Dark Pro": {
       "border.variant": "#15181c",
-      "border": "#15181c",
+      "border": "#404754",
       // "players": [
       //   {
       //     "cursor": "#ae68ff",
@@ -68,7 +71,8 @@
   },
   
   "experimental.theme_overrides": {
-    "terminal.ansi.blue": "#297F96",
+    "terminal.ansi.blue": "#1c6974",
+    "terminal.ansi.bright_blue": "#ff0000"
   },
   "terminal": {
     "font_family": "JetBrainsMono Nerd Font",
@@ -257,4 +261,44 @@
       }
     }
   },
+  "language_models": {
+    "openai_compatible": {
+      "vLLM": {
+        "api_url": "localhost:8000/v1",
+        "available_models": [
+          {
+            "name": "gemma4:e4b",
+            "max_tokens": 32000,
+            "max_output_tokens": 32000,
+            "max_completion_tokens": 32000,
+            "capabilities": {
+              "tools": true,
+              "images": false,
+              "parallel_tool_calls": false,
+              "prompt_cache_key": false,
+              "chat_completions": true
+            }
+          }
+        ]
+      }
+    },
+    "ollama": {
+      "api_url": "http://localhost:11434",
+      "context_window": 30000,
+      "available_models": [
+        {
+          "name": "gemma4:e4b",
+          "max_tokens": 30000, 
+          "keep_alive": "5m",
+          "supports_tools": true,
+        }
+      ]
+    }
+  },
+  "context_servers": {
+      "blender-mcp": {
+        "command": "uvx",
+        "args": ["--python", "3.13", "python", "C:/Users/daniel/.agents/skills/blender-bridge.py"]
+      }
+    }
 }
