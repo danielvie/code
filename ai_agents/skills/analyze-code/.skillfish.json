@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "name": "analyze-code",
+  "owner": "uniswap",
+  "repo": "ai-toolkit",
+  "path": "packages/plugins/development-codebase-tools/skills/analyze-code",
+  "branch": "next",
+  "sha": "4ccf5b401ee8d2432fc6660c2f34758b00c1ea01",
+  "source": "manual"
+}
