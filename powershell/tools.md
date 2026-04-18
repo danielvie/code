@@ -1,6 +1,9 @@
 ## ripgrep
 ripgrep recursively searches directories for a regex pattern while respecting your gitignore
 [https://github.com/BurntSushi/ripgrep](https://github.com/BurntSushi/ripgrep)
+```bash
+uv tool install ripgrep
+```
 
 ## fdfind
 A simple, fast and user-friendly alternative to 'find'
@@ -9,14 +12,16 @@ A simple, fast and user-friendly alternative to 'find'
 ## fzf
 A command-line fuzzy finder
 [https://github.com/junegunn/fzf](https://github.com/junegunn/fzf)
-
-## just
-Just a command runner
-[https://github.com/casey/just](https://github.com/casey/just)
+```bash
+uv tool install fzf-bin
+```
 
 ## task
 A task runner / simpler Make alternative written in Go
 [https://github.com/go-task/task](https://github.com/go-task/task)
+```bash
+uv tool install task@latest
+```
 
 ## jq
 json processor
@@ -25,6 +30,9 @@ json processor
 ## eza
 A modern alternative to ls
 [https://github.com/eza-community/eza](https://github.com/eza-community/eza)
+```bash
+cargo install eza
+```
 
 ## zoxide
 A smarter cd command. Supports all major shells
