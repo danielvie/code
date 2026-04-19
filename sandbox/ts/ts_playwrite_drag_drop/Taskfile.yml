@@ -10,7 +10,7 @@ tasks:
     cmds:
       - docker build -t playwright-multi-window-poc .
 
-  run-headless:
+  test:docker:
     desc: "Executes the tests inside the Docker container in headless mode."
     cmds:
       - docker rm -f pw-runner || true
@@ -24,16 +24,14 @@ tasks:
       - docker cp pw-runner:/app/playwright-report ./playwright-report
       - docker cp pw-runner:/app/test-results ./test-results || true
       - docker cp pw-runner:/app/e2e/test.spec.ts-snapshots ./e2e/ || true
-      - echo "Extraction complete! You can view the report by running:"
-      - echo "  npx playwright show-report"
+      - echo "Extraction complete."
 
-  update-snapshots:
-    desc: "Updates the baseline visual snapshots by running tests within Docker and copying them to the host."
+  test:show-result:
+    desc: "Extracts the latest results from the headless test container and displays the full trace / video locally."
     cmds:
-      - docker rm -f pw-runner || true
-      - echo "Generating new snapshots in headless Linux Docker..."
-      - docker run --name pw-runner playwright-multi-window-poc npx playwright test --update-snapshots
       - task extract-results
+      - npx playwright show-report
+
 
   serve:
     desc: "Runs the standalone web application natively on your host machine to interact with the POC manually."
