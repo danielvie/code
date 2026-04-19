@@ -1,0 +1,56 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  build:
+    desc: "Builds the Docker image."
+    cmds:
+      - docker build -t playwright-multi-window-poc .
+
+  run-headless:
+    desc: "Executes the tests inside the Docker container in headless mode."
+    cmds:
+      - docker rm -f pw-runner || true
+      - echo "Running Playwright Tests Headless in Docker..."
+      - docker run --name pw-runner playwright-multi-window-poc npx playwright test || true
+
+  extract-results:
+    desc: "Copies the playwright-report/ (including traces/videos) from the container back to the host Windows machine for inspection."
+    cmds:
+      - echo "Extracting results..."
+      - docker cp pw-runner:/app/playwright-report ./playwright-report
+      - docker cp pw-runner:/app/test-results ./test-results || true
+      - docker cp pw-runner:/app/e2e/test.spec.ts-snapshots ./e2e/ || true
+      - echo "Extraction complete! You can view the report by running:"
+      - echo "  npx playwright show-report"
+
+  update-snapshots:
+    desc: "Updates the baseline visual snapshots by running tests within Docker and copying them to the host."
+    cmds:
+      - docker rm -f pw-runner || true
+      - echo "Generating new snapshots in headless Linux Docker..."
+      - docker run --name pw-runner playwright-multi-window-poc npx playwright test --update-snapshots
+      - task extract-results
+
+  serve:
+    desc: "Runs the standalone web application natively on your host machine to interact with the POC manually."
+    cmds:
+      - uv sync
+      - uv run uvicorn server:app --host 127.0.0.1 --port 8000 --reload
+
+  test:local:
+    desc: "Installs Playwright locally and runs the automation on your host without Docker."
+    cmds:
+      - uv sync
+      - npm install
+      - npx playwright install chromium
+      - npx playwright test --update-snapshots
+      - echo "Done! You can view the report by running npx playwright show-report"
+
+  clean:
+    desc: "Cleans up all generated directories, reports, and virtual environments locally."
+    cmds:
+      - rm -rf playwright-report test-results node_modules .venv

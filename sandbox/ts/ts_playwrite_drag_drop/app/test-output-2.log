@@ -1,5 +1,0 @@
-
-Running 1 test using 1 worker
-
-[1A[2K[1/1] [chromium] ΓÇ║ tests\drag-and-drop-random.spec.ts:4:7 ΓÇ║ Level 3: Random Elements by Text ΓÇ║ should find randomly placed element by text and drag it
-[1A[2K  1 passed (4.8s)

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+
+# Node.js
+node_modules/
+
+# Playwright Test Artifacts
+playwright-report/
+test-results/
+playwright-video/
+playwright-trace/
+.playwright/
+
+# Taskfile
+.task/
+
+# OS / Editor
+.DS_Store
+.vscode/
