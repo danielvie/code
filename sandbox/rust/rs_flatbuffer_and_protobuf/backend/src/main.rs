@@ -18,9 +18,9 @@ pub mod sensor_proto {
     include!("generated/sensor_proto.rs");
 }
 
-#[derive(Clone)]
+#[derive(Clone, serde::Serialize)]
 struct RawSensor {
-    id: u32,
+    id: i32,
     value: f32,
     x: f32,
     y: f32,
@@ -35,10 +35,12 @@ async fn main() {
 
     let (proto_tx, _) = broadcast::channel::<Vec<u8>>(16);
     let (flat_tx, _) = broadcast::channel::<Vec<u8>>(16);
+    let (json_tx, _) = broadcast::channel::<Vec<u8>>(16);
     let (update_tx, mut update_rx) = mpsc::channel::<usize>(16);
 
     let proto_tx_clone = proto_tx.clone();
     let flat_tx_clone = flat_tx.clone();
+    let json_tx_clone = json_tx.clone();
 
     // Simulation Task
     tokio::spawn(async move {
@@ -52,14 +54,14 @@ async fn main() {
             ticker.tick().await;
             
             while let Ok(new_size) = update_rx.try_recv() {
-                let size = new_size.clamp(1, 100_000);
+                let size = new_size.clamp(1, 500_000);
                 sensors.resize(size, RawSensor { id: 0, value: 0.0, x: 0.0, y: 0.0, z: 0.0 });
             }
 
             step += 0.01;
 
             for (i, sensor) in sensors.iter_mut().enumerate() {
-                sensor.id = i as u32;
+                sensor.id = i as i32;
                 sensor.value = (step + i as f32).sin();
                 sensor.x = (step * 0.5 + i as f32).cos();
                 sensor.y = (step * 0.8 + i as f32).sin();
@@ -70,7 +72,7 @@ async fn main() {
             let mut proto_sensors = Vec::with_capacity(sensors.len());
             for s in &sensors {
                 proto_sensors.push(sensor_proto::Sensor {
-                    id: s.id,
+                    id: s.id as u32,
                     value: s.value,
                     x: s.x,
                     y: s.y,
@@ -88,7 +90,7 @@ async fn main() {
             builder.reset();
             let mut fbs_sensors = Vec::with_capacity(sensors.len());
             for s in &sensors {
-                fbs_sensors.push(sensor_fbs::Sensor::new(s.id, s.value, s.x, s.y, s.z));
+                fbs_sensors.push(sensor_fbs::Sensor::new(s.id as u32, s.value, s.x, s.y, s.z));
             }
             let vec = builder.create_vector(&fbs_sensors);
             let mut fbs_list_builder = sensor_fbs::SensorListBuilder::new(&mut builder);
@@ -99,14 +101,22 @@ async fn main() {
 
             // Broadcast FlatBuffers
             let _ = flat_tx_clone.send(flat_buf);
+
+            // 3. Serialize to JSON
+            if json_tx_clone.receiver_count() > 0 {
+                if let Ok(json_data) = serde_json::to_vec(&sensors) {
+                    let _ = json_tx_clone.send(json_data);
+                }
+            }
         }
     });
 
     while let Ok((stream, addr)) = listener.accept().await {
         let proto_rx = proto_tx.subscribe();
         let flat_rx = flat_tx.subscribe();
+        let json_rx = json_tx.subscribe();
         let upd_tx = update_tx.clone();
-        tokio::spawn(handle_connection(stream, addr, proto_rx, flat_rx, upd_tx));
+        tokio::spawn(handle_connection(stream, addr, proto_rx, flat_rx, json_rx, upd_tx));
     }
 }
 
@@ -115,6 +125,7 @@ async fn handle_connection(
     addr: SocketAddr,
     mut proto_rx: broadcast::Receiver<Vec<u8>>,
     mut flat_rx: broadcast::Receiver<Vec<u8>>,
+    mut json_rx: broadcast::Receiver<Vec<u8>>,
     update_tx: mpsc::Sender<usize>,
 ) {
     let mut ws_stream = match tokio_tungstenite::accept_async(stream).await {
@@ -134,8 +145,9 @@ async fn handle_connection(
     };
 
     let path = msg.into_text().unwrap_or_default();
-    let is_proto = path.contains("/proto");
-    let is_flat = path.contains("/flat");
+    let is_proto = path == "/proto";
+    let is_flat = path == "/flat";
+    let is_json = path == "/json";
 
     println!("Client requested path: {}", path);
 
@@ -161,6 +173,24 @@ async fn handle_connection(
         loop {
             tokio::select! {
                 Ok(buf) = flat_rx.recv() => {
+                    if ws_stream.send(WsMessage::Binary(buf)).await.is_err() {
+                        break;
+                    }
+                }
+                Some(Ok(msg)) = ws_stream.next() => {
+                    if let Ok(text) = msg.into_text() {
+                        if let Ok(val) = text.parse::<usize>() {
+                            let _ = update_tx.send(val).await;
+                        }
+                    }
+                }
+                else => break,
+            }
+        }
+    } else if is_json {
+        loop {
+            tokio::select! {
+                Ok(buf) = json_rx.recv() => {
                     if ws_stream.send(WsMessage::Binary(buf)).await.is_err() {
                         break;
                     }

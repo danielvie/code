@@ -14,6 +14,10 @@
   --flat-color: hsl(var(--flat-hue), 100%, 50%);
   --flat-glow: hsla(var(--flat-hue), 100%, 50%, 0.3);
 
+  --json-hue: 120;
+  --json-color: hsl(var(--json-hue), 100%, 50%);
+  --json-glow: hsla(var(--json-hue), 100%, 50%, 0.3);
+
   --accent-color: #f59e0b;
 
   --font-hud: 'Orbitron', sans-serif;
@@ -216,7 +220,7 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
 /* Comparison View */
 .comparison-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 40px;
   flex: 1;
 }
@@ -224,11 +228,11 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
 .client-card {
   position: relative;
   background: var(--bg-panel);
-  border-radius: 16px;
-  padding: 30px;
+  border-radius: 12px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 15px;
   border: 1px solid;
 }
 
@@ -240,39 +244,22 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
   border-color: rgba(var(--flat-hue), 100%, 50%, 0.3);
   box-shadow: 0 10px 40px -10px var(--flat-glow), inset 0 0 20px -10px var(--flat-glow);
 }
+.client-card.json {
+  border-color: rgba(var(--json-hue), 100%, 50%, 0.3);
+  box-shadow: 0 10px 40px -10px var(--json-glow), inset 0 0 20px -10px var(--json-glow);
+}
 
 .card-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-bottom: 20px;
+  flex-direction: column;
+  padding-bottom: 10px;
   border-bottom: 1px dashed rgba(255,255,255,0.1);
+  margin-top: 10px;
 }
 
-.proto .card-header h2 { color: var(--proto-color); text-shadow: 0 0 10px var(--proto-glow); }
-.flat .card-header h2 { color: var(--flat-color); text-shadow: 0 0 10px var(--flat-glow); }
-
-.status-indicator {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: var(--font-mono);
-  font-size: 0.8rem;
-  color: var(--text-dim);
-}
-.pulse {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  animation: pulse 1.5s infinite;
-}
-.proto .pulse { background: var(--proto-color); box-shadow: 0 0 10px var(--proto-color); }
-.flat .pulse { background: var(--flat-color); box-shadow: 0 0 10px var(--flat-color); }
-
-@keyframes pulse {
-  0% { transform: scale(0.95); opacity: 0.5; }
-  50% { transform: scale(1.2); opacity: 1; }
-  100% { transform: scale(0.95); opacity: 0.5; }
-}
+.proto .card-header h2 { color: var(--proto-color); text-shadow: 0 0 10px var(--proto-glow); font-size: 1.2rem; }
+.flat .card-header h2 { color: var(--flat-color); text-shadow: 0 0 10px var(--flat-glow); font-size: 1.2rem; }
+.json .card-header h2 { color: var(--json-color); text-shadow: 0 0 10px var(--json-glow); font-size: 1.2rem; }
 
 .metric-grid {
   display: grid;
@@ -282,16 +269,17 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
 
 .metric-box {
   background: rgba(0,0,0,0.4);
-  padding: 20px;
-  border-radius: 8px;
-  border-left: 4px solid;
+  padding: 12px 15px;
+  border-radius: 6px;
+  border-left: 3px solid;
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 2px;
 }
 
 .proto .metric-box { border-left-color: var(--proto-color); }
 .flat .metric-box { border-left-color: var(--flat-color); }
+.json .metric-box { border-left-color: var(--json-color); }
 
 .metric-label {
   font-size: 0.8rem;
@@ -302,12 +290,12 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
 
 .metric-value {
   font-family: var(--font-mono);
-  font-size: 2.5rem;
+  font-size: 1.8rem;
   font-weight: 700;
   color: var(--text-main);
   display: flex;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
 }
 
 .metric-unit {
@@ -315,6 +303,30 @@ input[type="range"]:focus::-webkit-slider-runnable-track {
   color: var(--text-dim);
   font-weight: 400;
 }
+
+.mini-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  padding: 2px 5px;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.2s;
+  letter-spacing: 1px;
+}
+
+.mini-btn:hover {
+  background: var(--accent-color);
+  color: var(--bg-color);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 10px var(--accent-color);
+}
+
 
 @media (max-width: 900px) {
   .comparison-container {
