@@ -1,0 +1,38 @@
+namespace Simulation;
+
+enum MessageType: byte { State, Params, Cmd, Reset }
+
+table PendulumState {
+  cart_position: float;
+  cart_velocity: float;
+  pendulum_angle: float;
+  pendulum_angular_velocity: float;
+  timestamp: long;
+  is_valid: bool = true;
+}
+
+table Parameters {
+  length: float;
+  mass_cart: float;
+  mass_pole: float;
+  q_pos: float;
+  q_vel: float;
+  q_ang: float;
+  q_omg: float;
+  r_ctrl: float;
+}
+
+table Command {
+  target_position: float;
+}
+
+table Reset {
+  // Empty signal
+}
+
+table Message {
+  type: MessageType;
+  data: [ubyte];
+}
+
+root_type Message;

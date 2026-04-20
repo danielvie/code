@@ -1,0 +1,27 @@
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+env/
+venv/
+ENV/
+
+# FlatBuffers (Generated)
+frontend/src/generated/
+backend/Simulation/
+bin/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

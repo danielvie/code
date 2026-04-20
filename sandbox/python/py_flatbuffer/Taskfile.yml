@@ -1,0 +1,57 @@
+version: '3'
+
+vars:
+  FLATC: './bin/flatc.exe'
+  SCHEMA_FILE: './schema/simulation.fbs'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  build-schemas:
+    desc: "Compile FlatBuffers schemas"
+    cmds:
+      - pwsh -Command "New-Item -ItemType Directory -Force -Path frontend/src/generated"
+      # Generate TS for FlatBuffers
+      - '{{.FLATC}} --ts -o frontend/src/generated {{.SCHEMA_FILE}}'
+      # Generate Python for FlatBuffers (Backend)
+      - '{{.FLATC}} --python -o backend {{.SCHEMA_FILE}}'
+
+  setup-flatc:
+    desc: "Download and extract the official flatc.exe for Windows"
+    cmds:
+      - pwsh -Command "Invoke-WebRequest -Uri https://github.com/google/flatbuffers/releases/download/v25.12.19-2026-02-06-03fffb2/Windows.flatc.binary.zip -OutFile flatc.zip"
+      - pwsh -Command "Expand-Archive -Path flatc.zip -DestinationPath bin -Force"
+      - pwsh -Command "Remove-Item flatc.zip"
+    status:
+      - test -f '{{.FLATC}}'
+
+  install:
+    desc: "Install frontend and backend dependencies"
+    deps: [setup-flatc]
+    cmds:
+      - cd frontend && npm install
+      - cd backend && uv sync
+
+  back:run:
+    desc: "Run the Python simulation server"
+    dir: "backend"
+    cmds:
+      - uv run python main.py
+
+  front:run:
+    desc: "Run the Vite frontend"
+    dir: "frontend"
+    cmds:
+      - npm run dev
+
+  dev:
+    desc: "Run both applications concurrently"
+    deps: [build-schemas]
+    cmds:
+      - task: _dev_concurrent
+
+  _dev_concurrent:
+    internal: true
+    deps: [back:run, front:run]
