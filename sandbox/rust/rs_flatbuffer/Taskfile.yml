@@ -1,0 +1,69 @@
+version: '3'
+
+vars:
+  FLATC: './bin/flatc.exe'
+  SCHEMA_FILE: './schema/simulation.fbs'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  build-schemas:
+    desc: "Compile FlatBuffers schemas for TypeScript (frontend) and Rust (backend)"
+    cmds:
+      - pwsh -Command "New-Item -ItemType Directory -Force -Path frontend/src/generated"
+      - pwsh -Command "New-Item -ItemType Directory -Force -Path backend/src/generated"
+      # Generate TS for FlatBuffers (frontend)
+      - '{{.FLATC}} --ts -o frontend/src/generated {{.SCHEMA_FILE}}'
+      # Generate Rust for FlatBuffers (backend)
+      - '{{.FLATC}} --rust -o backend/src/generated {{.SCHEMA_FILE}}'
+
+  setup-flatc:
+    desc: "Download and extract the official flatc.exe for Windows"
+    cmds:
+      - pwsh -Command "Invoke-WebRequest -Uri https://github.com/google/flatbuffers/releases/download/v25.12.19-2026-02-06-03fffb2/Windows.flatc.binary.zip -OutFile flatc.zip"
+      - pwsh -Command "Expand-Archive -Path flatc.zip -DestinationPath bin -Force"
+      - pwsh -Command "Remove-Item flatc.zip"
+    status:
+      - test -f '{{.FLATC}}'
+
+  install:
+    desc: "Install frontend dependencies and ensure flatc is present"
+    deps: [setup-flatc]
+    cmds:
+      - cd frontend && npm install
+
+  back:build:
+    desc: "Build the Rust simulation server (release)"
+    dir: "backend"
+    cmds:
+      - cargo build --release
+
+  back:run:
+    desc: "Run the Rust simulation server (debug)"
+    dir: "backend"
+    cmds:
+      - cargo run --bin server
+
+  back:run-release:
+    desc: "Run the Rust simulation server (release)"
+    dir: "backend"
+    cmds:
+      - cargo run --release --bin server
+
+  front:run:
+    desc: "Run the Vite frontend"
+    dir: "frontend"
+    cmds:
+      - npm run dev
+
+  dev:
+    desc: "Build schemas then run both Rust backend and Vite frontend concurrently"
+    deps: [build-schemas]
+    cmds:
+      - task: _dev_concurrent
+
+  _dev_concurrent:
+    internal: true
+    deps: [back:run, front:run]

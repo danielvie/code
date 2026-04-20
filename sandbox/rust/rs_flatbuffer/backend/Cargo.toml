@@ -1,0 +1,22 @@
+[package]
+name = "rs_flatbuffer_backend"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "server"
+path = "src/main.rs"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+# WebSocket
+tokio-tungstenite = "0.26"
+futures-util = "0.3"
+# FlatBuffers (must match flatc version 25.x)
+flatbuffers = "25.1.30"
+# Linear algebra for LQR solve
+nalgebra = "0.33"
+# Logging
+log = "0.4"
+env_logger = "0.11"
