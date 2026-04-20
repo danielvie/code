@@ -6,6 +6,7 @@ import { PendulumState } from './generated/Simulation/pendulum-state';
 import { Parameters } from './generated/Simulation/parameters';
 import { Command } from './generated/Simulation/command';
 import { Reset } from './generated/Simulation/reset';
+import { IntegrationMethod } from './generated/Simulation/integration-method';
 import { Target, Activity, Cpu, Layers, RotateCcw, AlertTriangle, Undo2 } from 'lucide-react';
 
 const DEFAULT_PARAMS = {
@@ -16,7 +17,8 @@ const DEFAULT_PARAMS = {
   qVel: 1.0,
   qAng: 100.0,
   qOmg: 10.0,
-  rCtrl: 0.01,
+  rCtrl: 0.1,
+  integrationMethod: IntegrationMethod.Euler
 };
 
 const App: React.FC = () => {
@@ -128,6 +130,7 @@ const App: React.FC = () => {
       Parameters.addQAng(b, params.qAng);
       Parameters.addQOmg(b, params.qOmg);
       Parameters.addRCtrl(b, params.rCtrl);
+      Parameters.addIntegrationMethod(b, params.integrationMethod);
       return Parameters.endParameters(b);
     });
   }, [params, sendMsg]);
@@ -346,14 +349,6 @@ const App: React.FC = () => {
           )}
 
           <div className="control-item">
-            <label><Target size={10} style={{marginRight: 4}}/> Navigation Setpoint</label>
-            <div className="control-row">
-              <input type="range" min="-5" max="5" step="0.1" value={targetX} onChange={e => setTargetX(parseFloat(e.target.value))} />
-              <div className="control-value">{targetX.toFixed(1)}m</div>
-            </div>
-          </div>
-
-          <div className="control-item">
             <label><Layers size={10} style={{marginRight: 4}}/> Pole Length</label>
             <div className="control-row">
               <input type="range" min="0.5" max="3" step="0.1" value={params.length} onChange={e => setParams(p => ({...p, length: parseFloat(e.target.value)}))} />
@@ -409,7 +404,35 @@ const App: React.FC = () => {
             </div>
           </div>
 
+          <div className="control-item">
+            <label><Cpu size={10} style={{marginRight: 4}}/> Solver Method</label>
+            <div className="control-row">
+              <select 
+                value={params.integrationMethod} 
+                onChange={e => setParams(p => ({...p, integrationMethod: parseInt(e.target.value)}))}
+                style={{
+                  width: '100%',
+                  background: 'var(--panel-secondary)',
+                  color: 'var(--text-primary)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: '4px',
+                  padding: '4px 8px',
+                  fontSize: '0.75rem',
+                  outline: 'none'
+                }}
+              >
+                <option value={IntegrationMethod.Euler}>Euler (Fast)</option>
+                <option value={IntegrationMethod.ODE3}>ODE3 (Balanced)</option>
+                <option value={IntegrationMethod.RK4}>Runge-Kutta 4 (Precise)</option>
+              </select>
+            </div>
+          </div>
+
           <div className="telemetry-grid">
+            <div className="data-node">
+              <div className="data-label">Target</div>
+              <div className="data-value">{targetX.toFixed(2)}m</div>
+            </div>
             <div className="data-node">
               <div className="data-label">Pos.X</div>
               <div className="data-value">{state.x.toFixed(3)}</div>

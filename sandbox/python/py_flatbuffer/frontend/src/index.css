@@ -194,15 +194,16 @@ input[type="range"]::-webkit-slider-thumb {
 
 .telemetry-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.6rem;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
 }
 
 .data-node {
   background: var(--bg-color);
   border: 1px solid var(--border-color);
-  padding: 0.75rem;
+  padding: 0.5rem 0.4rem;
   border-radius: 0.5rem;
+  text-align: center;
 }
 
 .data-label {
@@ -256,4 +257,27 @@ canvas {
   padding: 0.1rem 0.4rem;
   border-radius: 1rem;
   border: 1px solid rgba(97, 175, 239, 0.2);
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--panel-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color);
+}
+
+.data-node.highlight {
+  border-color: var(--accent-color);
+  background: var(--accent-soft);
 }

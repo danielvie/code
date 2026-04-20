@@ -11,6 +11,8 @@ table PendulumState {
   is_valid: bool = true;
 }
 
+enum IntegrationMethod: byte { Euler, RK4, ODE3 }
+
 table Parameters {
   length: float;
   mass_cart: float;
@@ -20,6 +22,7 @@ table Parameters {
   q_ang: float;
   q_omg: float;
   r_ctrl: float;
+  integration_method: IntegrationMethod = Euler;
 }
 
 table Command {

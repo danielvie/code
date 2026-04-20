@@ -6,7 +6,7 @@ import numpy as np
 import websockets
 import flatbuffers
 import scipy.linalg
-from Simulation import Message, MessageType, PendulumState, Parameters as FbParameters, Command as FbCommand
+from Simulation import Message, MessageType, PendulumState, Parameters as FbParameters, Command as FbCommand, IntegrationMethod
 
 # Physical Constants & State
 class Simulation:
@@ -23,6 +23,7 @@ class Simulation:
         self.q_ang = 100.0
         self.q_omg = 10.0
         self.r_ctrl = 0.01
+        self.integration_method = IntegrationMethod.Euler
         
         self.target_x = 0.0
         self.K = None
@@ -67,26 +68,58 @@ class Simulation:
         except:
             self.K = np.array([-1, -1, 10, 1]) 
 
+    def dynamics(self, state, force):
+        M, m, l, g = self.mass_cart, self.mass_pole, self.length, self.gravity
+        x, v, theta, omega = state
+        
+        L = l / 2.0
+        sin_t, cos_t = np.sin(theta), np.cos(theta)
+        
+        # Non-linear equations of motion
+        temp = (force + m * L * omega**2 * sin_t) / (M + m)
+        theta_acc = (g * sin_t - cos_t * temp) / (L * (4.0/3.0 - m * cos_t**2 / (M + m)))
+        x_acc = temp - (m * L * theta_acc * cos_t) / (M + m)
+        
+        return np.array([v, x_acc, omega, theta_acc])
+
+    def _step_euler(self, state, force, dt):
+        return state + self.dynamics(state, force) * dt
+
+    def _step_rk4(self, state, force, dt):
+        k1 = self.dynamics(state, force)
+        k2 = self.dynamics(state + 0.5 * dt * k1, force)
+        k3 = self.dynamics(state + 0.5 * dt * k2, force)
+        k4 = self.dynamics(state + dt * k3, force)
+        return state + (dt / 6.0) * (k1 + 2*k2 + 2*k3 + k4)
+
+    def _step_ode3(self, state, force, dt):
+        # Bogacki-Shampine 3rd order (simplified fixed step)
+        k1 = self.dynamics(state, force)
+        k2 = self.dynamics(state + (1/2)*dt*k1, force)
+        k3 = self.dynamics(state + (3/4)*dt*k2, force)
+        return state + (dt/9) * (2*k1 + 3*k2 + 4*k3)
+
     def step(self):
         if not self.is_valid:
             return
 
-        M, m, l, g = self.mass_cart, self.mass_pole, self.length, self.gravity
         state_vec = np.array([self.x, self.v, self.theta, self.omega])
         target_vec = np.array([self.target_x, 0, 0, 0])
         
+        # Control force calculated once from initial state
         force = -np.dot(self.K, state_vec - target_vec)
-        L = l / 2.0
-        sin_t, cos_t = np.sin(self.theta), np.cos(self.theta)
         
-        temp = (force + m * L * self.omega**2 * sin_t) / (M + m)
-        theta_acc = (g * sin_t - cos_t * temp) / (L * (4.0/3.0 - m * cos_t**2 / (M + m)))
-        x_acc = temp - (m * L * theta_acc * cos_t) / (M + m)
+        # Select integration method
+        if self.integration_method == IntegrationMethod.RK4:
+            next_state = self._step_rk4(state_vec, force, self.dt)
+        elif self.integration_method == IntegrationMethod.ODE3:
+            next_state = self._step_ode3(state_vec, force, self.dt)
+        else: # Default to Euler
+            next_state = self._step_euler(state_vec, force, self.dt)
+
+        self.x, self.v, self.theta, self.omega = next_state
         
-        self.v += x_acc * self.dt
-        self.x += self.v * self.dt
-        self.omega += theta_acc * self.dt
-        self.theta += self.omega * self.dt
+        # Damping & Normalization
         self.v *= 0.999
         self.omega *= 0.999
         self.theta = (self.theta + np.pi) % (2 * np.pi) - np.pi
@@ -96,7 +129,6 @@ class Simulation:
         state_vals = [self.x, self.v, self.theta, self.omega]
         if not all(math.isfinite(v) and abs(v) < LIMIT for v in state_vals):
             self.is_valid = False
-            # Zero out to prevent any possible overflow in packing
             self.x, self.v, self.theta, self.omega = 0.0, 0.0, 0.0, 0.0
             print("SIMULATION FAILED: Numerical instability detected.", flush=True)
 
@@ -169,6 +201,7 @@ async def handle_client(websocket):
                 current_sim.q_ang = fb_params.QAng()
                 current_sim.q_omg = fb_params.QOmg()
                 current_sim.r_ctrl = fb_params.RCtrl()
+                current_sim.integration_method = fb_params.IntegrationMethod()
                 current_sim._recompute_lqr()
                 
             elif msg.Type() == MessageType.MessageType.Cmd:
