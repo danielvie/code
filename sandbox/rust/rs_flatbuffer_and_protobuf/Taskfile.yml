@@ -1,0 +1,71 @@
+version: '3'
+
+vars:
+  FLATC: './bin/flatc.exe'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  build-schemas:
+    desc: "Compile Protobuf and FlatBuffers schemas"
+    cmds:
+      - pwsh -Command "New-Item -ItemType Directory -Force -Path frontend/src/generated"
+      - pwsh -Command "New-Item -ItemType Directory -Force -Path backend/src/generated"
+      # Generate JS/TS for Protobuf using protobufjs-cli
+      - cd frontend && npx --no-install pbjs -t static-module -w es6 -o src/generated/sensor_proto.js ../schemas/sensor.proto
+      - cd frontend && npx --no-install pbts -o src/generated/sensor_proto.d.ts src/generated/sensor_proto.js
+      # Generate TS for FlatBuffers using flatc
+      - '{{.FLATC}} --ts -o frontend/src/generated schemas/sensor.fbs'
+      # Generate Rust for FlatBuffers using flatc
+      - '{{.FLATC}} --rust -o backend/src/generated schemas/sensor.fbs'
+      # Default behavior for PROST via build.rs handles backend protobufs
+
+  setup-flatc:
+    desc: "Download and extract the official flatc.exe for Windows"
+    cmds:
+      - pwsh -Command "Invoke-WebRequest -Uri https://github.com/google/flatbuffers/releases/download/v25.12.19-2026-02-06-03fffb2/Windows.flatc.binary.zip -OutFile flatc.zip"
+      - pwsh -Command "Expand-Archive -Path flatc.zip -DestinationPath bin -Force"
+      - pwsh -Command "Remove-Item flatc.zip"
+    status:
+      - test -f '{{.FLATC}}'
+
+  install:
+    desc: "Install frontend and backend dependencies"
+    deps: [setup-flatc]
+    cmds:
+      - cd frontend && npm install
+      - cd backend && cargo fetch
+
+  back:run:
+    desc: "Run the Rust server"
+    cmds:
+      - cd backend && cargo run --release
+
+  front:run:
+    desc: "Run the Vite frontend"
+    cmds:
+      - cd frontend && npm run dev
+
+  back:build:
+    desc: "Build the Rust backend for production"
+    deps: [build-schemas]
+    cmds:
+      - cd backend && cargo build --release
+
+  front:build:
+    desc: "Build the Vite frontend for production"
+    deps: [build-schemas]
+    cmds:
+      - cd frontend && npm run build
+
+  dev:
+    desc: "Run both applications concurrently"
+    deps: [build-schemas]
+    cmds:
+      - task: _dev_concurrent
+
+  _dev_concurrent:
+    internal: true
+    deps: [back:run, front:run]

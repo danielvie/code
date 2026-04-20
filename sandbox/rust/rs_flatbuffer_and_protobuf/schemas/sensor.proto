@@ -1,0 +1,14 @@
+syntax = "proto3";
+package sensor_proto;
+
+message Sensor {
+  uint32 id = 1;
+  float value = 2;
+  float x = 3;
+  float y = 4;
+  float z = 5;
+}
+
+message SensorList {
+  repeated Sensor sensors = 1;
+}

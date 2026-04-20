@@ -1,0 +1,20 @@
+# Rust Dependencies
+/backend/target/
+**/Cargo.lock
+
+# Node Dependencies
+/frontend/node_modules/
+/frontend/dist/
+package-lock.json
+
+# Local Executables & Zips
+/bin/
+flatc.zip
+
+# Generated Schemas (Optional to ignore, but included since they are built dynamically)
+/frontend/src/generated/
+/backend/src/generated/
+
+# Temp & OS
+.DS_Store
+*.log
