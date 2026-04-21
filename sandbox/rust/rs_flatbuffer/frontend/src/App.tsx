@@ -15,6 +15,7 @@ import {
   AlertTriangle,
   Undo2,
 } from "lucide-react";
+import { Agentation } from "agentation";
 import SimulationCanvas from "./components/SimulationCanvas";
 import ChartCanvas from "./components/ChartCanvas";
 
@@ -162,315 +163,340 @@ const App: React.FC = () => {
   }, [syncParams]);
 
   return (
-    <div className="dashboard">
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <div style={{ display: "flex", gap: "0.25rem", width: "100%", justifyContent: "end" }}>
-              <button
-                className="icon-btn"
-                onClick={handleRestoreDefaults}
-                title="Restore Default Settings"
-                aria-label="Restore Default Settings"
-              >
-                <Undo2 size={16} />
-              </button>
-              <button
-                className={`icon-btn ${!isValid ? "pulse" : ""}`}
-                onClick={handleReset}
-                title="Restart Simulation"
-                aria-label="Restart Simulation"
-              >
-                <RotateCcw size={16} />
-              </button>
-            </div>
-          </div>
-          <div
-            className="status"
-            style={{ display: "flex", justifyContent: "space-between" }}
-          >
+    <>
+      <div className="dashboard">
+        <aside className="sidebar">
+          <div className="sidebar-header">
             <div
-              style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
             >
               <div
-                className={`status-dot ${connected ? (isValid ? "connected" : "error") : ""}`}
-                title={
-                  connected
-                    ? isValid
-                      ? "Connected — simulation running"
-                      : "Connected — stability failure"
-                    : "Disconnected from backend"
-                }
-              />
-              <span>
-                {connected
-                  ? isValid
-                    ? "System Stable"
-                    : "Stability Failure"
-                  : "Disconnected"}
-              </span>
+                style={{
+                  display: "flex",
+                  gap: "0.25rem",
+                  width: "100%",
+                  justifyContent: "end",
+                }}
+              >
+                <button
+                  className="icon-btn"
+                  onClick={handleRestoreDefaults}
+                  title="Restore Default Settings"
+                  aria-label="Restore Default Settings"
+                >
+                  <Undo2 size={16} />
+                </button>
+                <button
+                  className={`icon-btn ${!isValid ? "pulse" : ""}`}
+                  onClick={handleReset}
+                  title="Restart Simulation"
+                  aria-label="Restart Simulation"
+                >
+                  <RotateCcw size={16} />
+                </button>
+              </div>
             </div>
-            {connected && (
-              <div className="pps-badge" title="Packets Per Second">
-                {pps} PPS
+            <div
+              className="status"
+              style={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
+                <div
+                  className={`status-dot ${connected ? (isValid ? "connected" : "error") : ""}`}
+                  title={
+                    connected
+                      ? isValid
+                        ? "Connected — simulation running"
+                        : "Connected — stability failure"
+                      : "Disconnected from backend"
+                  }
+                />
+                <span>
+                  {connected
+                    ? isValid
+                      ? "System Stable"
+                      : "Stability Failure"
+                    : "Disconnected"}
+                </span>
+              </div>
+              {connected && (
+                <div className="pps-badge" title="Packets Per Second">
+                  {pps} PPS
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="sidebar-content">
+            {!isValid && (
+              <div className="alert-box">
+                <AlertTriangle size={16} />
+                <span>Simulation Halted</span>
               </div>
             )}
-          </div>
-        </div>
 
-        <div className="sidebar-content">
-          {!isValid && (
-            <div className="alert-box">
-              <AlertTriangle size={16} />
-              <span>Simulation Halted</span>
-            </div>
-          )}
+            <div className="control-group">
+              <div className="control-group-title">Physics</div>
+              <div className="control-item">
+                <label htmlFor="length-slider">
+                  <Layers size={10} style={{ marginRight: 4 }} /> Pole Length
+                </label>
+                <div className="control-row">
+                  <input
+                    id="length-slider"
+                    type="range"
+                    min="0.5"
+                    max="3"
+                    step="0.1"
+                    value={params.length}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        length: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                  <div className="control-value">
+                    {params.length.toFixed(1)}m
+                  </div>
+                </div>
+              </div>
 
-          <div className="control-group">
-            <div className="control-group-title">Physics</div>
-            <div className="control-item">
-              <label htmlFor="length-slider">
-                <Layers size={10} style={{ marginRight: 4 }} /> Pole Length
-              </label>
-              <div className="control-row">
-                <input
-                  id="length-slider"
-                  type="range"
-                  min="0.5"
-                  max="3"
-                  step="0.1"
-                  value={params.length}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      length: parseFloat(e.target.value),
-                    }))
-                  }
-                />
-                <div className="control-value">{params.length.toFixed(1)}m</div>
+              <div className="control-item">
+                <label htmlFor="mass-slider">
+                  <Layers size={10} style={{ marginRight: 4 }} /> Pole Mass
+                </label>
+                <div className="control-row">
+                  <input
+                    id="mass-slider"
+                    type="range"
+                    min="0.01"
+                    max="1"
+                    step="0.01"
+                    value={params.massPole}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        massPole: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                  <div className="control-value">
+                    {params.massPole.toFixed(2)}kg
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="control-item">
-              <label htmlFor="mass-slider">
-                <Layers size={10} style={{ marginRight: 4 }} /> Pole Mass
-              </label>
-              <div className="control-row">
-                <input
-                  id="mass-slider"
-                  type="range"
-                  min="0.01"
-                  max="1"
-                  step="0.01"
-                  value={params.massPole}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      massPole: parseFloat(e.target.value),
-                    }))
-                  }
-                />
-                <div className="control-value">
-                  {params.massPole.toFixed(2)}kg
+            <div className="control-group">
+              <div className="control-group-title">LQR Penalties</div>
+              <div className="control-item">
+                <label htmlFor="qpos-slider">
+                  <Cpu size={10} style={{ marginRight: 4 }} /> Position (Q1)
+                </label>
+                <div className="control-row">
+                  <input
+                    id="qpos-slider"
+                    type="range"
+                    min="1"
+                    max="200"
+                    step="1"
+                    value={params.qPos}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        qPos: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                  <div className="control-value">{params.qPos.toFixed(0)}</div>
+                </div>
+              </div>
+
+              <div className="control-item">
+                <label htmlFor="qvel-slider">
+                  <Cpu size={10} style={{ marginRight: 4 }} /> Velocity (Q2)
+                </label>
+                <div className="control-row">
+                  <input
+                    id="qvel-slider"
+                    type="range"
+                    min="1"
+                    max="200"
+                    step="1"
+                    value={params.qVel}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        qVel: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                  <div className="control-value">{params.qVel.toFixed(0)}</div>
+                </div>
+              </div>
+
+              <div className="control-item">
+                <label htmlFor="qang-slider">
+                  <Cpu size={10} style={{ marginRight: 4 }} /> Angle (Q3)
+                </label>
+                <div className="control-row">
+                  <input
+                    id="qang-slider"
+                    type="range"
+                    min="1"
+                    max="200"
+                    step="1"
+                    value={params.qAng}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        qAng: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                  <div className="control-value">{params.qAng.toFixed(0)}</div>
+                </div>
+              </div>
+
+              <div className="control-item">
+                <label htmlFor="qomg-slider">
+                  <Cpu size={10} style={{ marginRight: 4 }} /> Ang.Vel (Q4)
+                </label>
+                <div className="control-row">
+                  <input
+                    id="qomg-slider"
+                    type="range"
+                    min="1"
+                    max="50"
+                    step="1"
+                    value={params.qOmg}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        qOmg: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                  <div className="control-value">{params.qOmg.toFixed(0)}</div>
+                </div>
+              </div>
+
+              <div className="control-item">
+                <label htmlFor="r-slider">
+                  <Activity size={10} style={{ marginRight: 4 }} /> Control
+                  Effort (R)
+                </label>
+                <div className="control-row">
+                  <input
+                    id="r-slider"
+                    type="range"
+                    min="0.01"
+                    max="100"
+                    step="0.1"
+                    value={params.rCtrl}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        rCtrl: parseFloat(e.target.value),
+                      }))
+                    }
+                  />
+                  <div className="control-value">{params.rCtrl.toFixed(3)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="control-group">
+              <div className="control-group-title">Solver</div>
+              <div className="control-item">
+                <label htmlFor="solver-select">
+                  <Cpu size={10} style={{ marginRight: 4 }} /> Integration
+                  Method
+                </label>
+                <div className="control-row">
+                  <select
+                    id="solver-select"
+                    value={params.integrationMethod}
+                    onChange={(e) =>
+                      setParams((p) => ({
+                        ...p,
+                        integrationMethod: parseInt(e.target.value),
+                      }))
+                    }
+                  >
+                    <option value={IntegrationMethod.Euler}>
+                      Euler (Fast)
+                    </option>
+                    <option value={IntegrationMethod.ODE3}>
+                      ODE3 (Balanced)
+                    </option>
+                    <option value={IntegrationMethod.RK4}>
+                      Runge-Kutta 4 (Precise)
+                    </option>
+                  </select>
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="control-group">
-            <div className="control-group-title">LQR Penalties</div>
-            <div className="control-item">
-              <label htmlFor="qpos-slider">
-                <Cpu size={10} style={{ marginRight: 4 }} /> Position (Q1)
-              </label>
-              <div className="control-row">
-                <input
-                  id="qpos-slider"
-                  type="range"
-                  min="1"
-                  max="200"
-                  step="1"
-                  value={params.qPos}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      qPos: parseFloat(e.target.value),
-                    }))
-                  }
-                />
-                <div className="control-value">{params.qPos.toFixed(0)}</div>
+          <div
+            style={{
+              padding: "0.75rem 1.25rem",
+              background: "var(--surface)",
+              borderTop: "1px solid var(--border)",
+            }}
+          >
+            <div className="telemetry-grid">
+              <div
+                className={`data-node ${Math.abs(targetX - state.x) > 0.5 ? "highlight" : ""}`}
+              >
+                <div className="data-label">Target</div>
+                <div className="data-value">{targetX.toFixed(2)}m</div>
               </div>
-            </div>
-
-            <div className="control-item">
-              <label htmlFor="qvel-slider">
-                <Cpu size={10} style={{ marginRight: 4 }} /> Velocity (Q2)
-              </label>
-              <div className="control-row">
-                <input
-                  id="qvel-slider"
-                  type="range"
-                  min="1"
-                  max="200"
-                  step="1"
-                  value={params.qVel}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      qVel: parseFloat(e.target.value),
-                    }))
-                  }
-                />
-                <div className="control-value">{params.qVel.toFixed(0)}</div>
+              <div className="data-node">
+                <div className="data-label">Pos.X</div>
+                <div className="data-value">{state.x.toFixed(3)}</div>
               </div>
-            </div>
-
-            <div className="control-item">
-              <label htmlFor="qang-slider">
-                <Cpu size={10} style={{ marginRight: 4 }} /> Angle (Q3)
-              </label>
-              <div className="control-row">
-                <input
-                  id="qang-slider"
-                  type="range"
-                  min="1"
-                  max="200"
-                  step="1"
-                  value={params.qAng}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      qAng: parseFloat(e.target.value),
-                    }))
-                  }
-                />
-                <div className="control-value">{params.qAng.toFixed(0)}</div>
-              </div>
-            </div>
-
-            <div className="control-item">
-              <label htmlFor="qomg-slider">
-                <Cpu size={10} style={{ marginRight: 4 }} /> Ang.Vel (Q4)
-              </label>
-              <div className="control-row">
-                <input
-                  id="qomg-slider"
-                  type="range"
-                  min="1"
-                  max="50"
-                  step="1"
-                  value={params.qOmg}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      qOmg: parseFloat(e.target.value),
-                    }))
-                  }
-                />
-                <div className="control-value">{params.qOmg.toFixed(0)}</div>
-              </div>
-            </div>
-
-            <div className="control-item">
-              <label htmlFor="r-slider">
-                <Activity size={10} style={{ marginRight: 4 }} /> Control Effort
-                (R)
-              </label>
-              <div className="control-row">
-                <input
-                  id="r-slider"
-                  type="range"
-                  min="0.01"
-                  max="100"
-                  step="0.1"
-                  value={params.rCtrl}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      rCtrl: parseFloat(e.target.value),
-                    }))
-                  }
-                />
-                <div className="control-value">{params.rCtrl.toFixed(3)}</div>
+              <div className="data-node">
+                <div className="data-label">Deg.θ</div>
+                <div className="data-value">
+                  {((state.theta * 180) / Math.PI).toFixed(2)}°
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="control-group">
-            <div className="control-group-title">Solver</div>
+          <div className="sidebar-footer">
             <div className="control-item">
-              <label htmlFor="solver-select">
-                <Cpu size={10} style={{ marginRight: 4 }} /> Integration Method
+              <label
+                style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}
+              >
+                Chart (pos)
               </label>
-              <div className="control-row">
-                <select
-                  id="solver-select"
-                  value={params.integrationMethod}
-                  onChange={(e) =>
-                    setParams((p) => ({
-                      ...p,
-                      integrationMethod: parseInt(e.target.value),
-                    }))
-                  }
-                >
-                  <option value={IntegrationMethod.Euler}>Euler (Fast)</option>
-                  <option value={IntegrationMethod.ODE3}>
-                    ODE3 (Balanced)
-                  </option>
-                  <option value={IntegrationMethod.RK4}>
-                    Runge-Kutta 4 (Precise)
-                  </option>
-                </select>
-              </div>
+              <ChartCanvas historyRef={historyRef} />
             </div>
           </div>
+        </aside>
 
-          <div className="telemetry-grid">
-            <div
-              className={`data-node ${Math.abs(targetX - state.x) > 0.5 ? "highlight" : ""}`}
-            >
-              <div className="data-label">Target</div>
-              <div className="data-value">{targetX.toFixed(2)}m</div>
-            </div>
-            <div className="data-node">
-              <div className="data-label">Pos.X</div>
-              <div className="data-value">{state.x.toFixed(3)}</div>
-            </div>
-            <div className="data-node">
-              <div className="data-label">Deg.θ</div>
-              <div className="data-value">
-                {((state.theta * 180) / Math.PI).toFixed(2)}°
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="sidebar-footer">
-          <div className="control-item">
-            <label style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}>
-              Chart (pos)
-            </label>
-            <ChartCanvas historyRef={historyRef} />
-          </div>
-        </div>
-      </aside>
-
-      <main className="viewport">
-        <SimulationCanvas
-          state={state}
-          target_x={targetX}
-          params={params}
-          is_valid={isValid}
-          on_target_change={setTargetX}
-        />
-      </main>
-    </div>
+        <main className="viewport">
+          <SimulationCanvas
+            state={state}
+            target_x={targetX}
+            params={params}
+            is_valid={isValid}
+            on_target_change={setTargetX}
+          />
+        </main>
+      </div>
+      {process.env.NODE_ENV === "development" && <Agentation />}
+    </>
   );
 };
 
