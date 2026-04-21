@@ -1,23 +1,17 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import * as flatbuffers from "flatbuffers";
-import { Message } from "./generated/Simulation/message";
-import { MessageType } from "./generated/Simulation/message-type";
-import { PendulumState } from "./generated/Simulation/pendulum-state";
-import { Parameters } from "./generated/Simulation/parameters";
-import { Command } from "./generated/Simulation/command";
-import { Reset } from "./generated/Simulation/reset";
-import { IntegrationMethod } from "./generated/Simulation/integration-method";
-import {
-  Activity,
-  Cpu,
-  Layers,
-  RotateCcw,
-  AlertTriangle,
-  Undo2,
-} from "lucide-react";
+import { Message } from "./generated/simulation/message";
+import { MessageType } from "./generated/simulation/message-type";
+import { PendulumState } from "./generated/simulation/pendulum-state";
+import { Parameters } from "./generated/simulation/parameters";
+import { Command } from "./generated/simulation/command";
+import { Reset } from "./generated/simulation/reset";
+import { IntegrationMethod } from "./generated/simulation/integration-method";
+import { Activity, Cpu, Layers, AlertTriangle, Undo2 } from "lucide-react";
 import { Agentation } from "agentation";
 import SimulationCanvas from "./components/SimulationCanvas";
 import ChartCanvas from "./components/ChartCanvas";
+import Header from "./components/Header";
 
 const DEFAULT_PARAMS = {
   length: 1.0,
@@ -33,6 +27,7 @@ const DEFAULT_PARAMS = {
 
 const App: React.FC = () => {
   const wsRef = useRef<WebSocket | null>(null);
+  const reconnectTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [connected, setConnected] = useState(false);
   const [isValid, setIsValid] = useState(true);
   const [pps, setPps] = useState(0);
@@ -77,7 +72,7 @@ const App: React.FC = () => {
       Message.addData(outerBuilder, dataVector);
       const msgOffset = Message.endMessage(outerBuilder);
       outerBuilder.finish(msgOffset);
-      wsRef.current.send(outerBuilder.asUint8Array());
+      wsRef.current.send(outerBuilder.asUint8Array() as BufferSource);
     },
     [],
   );
@@ -98,38 +93,63 @@ const App: React.FC = () => {
 
   // WebSocket Setup
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:8765");
-    ws.binaryType = "arraybuffer";
-    wsRef.current = ws;
-    ws.onopen = () => setConnected(true);
-    ws.onclose = () => setConnected(false);
-    ws.onmessage = (event) => {
-      packetCountRef.current++;
-      const buf = new Uint8Array(event.data);
-      const builder = new flatbuffers.ByteBuffer(buf);
-      const msg = Message.getRootAsMessage(builder);
-      if (msg.type() === MessageType.State) {
-        const stateData = msg.dataArray();
-        if (stateData) {
-          const stateBuf = new flatbuffers.ByteBuffer(stateData);
-          const pState = PendulumState.getRootAsPendulumState(stateBuf);
-          const valid = pState.isValid();
-          setIsValid(valid);
-          if (valid) {
-            const currentX = pState.cartPosition();
-            setState({
-              x: currentX,
-              v: pState.cartVelocity(),
-              theta: pState.pendulumAngle(),
-              omega: pState.pendulumAngularVelocity(),
-            });
-            historyRef.current.push({ x: currentX, target: targetRef.current });
-            if (historyRef.current.length > 300) historyRef.current.shift();
+    let reconnectDelay = 1000;
+
+    const connectWs = () => {
+      const ws = new WebSocket("ws://localhost:8765");
+      ws.binaryType = "arraybuffer";
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        setConnected(true);
+        reconnectDelay = 1000;
+      };
+
+      ws.onclose = () => {
+        setConnected(false);
+        wsRef.current = null;
+        reconnectTimerRef.current = setTimeout(() => {
+          connectWs();
+        }, reconnectDelay);
+        reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+      };
+
+      ws.onmessage = (event) => {
+        packetCountRef.current++;
+        const buf = new Uint8Array(event.data);
+        const builder = new flatbuffers.ByteBuffer(buf);
+        const msg = Message.getRootAsMessage(builder);
+        if (msg.type() === MessageType.State) {
+          const stateData = msg.dataArray();
+          if (stateData) {
+            const stateBuf = new flatbuffers.ByteBuffer(stateData);
+            const pState = PendulumState.getRootAsPendulumState(stateBuf);
+            const valid = pState.isValid();
+            setIsValid(valid);
+            if (valid) {
+              const currentX = pState.cartPosition();
+              setState({
+                x: currentX,
+                v: pState.cartVelocity(),
+                theta: pState.pendulumAngle(),
+                omega: pState.pendulumAngularVelocity(),
+              });
+              historyRef.current.push({
+                x: currentX,
+                target: targetRef.current,
+              });
+              if (historyRef.current.length > 300) historyRef.current.shift();
+            }
           }
         }
-      }
+      };
     };
-    return () => ws.close();
+    connectWs();
+
+    return () => {
+      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
+      wsRef.current?.close();
+    };
   }, []);
 
   const syncParams = useCallback(() => {
@@ -166,74 +186,28 @@ const App: React.FC = () => {
     <>
       <div className="dashboard">
         <aside className="sidebar">
-          <div className="sidebar-header">
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <div
+          <div className="sidebar-content">
+            <div>
+              <button
+                className="icon-btn"
+                onClick={handleRestoreDefaults}
+                title="Restore Default Settings"
+                aria-label="Restore Default Settings"
                 style={{
-                  display: "flex",
-                  gap: "0.25rem",
                   width: "100%",
-                  justifyContent: "end",
+                  justifyContent: "center",
+                  background: "#181b21",
+                  border: "1px solid rgb(37, 42, 51)",
+                  gap: "0.5rem",
                 }}
               >
-                <button
-                  className="icon-btn"
-                  onClick={handleRestoreDefaults}
-                  title="Restore Default Settings"
-                  aria-label="Restore Default Settings"
-                >
-                  <Undo2 size={16} />
-                </button>
-                <button
-                  className={`icon-btn ${!isValid ? "pulse" : ""}`}
-                  onClick={handleReset}
-                  title="Restart Simulation"
-                  aria-label="Restart Simulation"
-                >
-                  <RotateCcw size={16} />
-                </button>
-              </div>
-            </div>
-            <div
-              className="status"
-              style={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <div
-                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
-              >
-                <div
-                  className={`status-dot ${connected ? (isValid ? "connected" : "error") : ""}`}
-                  title={
-                    connected
-                      ? isValid
-                        ? "Connected — simulation running"
-                        : "Connected — stability failure"
-                      : "Disconnected from backend"
-                  }
-                />
-                <span>
-                  {connected
-                    ? isValid
-                      ? "System Stable"
-                      : "Stability Failure"
-                    : "Disconnected"}
+                <Undo2 size={16} />
+                <span style={{ fontSize: "0.7rem", fontWeight: 700 }}>
+                  Restore Defaults
                 </span>
-              </div>
-              {connected && (
-                <div className="pps-badge" title="Packets Per Second">
-                  {pps} PPS
-                </div>
-              )}
+              </button>
             </div>
-          </div>
 
-          <div className="sidebar-content">
             {!isValid && (
               <div className="alert-box">
                 <AlertTriangle size={16} />
@@ -446,33 +420,6 @@ const App: React.FC = () => {
             </div>
           </div>
 
-          <div
-            style={{
-              padding: "0.75rem 1.25rem",
-              background: "var(--surface)",
-              borderTop: "1px solid var(--border)",
-            }}
-          >
-            <div className="telemetry-grid">
-              <div
-                className={`data-node ${Math.abs(targetX - state.x) > 0.5 ? "highlight" : ""}`}
-              >
-                <div className="data-label">Target</div>
-                <div className="data-value">{targetX.toFixed(2)}m</div>
-              </div>
-              <div className="data-node">
-                <div className="data-label">Pos.X</div>
-                <div className="data-value">{state.x.toFixed(3)}</div>
-              </div>
-              <div className="data-node">
-                <div className="data-label">Deg.θ</div>
-                <div className="data-value">
-                  {((state.theta * 180) / Math.PI).toFixed(2)}°
-                </div>
-              </div>
-            </div>
-          </div>
-
           <div className="sidebar-footer">
             <div className="control-item">
               <label
@@ -486,6 +433,14 @@ const App: React.FC = () => {
         </aside>
 
         <main className="viewport">
+          <Header
+            connected={connected}
+            isValid={isValid}
+            pps={pps}
+            targetX={targetX}
+            state={state}
+            onReset={handleReset}
+          />
           <SimulationCanvas
             state={state}
             target_x={targetX}
@@ -495,7 +450,9 @@ const App: React.FC = () => {
           />
         </main>
       </div>
-      {process.env.NODE_ENV === "development" && <Agentation />}
+      {process.env.NODE_ENV === "development" && (
+        <Agentation endpoint="http://localhost:4747" />
+      )}
     </>
   );
 };

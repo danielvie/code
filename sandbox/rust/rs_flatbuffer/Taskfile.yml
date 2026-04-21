@@ -57,13 +57,18 @@ tasks:
     dir: "frontend"
     cmds:
       - npm run dev
-
-  dev:
+      
+  front:agentation:
+    desc: "Run the agentation server"
+    cmds:
+      - npx agentation-mcp server
+      
+  run:
     desc: "Build schemas then run both Rust backend and Vite frontend concurrently"
     deps: [build-schemas]
     cmds:
-      - task: _dev_concurrent
+      - task: _run_concurrent
 
-  _dev_concurrent:
+  _run_concurrent:
     internal: true
-    deps: [back:run, front:run]
+    deps: [back:run, front:run, front:agentation]
