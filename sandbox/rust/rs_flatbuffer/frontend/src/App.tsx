@@ -58,6 +58,11 @@ const App: React.FC = () => {
     targetRef.current = targetX;
   }, [targetX]);
 
+  const paramsRef = useRef(DEFAULT_PARAMS);
+  useEffect(() => {
+    paramsRef.current = params;
+  }, [params]);
+
   const sendMsg = useCallback(
     (type: MessageType, dataBuilder: (b: flatbuffers.Builder) => number) => {
       if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
@@ -93,28 +98,68 @@ const App: React.FC = () => {
 
   // WebSocket Setup
   useEffect(() => {
+    let active = true;
+    let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
     let reconnectDelay = 1000;
+    let ws: WebSocket | null = null;
 
     const connectWs = () => {
-      const ws = new WebSocket("ws://localhost:8765");
-      ws.binaryType = "arraybuffer";
-      wsRef.current = ws;
+      if (!active) return;
 
-      ws.onopen = () => {
+      const socket = new WebSocket("ws://localhost:8765");
+      socket.binaryType = "arraybuffer";
+      ws = socket;
+      wsRef.current = socket;
+
+      socket.onopen = () => {
+        if (!active) {
+          socket.close();
+          return;
+        }
         setConnected(true);
         reconnectDelay = 1000;
+
+        // Re-sync target and params so the backend does not run with
+        // stale defaults after a reconnect.
+        const t = targetRef.current;
+        sendMsg(MessageType.Cmd, (b) => {
+          Command.startCommand(b);
+          Command.addTargetPosition(b, t);
+          return Command.endCommand(b);
+        });
+
+        const p = paramsRef.current;
+        sendMsg(MessageType.Params, (b) => {
+          Parameters.startParameters(b);
+          Parameters.addLength(b, p.length);
+          Parameters.addMassCart(b, p.massCart);
+          Parameters.addMassPole(b, p.massPole);
+          Parameters.addQPos(b, p.qPos);
+          Parameters.addQVel(b, p.qVel);
+          Parameters.addQAng(b, p.qAng);
+          Parameters.addQOmg(b, p.qOmg);
+          Parameters.addRCtrl(b, p.rCtrl);
+          Parameters.addIntegrationMethod(b, p.integrationMethod);
+          return Parameters.endParameters(b);
+        });
       };
 
-      ws.onclose = () => {
-        setConnected(false);
-        wsRef.current = null;
-        reconnectTimerRef.current = setTimeout(() => {
-          connectWs();
-        }, reconnectDelay);
-        reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+      socket.onclose = () => {
+        if (wsRef.current === socket) {
+          setConnected(false);
+          wsRef.current = null;
+        }
+
+        if (active) {
+          reconnectTimer = setTimeout(() => {
+            connectWs();
+          }, reconnectDelay);
+          reconnectDelay = Math.min(reconnectDelay * 2, 30000);
+        }
       };
 
-      ws.onmessage = (event) => {
+      socket.onmessage = (event) => {
+        if (!active) return;
         packetCountRef.current++;
         const buf = new Uint8Array(event.data);
         const builder = new flatbuffers.ByteBuffer(buf);
@@ -147,10 +192,17 @@ const App: React.FC = () => {
     connectWs();
 
     return () => {
-      if (reconnectTimerRef.current) clearTimeout(reconnectTimerRef.current);
-      wsRef.current?.close();
+      active = false;
+      if (reconnectTimer) clearTimeout(reconnectTimer);
+      if (ws) {
+        ws.close();
+        ws = null;
+      }
+      if (wsRef.current) {
+        wsRef.current = null;
+      }
     };
-  }, []);
+  }, [sendMsg]);
 
   const syncParams = useCallback(() => {
     sendMsg(MessageType.Params, (b) => {
