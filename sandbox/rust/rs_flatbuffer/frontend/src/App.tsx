@@ -8,7 +8,6 @@ import { Command } from "./generated/Simulation/command";
 import { Reset } from "./generated/Simulation/reset";
 import { IntegrationMethod } from "./generated/Simulation/integration-method";
 import {
-  Target,
   Activity,
   Cpu,
   Layers,
@@ -16,6 +15,8 @@ import {
   AlertTriangle,
   Undo2,
 } from "lucide-react";
+import SimulationCanvas from "./components/SimulationCanvas";
+import ChartCanvas from "./components/ChartCanvas";
 
 const DEFAULT_PARAMS = {
   length: 1.0,
@@ -30,8 +31,6 @@ const DEFAULT_PARAMS = {
 };
 
 const App: React.FC = () => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const chartRef = useRef<HTMLCanvasElement>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const [connected, setConnected] = useState(false);
   const [isValid, setIsValid] = useState(true);
@@ -162,240 +161,6 @@ const App: React.FC = () => {
     syncParams();
   }, [syncParams]);
 
-  // Main Render
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let animationFrameId: number;
-
-    const render = () => {
-      ctx.fillStyle = "#13161c";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2 + 100;
-      const scale = 220;
-
-      // Grid
-      ctx.strokeStyle = "#1e232a";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      for (let i = -20; i <= 20; i++) {
-        const px = centerX + i * (scale / 4);
-        ctx.moveTo(px, 0);
-        ctx.lineTo(px, canvas.height);
-      }
-      ctx.stroke();
-
-      // Track
-      ctx.strokeStyle = "#252a33";
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(0, centerY + 25);
-      ctx.lineTo(canvas.width, centerY + 25);
-      ctx.stroke();
-
-      // Target (Indicator)
-      const tx = centerX + targetX * scale;
-      ctx.strokeStyle = "rgba(244, 63, 94, 0.65)";
-      ctx.setLineDash([4, 4]);
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(tx, 0);
-      ctx.lineTo(tx, canvas.height);
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // Cart
-      const cartX = centerX + state.x * scale;
-      const cartY = centerY;
-
-      // Cart Body
-      ctx.fillStyle = isValid ? "#2a3039" : "#7f1d1d";
-      ctx.strokeStyle = "#3a414d";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.roundRect(cartX - 50, cartY - 20, 100, 40, 4);
-      ctx.fill();
-      ctx.stroke();
-
-      // Wooden Wheels
-      const drawWheel = (wx: number, wy: number) => {
-        const radius = 12;
-
-        // Tire
-        ctx.fillStyle = "#5c4033";
-        ctx.beginPath();
-        ctx.arc(wx, wy, radius, 0, Math.PI * 2);
-        ctx.fill();
-
-        // Rim
-        ctx.strokeStyle = "#8b6f47";
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.arc(wx, wy, radius - 2, 0, Math.PI * 2);
-        ctx.stroke();
-
-        // Spokes
-        ctx.strokeStyle = "#6b5237";
-        ctx.lineWidth = 1.5;
-        ctx.lineCap = "round";
-        for (let i = 0; i < 4; i++) {
-          const angle = (i * Math.PI) / 2;
-          ctx.beginPath();
-          ctx.moveTo(wx, wy);
-          ctx.lineTo(
-            wx + Math.cos(angle) * (radius - 3),
-            wy + Math.sin(angle) * (radius - 3),
-          );
-          ctx.stroke();
-        }
-
-        // Hub
-        ctx.fillStyle = "#4a3728";
-        ctx.beginPath();
-        ctx.arc(wx, wy, 3, 0, Math.PI * 2);
-        ctx.fill();
-      };
-
-      drawWheel(cartX - 35, cartY + 20);
-      drawWheel(cartX + 35, cartY + 20);
-
-      // Pole
-      const poleEndX = cartX + Math.sin(state.theta) * params.length * scale;
-      const poleEndY =
-        cartY - 20 - Math.cos(state.theta) * params.length * scale;
-
-      ctx.strokeStyle = "#64748b";
-      ctx.lineWidth = 6;
-      ctx.lineCap = "round";
-      ctx.beginPath();
-      ctx.moveTo(cartX, cartY - 20);
-      ctx.lineTo(poleEndX, poleEndY);
-      ctx.stroke();
-
-      // Bob
-      ctx.fillStyle = isValid ? "#2dd4bf" : "#f43f5e";
-      ctx.beginPath();
-      ctx.arc(poleEndX, poleEndY, 14, 0, Math.PI * 2);
-      ctx.fill();
-
-      if (!isValid) {
-        ctx.fillStyle = "rgba(0,0,0,0.4)";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = "#fff";
-        ctx.font = "bold 24px Inter";
-        ctx.textAlign = "center";
-        ctx.fillText("STABILITY FAILURE", centerX, centerY - 20);
-        ctx.font = "16px Inter";
-        ctx.fillText("NUMERICAL OVERFLOW DETECTED", centerX, centerY + 10);
-      }
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-    render();
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [state, params, targetX, isValid]);
-
-  // Chart Render
-  useEffect(() => {
-    const canvas = chartRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    let frame: number;
-    const render = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const history = historyRef.current;
-      if (history.length < 2) {
-        frame = requestAnimationFrame(render);
-        return;
-      }
-
-      const w = canvas.width;
-      const h = canvas.height;
-      const scale = 40;
-
-      // Grid
-      ctx.strokeStyle = "#1e232a";
-      ctx.lineWidth = 1;
-      for (let y = -5; y <= 5; y++) {
-        const yPos = h / 2 - y * scale;
-        ctx.beginPath();
-        ctx.moveTo(0, yPos);
-        ctx.lineTo(w, yPos);
-        ctx.stroke();
-      }
-
-      // Origin
-      ctx.strokeStyle = "#2a3039";
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(0, h / 2);
-      ctx.lineTo(w, h / 2);
-      ctx.stroke();
-
-      // Target
-      ctx.strokeStyle = "rgba(244, 63, 94, 0.65)";
-      ctx.setLineDash([4, 4]);
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      history.forEach((p, i) => {
-        const x = (i / 300) * w;
-        const y = h / 2 - p.target * scale;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-      ctx.setLineDash([]);
-
-      // State
-      ctx.strokeStyle = "rgba(45, 212, 191, 0.85)";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      history.forEach((p, i) => {
-        const x = (i / 300) * w;
-        const y = h / 2 - p.x * scale;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-
-      frame = requestAnimationFrame(render);
-    };
-    render();
-    return () => cancelAnimationFrame(frame);
-  }, []);
-
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const centerX = canvas.width / 2;
-    const scale = 220; // Must match the render scale
-    const newTargetX = (x - centerX) / scale;
-    // Constrain to reasonable range
-    setTargetX(Math.max(-5, Math.min(5, newTargetX)));
-  };
-
-  useEffect(() => {
-    const handleResize = (entries: ResizeObserverEntry[]) => {
-      for (const entry of entries) {
-        const canvas = entry.target as HTMLCanvasElement;
-        canvas.width = entry.contentRect.width;
-        canvas.height = entry.contentRect.height;
-      }
-    };
-
-    const observer = new ResizeObserver(handleResize);
-    if (canvasRef.current) observer.observe(canvasRef.current);
-    if (chartRef.current) observer.observe(chartRef.current);
-
-    return () => observer.disconnect();
-  }, []);
-
   return (
     <div className="dashboard">
       <aside className="sidebar">
@@ -407,11 +172,7 @@ const App: React.FC = () => {
               alignItems: "center",
             }}
           >
-            <h1>
-              Antigrav{" "}
-              <span style={{ fontWeight: 400, opacity: 0.5 }}>v2.1</span>
-            </h1>
-            <div style={{ display: "flex", gap: "0.25rem" }}>
+            <div style={{ display: "flex", gap: "0.25rem", width: "100%", justifyContent: "end" }}>
               <button
                 className="icon-btn"
                 onClick={handleRestoreDefaults}
@@ -695,18 +456,18 @@ const App: React.FC = () => {
             <label style={{ paddingLeft: "1.25rem", paddingRight: "1.25rem" }}>
               Chart (pos)
             </label>
-            <div className="chart-container">
-              <canvas ref={chartRef} />
-            </div>
+            <ChartCanvas historyRef={historyRef} />
           </div>
         </div>
       </aside>
 
       <main className="viewport">
-        <canvas
-          ref={canvasRef}
-          onClick={handleCanvasClick}
-          style={{ cursor: "crosshair" }}
+        <SimulationCanvas
+          state={state}
+          target_x={targetX}
+          params={params}
+          is_valid={isValid}
+          on_target_change={setTargetX}
         />
       </main>
     </div>
