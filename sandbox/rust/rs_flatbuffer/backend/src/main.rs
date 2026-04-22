@@ -25,6 +25,7 @@ use tokio_tungstenite::{accept_async, tungstenite::Message as WsMessage};
 
 const BIND_ADDR: &str = "127.0.0.1:8765";
 
+/// Application entry point: initializes logging, shared state, and background tasks.
 #[tokio::main]
 async fn main() {
     env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info")).init();
@@ -36,8 +37,9 @@ async fn main() {
     let (tx, _) = broadcast::channel::<Vec<u8>>(16);
 
     // Spawn the global physics loop.
-    tokio::spawn(global_physics_loop(Arc::clone(&sim), tx.clone()));
+    tokio::spawn(simulation_run(Arc::clone(&sim), tx.clone()));
 
+    // Sets the listenner for incoming TCP traffic
     let listener = TcpListener::bind(BIND_ADDR)
         .await
         .unwrap_or_else(|e| panic!("Failed to bind {BIND_ADDR}: {e}"));
@@ -47,23 +49,21 @@ async fn main() {
     loop {
         match listener.accept().await {
             Ok((stream, addr)) => {
-                tokio::spawn(handle_client(stream, addr, Arc::clone(&sim), tx.clone()));
+                tokio::spawn(websocket_handler(stream, addr, Arc::clone(&sim), tx.clone()));
             }
             Err(e) => log::error!("Accept error: {e}"),
         }
     }
 }
 
-async fn global_physics_loop(sim: Arc<Mutex<Simulation>>, tx: broadcast::Sender<Vec<u8>>) {
+/// Simulation driver: steps the physics engine and broadcasts state updates at 60Hz.
+async fn simulation_run(sim: Arc<Mutex<Simulation>>, tx: broadcast::Sender<Vec<u8>>) {
     let mut builder = FlatBufferBuilder::with_capacity(512);
     let mut next_frame_due = tokio::time::Instant::now();
     let frame_interval = Duration::from_secs_f64(DT_SECONDS);
 
     loop {
-        {
-            let mut guard = sim.lock().await;
-            guard.step();
-        }
+        sim.lock().await.step();
 
         let payload = {
             let guard = sim.lock().await;
@@ -76,14 +76,15 @@ async fn global_physics_loop(sim: Arc<Mutex<Simulation>>, tx: broadcast::Sender<
         let now = tokio::time::Instant::now();
         if next_frame_due > now {
             tokio::time::sleep_until(next_frame_due).await;
-        } else {
+        } /* else {
             next_frame_due = now;
             tokio::task::yield_now().await;
-        }
+        } */
     }
 }
 
-async fn handle_client(
+/// Manages the WebSocket lifecycle and message routing for a single client.
+async fn websocket_handler(
     stream: TcpStream,
     addr: SocketAddr,
     sim: Arc<Mutex<Simulation>>,
@@ -91,6 +92,7 @@ async fn handle_client(
 ) {
     log::info!("Client connected: {addr}");
 
+    // 1. WebSocket Handshake
     let ws = match accept_async(stream).await {
         Ok(ws) => ws,
         Err(e) => {
@@ -99,9 +101,11 @@ async fn handle_client(
         }
     };
 
+    // 2. Split into sink (TX) and stream (RX)
     let (mut ws_tx, mut ws_rx) = ws.split();
     let mut rx = tx.subscribe();
 
+    // 3. Spawn task to forward simulation updates to this client
     let send_task = tokio::spawn(async move {
         while let Ok(payload) = rx.recv().await {
             if let Err(e) = ws_tx.send(WsMessage::Binary(payload.into())).await {
@@ -111,6 +115,7 @@ async fn handle_client(
         }
     });
 
+    // 4. Inbound message loop (Params, Cmd, Reset)
     while let Some(msg) = ws_rx.next().await {
         let msg = match msg {
             Ok(m) => m,
@@ -121,15 +126,18 @@ async fn handle_client(
         };
 
         if msg.is_binary() {
-            decode_and_apply(msg.into_data().to_vec(), &sim).await;
+            // Dispatch binary data to simulation handlers
+            simulation_process_message(msg.into_data().to_vec(), &sim).await;
         }
     }
 
+    // 5. Cleanup on disconnect
     send_task.abort();
     log::info!("Client disconnected: {addr}");
 }
 
-async fn decode_and_apply(data: Vec<u8>, sim: &Arc<Mutex<Simulation>>) {
+/// Decodes FlatBuffer frames and delegates to specific handlers.
+async fn simulation_process_message(data: Vec<u8>, sim: &Arc<Mutex<Simulation>>) {
     let msg = match flatbuffers::root::<Message>(&data) {
         Ok(m) => m,
         Err(e) => {
@@ -139,14 +147,15 @@ async fn decode_and_apply(data: Vec<u8>, sim: &Arc<Mutex<Simulation>>) {
     };
 
     match msg.type_() {
-        MessageType::Params => apply_params(msg, sim).await,
-        MessageType::Cmd => apply_cmd(msg, sim).await,
-        MessageType::Reset => apply_reset(sim).await,
+        MessageType::Params => simulation_apply_params(msg, sim).await,
+        MessageType::Cmd => simulation_apply_cmd(msg, sim).await,
+        MessageType::Reset => simulation_apply_reset(sim).await,
         _ => log::debug!("Unknown message type: {:?}", msg.type_()),
     }
 }
 
-async fn apply_params(msg: Message<'_>, sim: &Arc<Mutex<Simulation>>) {
+/// Parameter handler: updates physical constants like mass and length in the simulation.
+async fn simulation_apply_params(msg: Message<'_>, sim: &Arc<Mutex<Simulation>>) {
     let Some(raw) = msg.data() else {
         return;
     };
@@ -174,7 +183,8 @@ async fn apply_params(msg: Message<'_>, sim: &Arc<Mutex<Simulation>>) {
     sim.lock().await.apply_params(new_params);
 }
 
-async fn apply_cmd(msg: Message<'_>, sim: &Arc<Mutex<Simulation>>) {
+/// Command handler: updates the target horizontal position of the cart.
+async fn simulation_apply_cmd(msg: Message<'_>, sim: &Arc<Mutex<Simulation>>) {
     let Some(raw) = msg.data() else {
         return;
     };
@@ -190,11 +200,13 @@ async fn apply_cmd(msg: Message<'_>, sim: &Arc<Mutex<Simulation>>) {
     sim.lock().await.target_x = fb.target_position() as f64;
 }
 
-async fn apply_reset(sim: &Arc<Mutex<Simulation>>) {
+/// Reset handler: restores the simulation to its starting state.
+async fn simulation_apply_reset(sim: &Arc<Mutex<Simulation>>) {
     sim.lock().await.reset_state();
     log::info!("Global simulation reset.");
 }
 
+/// State encoder: serializes current simulation data into a binary FlatBuffer payload.
 fn encode_state(sim: &physics::Simulation, builder: &mut FlatBufferBuilder) -> Vec<u8> {
     let timestamp_ms = SystemTime::now()
         .duration_since(UNIX_EPOCH)
