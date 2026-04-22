@@ -103,15 +103,19 @@ body {
     left: 12px;
     right: 12px;
     height: 78px;
-    background: var(--panel);
-    border: 1px solid var(--border);
+    background: #1c1f26;
+    border: 1px solid #2d333f;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 0.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     padding: 0 1.25rem;
     z-index: 10;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    box-shadow: 
+        0 20px 25px -5px rgba(0, 0, 0, 0.5),
+        0 10px 10px -5px rgba(0, 0, 0, 0.4),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 .viewport-header-title {
@@ -213,9 +217,9 @@ h1 {
 /* Buttons ----------------------------------------------------------------- */
 
 .icon-btn {
-    background: transparent;
-    border: 1px solid transparent;
-    color: var(--text-dim);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
     cursor: pointer;
     padding: 0.4rem;
     border-radius: 0.4rem;
