@@ -76,10 +76,10 @@ async fn simulation_run(sim: Arc<Mutex<Simulation>>, tx: broadcast::Sender<Vec<u
         let now = tokio::time::Instant::now();
         if next_frame_due > now {
             tokio::time::sleep_until(next_frame_due).await;
-        } /* else {
+        } else {
             next_frame_due = now;
             tokio::task::yield_now().await;
-        } */
+        }
     }
 }
 
