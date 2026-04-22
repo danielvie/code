@@ -72,13 +72,13 @@ async fn simulation_run(sim: Arc<Mutex<Simulation>>, tx: broadcast::Sender<Vec<u
 
         let _ = tx.send(payload);
 
-        next_frame_due += frame_interval;
-        let now = tokio::time::Instant::now();
+        next_frame_due += frame_interval; // Increment the scheduled time for the next frame
+        let now = tokio::time::Instant::now(); // Capture the current time
         if next_frame_due > now {
-            tokio::time::sleep_until(next_frame_due).await;
+            tokio::time::sleep_until(next_frame_due).await; // Wait until the scheduled time
         } else {
-            next_frame_due = now;
-            tokio::task::yield_now().await;
+            next_frame_due = now; // Synchronize deadline if behind schedule
+            tokio::task::yield_now().await; // Yield to avoid starvation
         }
     }
 }

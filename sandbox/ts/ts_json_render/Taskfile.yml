@@ -1,0 +1,37 @@
+version: '3'
+
+tasks:
+  dev:
+    desc: Start the Vite development server
+    cmds:
+      - npm run dev
+
+  install:
+    desc: Install dependencies
+    aliases: [i]
+    cmds:
+      - npm install
+
+  build:
+    desc: Build the project
+    aliases: [b]
+    cmds:
+      - npm run build
+
+  preview:
+    desc: Preview the production build
+    aliases: [p]
+    cmds:
+      - npm run preview
+
+  kill:
+    desc: Kill running node/vite processes
+    aliases: [k, stop]
+    cmds:
+      - cmd: taskkill /F /IM node.exe
+        ignore_error: true
+
+  default:
+    desc: Run the development server
+    cmds:
+      - task: dev

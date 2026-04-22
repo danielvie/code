@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  run:
+    desc: Run the async demo
+    cmds:
+      - zig build run
+
+  test:
+    desc: Run tests
+    cmds:
+      - zig build test
+
+  clean:
+    desc: Clean up build artifacts
+    cmds:
+      - rm -rf zig-cache/
+      - rm -f async_demo
