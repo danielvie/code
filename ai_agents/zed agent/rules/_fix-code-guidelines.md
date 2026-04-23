@@ -1,0 +1,1 @@
+- for all code projects, create a Taskfile.yml with the main tasks required to run/test/clear the project
