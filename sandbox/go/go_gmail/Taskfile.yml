@@ -1,20 +1,36 @@
-version: "3"
+version: '3'
 
 tasks:
-  default:
-    deps: [main]
-
   main:
-    aliases: ["m"]
+    desc: Run the Go backend / CLI
     cmds:
       - go run main.go
-
-  test:
-    aliases: ["t"]
+    
+  web:dev:
+    desc: Run the Electron Svelte Web App in development mode
+    dir: web
     cmds:
-      - go test -v ./...
+      - npm run dev
 
-  clear:
-    aliases: ["c"]
+  web:build:
+    desc: Build the Electron Svelte Web App
+    dir: web
     cmds:
-      - powershell rm token.json
+      - npm run build
+
+  web:install:
+    desc: Install dependencies for the Web App
+    dir: web
+    cmds:
+      - npm install
+
+  web:agentation:
+    desc: "Run the agentation server"
+    cmds:
+      - npx agentation-mcp server
+
+  web:dist:
+    desc: "Generate Windows executable (.exe)"
+    dir: web
+    cmds:
+      - npm run build:win
