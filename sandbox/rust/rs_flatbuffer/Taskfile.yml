@@ -1,7 +1,11 @@
 version: '3'
 
+
 vars:
-  FLATC: './bin/flatc.exe'
+  EXE: '{{if eq OS "windows"}}.exe{{else}}{{end}}'
+  FLATC: './bin/flatc{{.EXE}}'
+  FLATC_OS: '{{if eq OS "windows"}}Windows{{else if eq OS "darwin"}}Mac{{else}}Linux{{end}}'
+  FLATC_URL: 'https://github.com/google/flatbuffers/releases/download/v25.12.19-2026-02-06-03fffb2/{{.FLATC_OS}}.flatc.binary.zip'
   SCHEMA_FILE: './schema/simulation.fbs'
 
 tasks:
@@ -12,27 +16,28 @@ tasks:
   build-schemas:
     desc: "Compile FlatBuffers schemas for TypeScript (frontend) and Rust (backend)"
     cmds:
-      - pwsh -Command "New-Item -ItemType Directory -Force -Path frontend/src/generated"
-      - pwsh -Command "New-Item -ItemType Directory -Force -Path backend/src/generated"
+      - '{{if eq OS "windows"}}pwsh -Command "New-Item -ItemType Directory -Force -Path frontend/src/generated"{{else}}mkdir -p frontend/src/generated{{end}}'
+      - '{{if eq OS "windows"}}pwsh -Command "New-Item -ItemType Directory -Force -Path backend/src/generated"{{else}}mkdir -p backend/src/generated{{end}}'
       # Generate TS for FlatBuffers (frontend)
       - '{{.FLATC}} --ts -o frontend/src/generated {{.SCHEMA_FILE}}'
       # Generate Rust for FlatBuffers (backend)
       - '{{.FLATC}} --rust -o backend/src/generated {{.SCHEMA_FILE}}'
 
   setup-flatc:
-    desc: "Download and extract the official flatc.exe for Windows"
+    desc: "Download and extract the official flatc for the current OS"
     cmds:
-      - pwsh -Command "Invoke-WebRequest -Uri https://github.com/google/flatbuffers/releases/download/v25.12.19-2026-02-06-03fffb2/Windows.flatc.binary.zip -OutFile flatc.zip"
-      - pwsh -Command "Expand-Archive -Path flatc.zip -DestinationPath bin -Force"
-      - pwsh -Command "Remove-Item flatc.zip"
+      - '{{if eq OS "windows"}}pwsh -Command "Invoke-WebRequest -Uri {{.FLATC_URL}} -OutFile flatc.zip"{{else}}curl -L {{.FLATC_URL}} -o flatc.zip{{end}}'
+      - '{{if eq OS "windows"}}pwsh -Command "Expand-Archive -Path flatc.zip -DestinationPath bin -Force"{{else}}mkdir -p bin && unzip -o flatc.zip -d bin && chmod +x {{.FLATC}}{{end}}'
+      - '{{if eq OS "windows"}}pwsh -Command "Remove-Item flatc.zip"{{else}}rm flatc.zip{{end}}'
     status:
       - test -f '{{.FLATC}}'
 
-  install:
+  front:install:
     desc: "Install frontend dependencies and ensure flatc is present"
     deps: [setup-flatc]
+    dir: "frontend"
     cmds:
-      - cd frontend && npm install
+      - bun install
 
   back:build:
     desc: "Build the Rust simulation server (release)"
