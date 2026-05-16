@@ -91,15 +91,15 @@ Before starting work:
 
 example: 
 """
-# TODO: Reduce search input size
+# TODO: My first task
 
-- [x] Shrink search
-- [x] Run Svelte check
+- [x] action item 1
+- [x] action item 2
 
-# TODO: Fit email columns
+# TODO: My second task
 
-- [x] Add fit-columns control
-- [x] Implmement auto-fit sizing
+- [x] another action item
+- [x] yet another action item
 ...
 """
 
