@@ -1,6 +1,11 @@
 # Guidelines
 
-- for all projects that generate code, create a Taskfile.yml with: 
+- NEVER start implement/modify files when the prompt is a question.
+
+- for all projects that generate code, create a Taskfile.yml
+
+## Taskfile.yml Format
+
   - the main tasks required to run/test/clear the project with `desc`
   - a default task with `--list` command
   - one tasks must be `run` with this task runs the project
@@ -79,9 +84,24 @@ For multi-step tasks, state a brief plan:
 
 Before starting work:
 
-1. Create or read `TODO.md` in the project root
+1. Create or read `TODO.md` in the project root. If the `TODO.md` file exists, then append it with the new items.
 2. List all tasks needed to complete the request
 3. Mark each task as `- [ ]` (incomplete) or `- [x]` (complete)
+4. Every independent task create a subtitle in the TODO list to separate the context
+
+example: 
+"""
+# TODO: Reduce search input size
+
+- [x] Shrink search
+- [x] Run Svelte check
+
+# TODO: Fit email columns
+
+- [x] Add fit-columns control
+- [x] Implmement auto-fit sizing
+...
+"""
 
 During work:
 
@@ -97,5 +117,3 @@ After work:
 
 Always keep `TODO.md` current with the actual state of work.
 When removing a `TODO.md` item, add them to `TODO-history.md`
-
-NEVER start implement/modify files when the prompt is a question.
