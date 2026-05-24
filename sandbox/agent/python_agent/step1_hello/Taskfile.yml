@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+
+  default:
+    cmds:
+      - task --list
+
+  hi:
+    desc: "Run a test prompt"
+    cmds:
+      - uv run -m app.main -p "hi"
+
+  run:
+    aliases: ["r"]
+    desc: "Run the Application"
+    cmds:
+      - uv run -m app.main -p {{.CLI_ARGS}}
