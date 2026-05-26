@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BOLD | Web Component System</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="header-section">
+        <h1>System Status</h1>
+        <p style="font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">Real-time Performance Metrics</p>
+    </div>
+
+    <div class="container">
+        <bold-card title="Processing Power" value="98.2%" status="Critical" icon="⚡" color="#ef4444">
+        </bold-card>
+
+        <bold-card title="Memory Buffer" value="14.8GB" status="Warning" icon="💾" color="#fbbf24">
+        </bold-card>
+
+        <bold-card title="Uptime Phase" value="142D" status="Stable" icon="⏱️" color="#10b981">
+        </bold-card>
+
+        <bold-card title="Network Load" value="2.4GB/s" status="Optimal" icon="📡" color="#3b82f6">
+        </bold-card>
+    </div>
+
+    <!-- Decorative floating elements -->
+    <div style="position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: black; 
+            color: white; 
+            padding: 10px 20px; 
+            font-weight: 900; 
+            transform: rotate(-2deg); 
+            border: 4px solid #fbbf24; 
+            user-select: none;
+            -webkit-user-select: none;
+            ">
+        V1.0.4-BOLD
+    </div>
+
+    <script src="components/BoldCard.js"></script>
+</body>
+
+</html>

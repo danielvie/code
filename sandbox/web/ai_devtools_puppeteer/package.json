@@ -1,0 +1,20 @@
+{
+  "name": "ai-devtools-puppeteer-learning",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "run": "node src/server.js",
+    "test": "node tests/cart.test.js",
+    "test:puppeteer": "node tests/cart.test.js",
+    "test:playwright": "node tests/cart.playwright.test.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "playwright": "^1.49.1",
+    "puppeteer": "^24.9.0"
+  },
+  "devDependencies": {
+    "chrome-devtools-mcp": "latest"
+  }
+}

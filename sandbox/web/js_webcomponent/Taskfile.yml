@@ -1,0 +1,11 @@
+version: '3'
+
+tasks:
+  run:
+    desc: Run the web component example
+    cmds:
+      - npx -y serve .
+  clean:
+    desc: Clean up temporary files (if any)
+    cmds:
+      - echo "Nothing to clean yet"

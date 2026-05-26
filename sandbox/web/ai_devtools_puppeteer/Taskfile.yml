@@ -1,0 +1,38 @@
+version: "3"
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install Node.js dependencies and Playwright Chromium
+    cmds:
+      - npm install
+      - npx playwright install chromium
+
+  run:
+    desc: Run the demo website at http://localhost:3000
+    cmds:
+      - npm run run
+
+  test:
+    desc: Run the default Puppeteer testcase
+    cmds:
+      - npm test
+
+  test:puppeteer:
+    desc: Run the cart testcase with Puppeteer
+    cmds:
+      - npm run test:puppeteer
+
+  test:playwright:
+    desc: Run the cart testcase with Playwright and save a Chrome performance trace
+    cmds:
+      - npm run test:playwright
+
+  clean:
+    desc: Remove installed dependencies
+    cmds:
+      - rm -rf node_modules

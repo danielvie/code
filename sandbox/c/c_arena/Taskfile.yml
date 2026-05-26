@@ -1,0 +1,27 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  build:
+    aliases: [b]
+    desc: "Build the executable"
+    cmds:
+      - cmake -G Ninja -B build
+      - cmake --build build
+
+  run:
+    deps: [build]
+    desc: "Run the executable"
+    cmds:
+      - ./build/main.exe
+      
+  clean:
+    aliases: [c]
+    desc: "Clean artifacts"
+    cmds: 
+      - 'if {{ eq OS "windows" }}; 
+        then powershell Remove-Item -Recurse -Force build; 
+        else rm -rf build; fi'

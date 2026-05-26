@@ -1,0 +1,8 @@
+[
+{
+  "directory": "C:/SANDBOX/code.git/sandbox/c/c_arena/build",
+  "command": "C:\\PROGRA~1\\LLVM\\bin\\clang.exe -O0 -g -Xclang -gcodeview -D_DEBUG -D_DLL -D_MT -Xclang --dependent-lib=msvcrtd -o CMakeFiles\\main.dir\\src\\main.c.obj -c C:\\SANDBOX\\code.git\\sandbox\\c\\c_arena\\src\\main.c",
+  "file": "C:\\SANDBOX\\code.git\\sandbox\\c\\c_arena\\src\\main.c",
+  "output": "CMakeFiles\\main.dir\\src\\main.c.obj"
+}
+]

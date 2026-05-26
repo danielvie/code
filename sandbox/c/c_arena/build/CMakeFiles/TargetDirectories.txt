@@ -1,0 +1,3 @@
+C:/SANDBOX/code.git/sandbox/c/c_arena/build/CMakeFiles/main.dir
+C:/SANDBOX/code.git/sandbox/c/c_arena/build/CMakeFiles/edit_cache.dir
+C:/SANDBOX/code.git/sandbox/c/c_arena/build/CMakeFiles/rebuild_cache.dir
