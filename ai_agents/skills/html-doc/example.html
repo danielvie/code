@@ -1,0 +1,795 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>HTML Doc Skill - Layout Verification</title>
+        <style>
+            :root {
+                --ink: #182025;
+                --muted: #60707a;
+                --line: #d7e1e7;
+                --paper: #fbfcfb;
+                --panel: #f3f7f5;
+                --level-1: #365da8;
+                --level-2: #16645a;
+                --level-3: #5b4c94;
+                --code: #101820;
+            }
+            * {
+                box-sizing: border-box;
+            }
+            html {
+                scroll-behavior: smooth;
+            }
+            body {
+                margin: 0;
+                color: var(--ink);
+                font-family: "Segoe UI", Candara, Tahoma, sans-serif;
+                line-height: 1.55;
+                background:
+                    linear-gradient(
+                            90deg,
+                            rgba(24, 32, 37, 0.035) 1px,
+                            transparent 1px
+                        )
+                        0 0 / 28px 28px,
+                    linear-gradient(
+                            rgba(24, 32, 37, 0.025) 1px,
+                            transparent 1px
+                        )
+                        0 0 / 28px 28px,
+                    var(--paper);
+            }
+            main {
+                max-width: 1180px;
+                margin: 0 auto;
+                padding: 32px 20px 70px;
+            }
+            h1,
+            h2,
+            h3,
+            p {
+                margin-top: 0;
+            }
+            h1 {
+                font-size: clamp(30px, 5vw, 54px);
+                line-height: 1.05;
+                margin-bottom: 14px;
+            }
+            h2 {
+                font-size: 24px;
+                margin: 0;
+            }
+            h3 {
+                font-size: 18px;
+                margin: 24px 0 8px;
+            }
+            p {
+                color: var(--muted);
+            }
+            code {
+                padding: 1px 5px;
+                border: 1px solid var(--line);
+                background: #fff;
+            }
+            .hero {
+                display: grid;
+                grid-template-columns: minmax(0, 1.7fr) minmax(260px, 0.8fr);
+                gap: 20px;
+                align-items: start;
+                margin-bottom: 18px;
+            }
+            .lede {
+                font-size: 18px;
+                max-width: 760px;
+            }
+            .meta,
+            .index,
+            details.chapter,
+            .card,
+            .callout {
+                border: 1px solid var(--line);
+                border-radius: 5px;
+                background: rgba(255, 255, 255, 0.82);
+                box-shadow: 0 10px 30px rgba(24, 32, 37, 0.045);
+            }
+            .meta {
+                padding: 18px;
+            }
+            .meta dl {
+                margin: 0;
+                display: grid;
+                grid-template-columns: auto 1fr;
+                gap: 8px 12px;
+            }
+            .meta dt {
+                color: var(--muted);
+                font-weight: 700;
+            }
+            .meta dd {
+                margin: 0;
+            }
+            .chips {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 18px;
+            }
+            .chip {
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                padding: 4px 10px;
+                background: var(--panel);
+                color: var(--muted);
+                font-size: 13px;
+                font-weight: 700;
+            }
+            .toolbar {
+                display: flex;
+                gap: 10px;
+                margin: 18px 0;
+            }
+            button {
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                padding: 8px 13px;
+                background: #fff;
+                color: var(--ink);
+                cursor: pointer;
+                font-weight: 700;
+            }
+            button:hover {
+                border-color: var(--level-1);
+            }
+            .index {
+                padding: 18px;
+                margin-bottom: 18px;
+            }
+            .index-grid {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 10px;
+                margin-top: 12px;
+            }
+            .index a {
+                position: relative;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 10px;
+                padding: 12px;
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                background: var(--panel);
+                color: var(--ink);
+                text-decoration: none;
+                font-weight: 700;
+            }
+            .hint {
+                position: relative;
+                display: inline-grid;
+                place-items: center;
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: #fff;
+                color: var(--muted);
+                border: 1px solid var(--line);
+                font-size: 12px;
+            }
+            .hint:hover::after,
+            .hint:focus::after {
+                content: attr(data-tip);
+                position: absolute;
+                right: 0;
+                top: 28px;
+                z-index: 2;
+                width: 240px;
+                padding: 8px 10px;
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                background: #fff;
+                color: var(--ink);
+                box-shadow: 0 10px 20px rgba(24, 32, 37, 0.12);
+            }
+            details.chapter {
+                margin: 14px 0;
+                border-left-width: 6px;
+                overflow: clip;
+            }
+            details.level-1 {
+                border-left-color: var(--level-1);
+            }
+            h3 {
+                border-left: 4px solid var(--level-2);
+                padding-left: 10px;
+            }
+            h4,
+            .sub-subsection-label {
+                color: var(--level-3);
+                font-weight: 700;
+            }
+            summary {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 16px;
+                padding: 18px;
+                cursor: pointer;
+            }
+            summary::-webkit-details-marker {
+                display: none;
+            }
+            details.chapter > summary::after {
+                content: "show";
+                border: 1px solid var(--line);
+                color: var(--muted);
+                border-radius: 999px;
+                padding: 3px 10px;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+            details.chapter[open] > summary::after {
+                content: "hide";
+            }
+            .content {
+                padding: 0 18px 18px;
+            }
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 12px;
+            }
+            .card {
+                padding: 14px;
+                background: var(--panel);
+            }
+            .card p {
+                margin-bottom: 0;
+            }
+            .chart {
+                margin: 16px 0;
+                overflow-x: auto;
+                border: 1px solid var(--line);
+                border-radius: 12px;
+                background: #fff;
+                padding: 12px;
+            }
+            svg {
+                max-width: 100%;
+                height: auto;
+                min-width: 720px;
+            }
+            .box {
+                fill: #fff;
+                stroke: #b8c6cd;
+                stroke-width: 1.3;
+                rx: 7;
+            }
+            .box-level-1,
+            .chart-level-1 {
+                fill: rgba(54, 93, 168, 0.1);
+                stroke: var(--level-1);
+            }
+            .box-level-2,
+            .chart-level-2 {
+                fill: rgba(22, 100, 90, 0.1);
+                stroke: var(--level-2);
+            }
+            .box-level-3,
+            .chart-level-3 {
+                fill: rgba(91, 76, 148, 0.1);
+                stroke: var(--level-3);
+            }
+            .arrow {
+                stroke: #56666f;
+                stroke-width: 1.5;
+                fill: none;
+                marker-end: url(#arrow);
+            }
+            .label {
+                fill: var(--ink);
+                font-size: 13px;
+                font-weight: 650;
+            }
+            .small {
+                fill: var(--muted);
+                font-size: 12px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 12px;
+                background: #fff;
+            }
+            th,
+            td {
+                border: 1px solid var(--line);
+                padding: 9px 10px;
+                text-align: left;
+                vertical-align: top;
+            }
+            th {
+                background: var(--panel);
+            }
+            .callout {
+                padding: 13px 14px;
+                border-left: 6px solid var(--level-2);
+                background: #fff;
+            }
+            pre {
+                margin: 12px 0;
+                padding: 14px;
+                overflow-x: auto;
+                border-radius: 5px;
+                border: 1px solid #293640;
+                background: var(--code);
+                color: #dce8e5;
+                font-size: 13px;
+                line-height: 1.45;
+            }
+            pre code {
+                padding: 0;
+                border: 0;
+                background: transparent;
+                color: inherit;
+                font-size: inherit;
+            }
+            .tok-comment {
+                color: #91a8a2;
+                font-style: italic;
+            }
+            .tok-keyword {
+                color: #7dd3fc;
+                font-weight: 700;
+            }
+            .tok-type {
+                color: #a7f3d0;
+            }
+            .tok-fn {
+                color: #fde68a;
+            }
+            .tok-string {
+                color: #fda4af;
+            }
+            .tok-number {
+                color: #c4b5fd;
+            }
+            .tok-literal {
+                color: #f9a8d4;
+                font-weight: 700;
+            }
+            .tok-operator {
+                color: #93c5fd;
+            }
+            @media (max-width: 900px) {
+                main {
+                    padding: 22px 14px 48px;
+                }
+                .hero,
+                .index-grid,
+                .cards {
+                    grid-template-columns: 1fr;
+                }
+                .toolbar {
+                    flex-wrap: wrap;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <section class="hero">
+                <div>
+                    <h1>Architecture Study Layout Verification</h1>
+                    <p class="lede">
+                        This standalone page verifies the html-doc skill layout:
+                        hero, metadata, index, collapsible chapters, SVG charts,
+                        timing diagrams, tables, callouts, and code
+                        highlighting.
+                    </p>
+                    <div class="chips" aria-label="Topics">
+                        <span class="chip">Level 1: Sections</span>
+                        <span class="chip">Level 2: Subsections</span>
+                        <span class="chip">Level 3: Sub-subsections</span>
+                        <span class="chip">Timing</span>
+                        <span class="chip">Tables</span>
+                    </div>
+                </div>
+                <aside class="meta" aria-label="Document metadata">
+                    <dl>
+                        <dt>Scope</dt>
+                        <dd>Layout smoke test</dd>
+                        <dt>Format</dt>
+                        <dd>Single-file HTML</dd>
+                        <dt>Updated</dt>
+                        <dd>2026-05-28</dd>
+                        <dt>Status</dt>
+                        <dd>Example</dd>
+                    </dl>
+                </aside>
+            </section>
+
+            <div class="toolbar">
+                <button type="button" data-action="open-all">
+                    Open all sections
+                </button>
+                <button type="button" data-action="close-all">
+                    Close all sections
+                </button>
+            </div>
+
+            <nav class="index" aria-label="Documentation index">
+                <h2>Documentation Index</h2>
+                <div class="index-grid">
+                    <a href="#architecture"
+                        >Architecture
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="Checks boxes, arrows, labels, and hierarchy-level chart colors."
+                            >?</span
+                        ></a
+                    >
+                    <a href="#timing"
+                        >Timing Model
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="Checks timeline lanes, real units, boundaries, and captions."
+                            >?</span
+                        ></a
+                    >
+                    <a href="#implementation"
+                        >Implementation Notes
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="Checks cards, tables, callouts, and code blocks."
+                            >?</span
+                        ></a
+                    >
+                </div>
+            </nav>
+
+            <details class="chapter level-1" id="architecture" open>
+                <summary><h2>Architecture</h2></summary>
+                <div class="content">
+                    <p>
+                        The architecture chapter verifies a typical data-flow
+                        SVG where color represents hierarchy depth instead of
+                        subsystem type.
+                    </p>
+                    <div
+                        class="chart"
+                        aria-label="Architecture data flow chart"
+                    >
+                        <svg viewBox="0 0 1040 300" role="img">
+                            <defs>
+                                <marker
+                                    id="arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="40"
+                                y="88"
+                                width="210"
+                                height="90"
+                                rx="7"
+                                class="box box-level-1"
+                            ></rect>
+                            <text x="76" y="124" class="label">Section</text>
+                            <text x="76" y="150" class="small">
+                                blue: top level
+                            </text>
+                            <path d="M 250 132 L 410 132" class="arrow"></path>
+                            <rect
+                                x="410"
+                                y="88"
+                                width="210"
+                                height="90"
+                                rx="7"
+                                class="box box-level-2"
+                            ></rect>
+                            <text x="452" y="124" class="label">
+                                Subsection
+                            </text>
+                            <text x="452" y="150" class="small">
+                                green: second level
+                            </text>
+                            <path d="M 620 132 L 780 132" class="arrow"></path>
+                            <rect
+                                x="780"
+                                y="88"
+                                width="210"
+                                height="90"
+                                rx="7"
+                                class="box box-level-3"
+                            ></rect>
+                            <text x="820" y="124" class="label">
+                                Sub-subsection
+                            </text>
+                            <text x="820" y="150" class="small">
+                                purple: third level
+                            </text>
+                        </svg>
+                    </div>
+                </div>
+            </details>
+
+            <details class="chapter level-1" id="timing" open>
+                <summary><h2>Timing Model</h2></summary>
+                <div class="content">
+                    <p>
+                        The timing chapter verifies scrollable SVG timelines
+                        with real units and lane labels.
+                    </p>
+                    <div
+                        class="chart"
+                        aria-label="After timeline: DMA acquisition"
+                    >
+                        <svg viewBox="0 0 1040 240" role="img">
+                            <text x="36" y="24" class="label">
+                                After — DMA continuous
+                            </text>
+                            <line
+                                x1="120"
+                                y1="56"
+                                x2="980"
+                                y2="56"
+                                class="arrow"
+                                style="marker-end: none"
+                            ></line>
+                            <text x="120" y="48" class="small">0 us</text>
+                            <text x="540" y="48" class="small">140</text>
+                            <text x="950" y="48" class="small">280 us</text>
+                            <text x="36" y="92" class="small">ADC HW</text>
+                            <rect
+                                x="120"
+                                y="74"
+                                width="860"
+                                height="24"
+                                rx="4"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="36" y="128" class="small">Core 0</text>
+                            <rect
+                                x="310"
+                                y="110"
+                                width="42"
+                                height="24"
+                                rx="4"
+                                class="chart-level-2"
+                            ></rect>
+                            <rect
+                                x="660"
+                                y="110"
+                                width="42"
+                                height="24"
+                                rx="4"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="36" y="168" class="small">Core 1</text>
+                            <rect
+                                x="120"
+                                y="156"
+                                width="620"
+                                height="24"
+                                rx="4"
+                                class="chart-level-3"
+                            ></rect>
+                            <line
+                                x1="740"
+                                y1="148"
+                                x2="740"
+                                y2="188"
+                                stroke="#5b4c94"
+                                stroke-width="2"
+                                stroke-dasharray="6 5"
+                            ></line>
+                            <text x="648" y="146" class="small">
+                                control point
+                            </text>
+                            <text
+                                x="120"
+                                y="218"
+                                class="small"
+                                fill="#1b4a32"
+                                font-weight="700"
+                            >
+                                ✓ Background sampling keeps fresh data available
+                                during the cycle.
+                            </text>
+                        </svg>
+                    </div>
+                </div>
+            </details>
+
+            <details class="chapter level-1" id="implementation" open>
+                <summary><h2>Implementation Notes</h2></summary>
+                <div class="content">
+                    <div class="cards">
+                        <div class="card">
+                            <strong>Navigation</strong>
+                            <p>Index links target stable chapter ids.</p>
+                        </div>
+                        <div class="card">
+                            <strong>Disclosure</strong>
+                            <p>
+                                Native details elements provide collapsible
+                                sections.
+                            </p>
+                        </div>
+                        <div class="card">
+                            <strong>Portability</strong>
+                            <p>All CSS and JS are inline.</p>
+                        </div>
+                    </div>
+                    <h3>Responsibility Table</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Element</th>
+                                <th>Purpose</th>
+                                <th>Verification</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>.hero</code></td>
+                                <td>Introduce scope</td>
+                                <td>Two-column desktop, one-column mobile</td>
+                            </tr>
+                            <tr>
+                                <td><code>.chart</code></td>
+                                <td>Contain SVG</td>
+                                <td>Horizontal scroll on narrow screens</td>
+                            </tr>
+                            <tr>
+                                <td><code>details.chapter</code></td>
+                                <td>Show/hide content</td>
+                                <td>CSS label changes between show/hide</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h3>Callout</h3>
+                    <div class="callout">
+                        <strong>Layout rule:</strong> Important information
+                        appears in text labels, not only in color.
+                    </div>
+                    <h3>Code Block</h3>
+                    <p class="sub-subsection-label">
+                        Sub-subsection marker: purple identifies third-level
+                        details.
+                    </p>
+                    <pre><code>const chapters = Array.from(document.querySelectorAll("details.chapter"));
+
+function setChapters(open) {
+  chapters.forEach((chapter) => {
+    chapter.open = open;
+  });
+}</code></pre>
+                </div>
+            </details>
+        </main>
+
+        <script>
+            const chapters = Array.from(
+                document.querySelectorAll("details.chapter"),
+            );
+            document
+                .querySelector('[data-action="open-all"]')
+                .addEventListener("click", () => {
+                    chapters.forEach((chapter) => {
+                        chapter.open = true;
+                    });
+                });
+            document
+                .querySelector('[data-action="close-all"]')
+                .addEventListener("click", () => {
+                    chapters.forEach((chapter) => {
+                        chapter.open = false;
+                    });
+                });
+
+            const syntaxKeywords = new Set([
+                "const",
+                "function",
+                "return",
+                "forEach",
+            ]);
+            const syntaxLiterals = new Set(["false", "true"]);
+
+            const escapeHtml = (text) =>
+                text.replace(
+                    /[&<>]/g,
+                    (char) =>
+                        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[char],
+                );
+
+            const colorToken = (className, text) =>
+                `<span class="${className}">${escapeHtml(text)}</span>`;
+
+            const highlightCodeBlock = (code) => {
+                const source = code.textContent;
+                let html = "";
+                let index = 0;
+
+                while (index < source.length) {
+                    const rest = source.slice(index);
+
+                    if (rest.startsWith("//")) {
+                        const end = source.indexOf("\n", index);
+                        const next = end === -1 ? source.length : end;
+                        html += colorToken(
+                            "tok-comment",
+                            source.slice(index, next),
+                        );
+                        index = next;
+                        continue;
+                    }
+
+                    const stringMatch = rest.match(
+                        /^"([^"\\]|\\.)*"|^'([^'\\]|\\.)*'/,
+                    );
+                    if (stringMatch) {
+                        html += colorToken("tok-string", stringMatch[0]);
+                        index += stringMatch[0].length;
+                        continue;
+                    }
+
+                    const numberMatch = rest.match(/^\d+(?:\.\d+)?\b/);
+                    if (numberMatch) {
+                        html += colorToken("tok-number", numberMatch[0]);
+                        index += numberMatch[0].length;
+                        continue;
+                    }
+
+                    const wordMatch = rest.match(/^[A-Za-z_][\w:]*/);
+                    if (wordMatch) {
+                        const word = wordMatch[0];
+                        const afterWord = source.slice(index + word.length);
+                        if (syntaxKeywords.has(word)) {
+                            html += colorToken("tok-keyword", word);
+                        } else if (syntaxLiterals.has(word)) {
+                            html += colorToken("tok-literal", word);
+                        } else if (/^[A-Z][\w:]*$/.test(word)) {
+                            html += colorToken("tok-type", word);
+                        } else if (/^\s*\(/.test(afterWord)) {
+                            html += colorToken("tok-fn", word);
+                        } else {
+                            html += escapeHtml(word);
+                        }
+                        index += word.length;
+                        continue;
+                    }
+
+                    if (/^[{}()[\];,.=:+\-*/&|!<>]/.test(rest)) {
+                        html += colorToken("tok-operator", source[index]);
+                        index += 1;
+                        continue;
+                    }
+
+                    html += escapeHtml(source[index]);
+                    index += 1;
+                }
+
+                code.innerHTML = html;
+            };
+
+            document.querySelectorAll("pre code").forEach(highlightCodeBlock);
+        </script>
+    </body>
+</html>
