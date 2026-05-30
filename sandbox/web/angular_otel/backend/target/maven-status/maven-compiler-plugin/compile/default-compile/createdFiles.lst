@@ -1,0 +1,10 @@
+com\example\zoocatalog\CatalogNode.class
+com\example\zoocatalog\DatasetRequest.class
+com\example\zoocatalog\CatalogService.class
+com\example\zoocatalog\CatalogNodeRepository.class
+com\example\zoocatalog\Animal.class
+com\example\zoocatalog\CatalogGenerator.class
+com\example\zoocatalog\CatalogController.class
+com\example\zoocatalog\ZooCatalogApplication.class
+com\example\zoocatalog\CatalogTreeResponse.class
+com\example\zoocatalog\CatalogNodeDto.class

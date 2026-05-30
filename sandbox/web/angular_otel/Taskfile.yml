@@ -1,0 +1,67 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Run the Spring Boot backend and Angular frontend
+    cmds:
+      - task --parallel back:run web:run
+
+  build:
+    desc: Build the backend and frontend
+    cmds:
+      - task back:build
+      - task web:build
+
+  web:run:
+    desc: Run the Angular development server
+    cmds:
+      - bun run start
+
+  web:build:
+    desc: Build the Angular application
+    cmds:
+      - bun run build
+
+  test:
+    desc: Run backend and frontend tests
+    cmds:
+      - task back:test
+      - task web:test
+
+  web:test:
+    desc: Run the Angular test suite
+    cmds:
+      - bun run test -- --watch=false
+
+  back:run:
+    desc: Run the Spring Boot backend
+    dir: backend
+    cmds:
+      - mvn spring-boot:run
+
+  back:build:
+    desc: Build the Spring Boot backend
+    dir: backend
+    cmds:
+      - mvn package
+
+  back:test:
+    desc: Run backend tests
+    dir: backend
+    cmds:
+      - mvn test
+
+  generate-data:
+    desc: Generate small and large legacy frontend datasets
+    cmds:
+      - node scripts/generate-catalog.mjs
+
+  clean:
+    desc: Remove build outputs and generated dependencies
+    cmds:
+      - powershell -NoProfile -Command "Remove-Item -Recurse -Force dist,.angular,node_modules,backend/target -ErrorAction SilentlyContinue"

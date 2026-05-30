@@ -1,0 +1,235 @@
+<main class="shell">
+  <header class="toolbar">
+    <div>
+      <p class="eyebrow">Zoo catalog</p>
+      <h1>Inventory Explorer</h1>
+    </div>
+
+    <div class="controls">
+      <label>
+        Dataset
+        <select [value]="dataset()" (change)="changeDataset($any($event.target).value)">
+          <option value="small">Small</option>
+          <option value="large">Large</option>
+        </select>
+      </label>
+
+      <label>
+        Search
+        <input
+          type="search"
+          [value]="query()"
+          (input)="changeQuery($any($event.target).value)"
+          placeholder="animal, habitat, status"
+        />
+      </label>
+    </div>
+  </header>
+
+  <section class="metrics">
+    <article>
+      <span>Animals</span>
+      <strong>{{ totalAnimals() }}</strong>
+    </article>
+    <article>
+      <span>Visible nodes</span>
+      <strong>{{ visibleNodeCount() }}</strong>
+    </article>
+    <article>
+      <span>Selected</span>
+      <strong>{{ selectedSummary() }}</strong>
+    </article>
+  </section>
+
+  <section class="workspace">
+    <aside class="tree-panel">
+      <div class="tree-header">
+        <h2>Catalog Tree</h2>
+        <div class="tree-actions">
+          <button type="button" (click)="expandAll()">Expand all</button>
+          <button type="button" (click)="collapseAll()">Collapse all</button>
+        </div>
+      </div>
+
+      <div class="tree" (mousemove)="inspectPointer($event)">
+        @for (node of tree(); track node.key) {
+          <ng-container
+            [ngTemplateOutlet]="treeNode"
+            [ngTemplateOutletContext]="{ node: node, depth: 0, mirrorRootKey: null }"
+          />
+        }
+      </div>
+    </aside>
+
+    <section class="detail-panel">
+      @if (selectedNode(); as node) {
+        <div class="detail-header">
+          <div>
+            <p class="eyebrow">{{ node.type }}</p>
+            <h2>{{ node.label }}</h2>
+          </div>
+          <span class="status">{{ node.hasChildren ? 'Has children' : 'Leaf' }}</span>
+        </div>
+
+        @if (node.animal; as animal) {
+          <dl>
+            <div>
+              <dt>Species</dt>
+              <dd>{{ animal.species }}</dd>
+            </div>
+            <div>
+              <dt>Habitat</dt>
+              <dd>{{ animal.habitat }}</dd>
+            </div>
+            <div>
+              <dt>Diet</dt>
+              <dd>{{ animal.diet }}</dd>
+            </div>
+            <div>
+              <dt>Care Level</dt>
+              <dd>{{ animal.careLevel }}</dd>
+            </div>
+            <div>
+              <dt>Last Checkup</dt>
+              <dd>{{ animal.lastCheckup }}</dd>
+            </div>
+            <div>
+              <dt>Inventory Tag</dt>
+              <dd>{{ animal.tag }}</dd>
+            </div>
+          </dl>
+        } @else {
+          <dl>
+            <div>
+              <dt>Node Type</dt>
+              <dd>{{ node.type }}</dd>
+            </div>
+            <div>
+              <dt>Children</dt>
+              <dd>{{ node.hasChildren ? 'Available on expand' : 'None' }}</dd>
+            </div>
+            <div>
+              <dt>Inventory Count</dt>
+              <dd>{{ node.count }}</dd>
+            </div>
+          </dl>
+        }
+
+        <form class="crud-panel">
+          <h3>Catalog Actions</h3>
+          <label>
+            Name
+            <input name="name" [(ngModel)]="editor().name" />
+          </label>
+          <label>
+            Species
+            <input name="species" [(ngModel)]="editor().species" />
+          </label>
+          <label>
+            Category
+            <input name="category" [(ngModel)]="editor().category" />
+          </label>
+          <label>
+            Family
+            <input name="family" [(ngModel)]="editor().family" />
+          </label>
+          <label>
+            Habitat
+            <input name="habitat" [(ngModel)]="editor().habitat" />
+          </label>
+          <label>
+            Status
+            <select name="status" [(ngModel)]="editor().status">
+              <option>Healthy</option>
+              <option>Observation</option>
+              <option>Quarantine</option>
+              <option>Breeding</option>
+              <option>Transfer Review</option>
+            </select>
+          </label>
+
+          <div class="crud-actions">
+            <button type="button" class="primary" (click)="createAnimal()">Create</button>
+            <button type="button" class="primary" (click)="updateSelectedAnimal()">Update</button>
+            <button type="button" class="danger" (click)="deleteSelectedAnimal()">Delete</button>
+            <button type="button" class="secondary" (click)="runDailyAudit()">Run Daily Audit</button>
+          </div>
+        </form>
+      } @else {
+        <div class="empty">
+          <h2>Select an animal</h2>
+          <p>Choose a leaf node in the catalog tree.</p>
+        </div>
+      }
+    </section>
+  </section>
+
+  <section class="mirror-panel" (dragover)="allowMirrorDrop($event)" (drop)="dropMirrorNode($event)">
+    <div class="mirror-header">
+      <div>
+        <p class="eyebrow">Mirror</p>
+        <h2>Focused Views</h2>
+      </div>
+    </div>
+
+    @if (mirroredNodes().length) {
+      <div class="mirror-grid">
+        @for (node of mirroredNodes(); track node.key) {
+          <article class="mirror-card">
+            <div class="mirror-card-header">
+              <strong>{{ node.label }}</strong>
+              <button type="button" (click)="removeMirrorNode(node.key)">Remove</button>
+            </div>
+            <div class="tree mirror-tree">
+              <ng-container
+                [ngTemplateOutlet]="treeNode"
+                [ngTemplateOutletContext]="{ node: node, depth: 0, mirrorRootKey: node.key }"
+              />
+            </div>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="mirror-empty">
+        Drag a catalog node here.
+      </div>
+    }
+  </section>
+</main>
+
+<ng-template #treeNode let-node="node" let-depth="depth" let-mirrorRootKey="mirrorRootKey">
+  <div class="tree-row" [style.--depth]="depth">
+    <button
+      type="button"
+      class="toggle"
+      [class.hidden]="!node.hasChildren"
+      (click)="mirrorRootKey ? toggleMirrorNode(mirrorRootKey, node) : toggleNode(node)"
+    >
+      {{ node.expanded ? '-' : '+' }}
+    </button>
+
+    <button
+      type="button"
+      class="node"
+      draggable="true"
+      [class.leaf]="!node.hasChildren"
+      [class.selected]="selectedNodeKeys().has(node.key)"
+      (click)="selectNode(node, $event, mirrorRootKey)"
+      (dragstart)="startNodeDrag($event, node)"
+    >
+      <span>{{ node.label }}</span>
+      @if (node.count) {
+        <small>{{ node.count }}</small>
+      }
+    </button>
+  </div>
+
+  @if (node.expanded) {
+    @for (child of node.children; track child.key) {
+      <ng-container
+        [ngTemplateOutlet]="treeNode"
+        [ngTemplateOutletContext]="{ node: child, depth: depth + 1, mirrorRootKey: mirrorRootKey }"
+      />
+    }
+  }
+</ng-template>
