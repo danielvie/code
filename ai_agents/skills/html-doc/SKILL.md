@@ -6,42 +6,77 @@ disable-model-invocation: true
 
 # Skill: Interactive HTML Study Documentation
 
-Use this skill when creating standalone HTML documentation that should feel like a technical study artifact: readable, visual, self-contained, navigable, and suitable for explaining architecture, timing, firmware/web/protocol interactions, and implementation tradeoffs.
+Create standalone HTML study documents using a template-based multi-step assembly that avoids output truncation.
 
 ## Core Idea
 
-Create a single-file HTML document with:
-
-- a clean technical report layout;
-- a light engineering-paper background;
-- collapsible chapters with `show` / `hide` affordances, open by default;
-- an index with chapter links and short explanations;
-- hierarchy-based colors: sections blue, subsections green, sub-subsections purple;
-- visual-first explanations: overview charts before detailed prose;
-- inline SVG charts, especially timing charts and sequence diagrams;
-- tables for responsibilities, files, interfaces, and risks;
-- dark code blocks with syntax coloring;
-- minimal JavaScript only for expand/collapse controls and code highlighting.
-
-The document should explain design consequences, not only implementation details. Favor charts over prose whenever charts can make the logic, timing, ownership, or message flow explicit.
-
-## When Generating a Document
-
-1. Identify the study subject and scope.
-2. List the major chapters before writing HTML.
-3. Use hierarchy-based classes and colors: `level-1` for chapters, `level-2` for subsections, `level-3` for sub-subsections.
-4. Build the hero, toolbar, index, and first overview chapter with one or more charts before detailed sections.
-5. Write each chapter as: short framing sentence → chart first when possible → details/table → code snippet if useful → design implication/callout.
-6. Use timing charts with real units for timing-sensitive topics and sequence diagrams for logic, message exchange, request/response flows, state transitions, or multi-actor interactions.
-7. Keep the result standalone: inline CSS, inline SVG, and small inline JS only.
-8. Verify responsiveness, accessibility, index links, and expand/collapse controls.
+A reusable `template.html` contains all CSS, JS, and structural boilerplate. The model only generates content (text, charts, tables, code snippets) and injects it into placeholders. No single tool call produces more than one chapter.
 
 ## Reference Files
 
-Read the relevant reference files before producing the final HTML:
+Read before generating:
 
-- `references/document-structure.md` — required HTML shell, hero, toolbar, index, and chapter patterns.
-- `references/visual-design.md` — layout, typography, background, colors, cards, tables, and callouts.
-- `references/charts.md` — visual-first chart rules, reusable SVG classes, arrows, timing charts, and sequence diagrams.
-- `references/code-snippets.md` — dark code block styling and inline syntax highlighter pattern.
-- `references/writing-quality.md` — writing style, accessibility, CSS checklist, workflow, and final quality checklist.
+- `references/template.html` — the reusable HTML shell (copy verbatim to target path).
+- `references/charts-guide.md` — chart selection rules, SVG patterns, coordinate formulas, examples.
+- `references/writing-guide.md` — content pattern, writing style, accessibility, quality checklist.
+
+## Generation Workflow
+
+### Phase 1: Setup
+
+1. Read `references/template.html`.
+2. Copy it verbatim to the target output path using `fs_write`.
+3. Replace `{{TITLE}}` with the document title.
+4. Replace `{{LEDE}}` with a one-sentence description.
+5. Replace `{{META_ITEMS}}` with `<li>` elements (scope, date, subsystem, etc.).
+6. Replace `{{CHIPS}}` with `<span class="chip">` elements for major topics.
+
+All hero replacements can be done in parallel (independent targets).
+
+### Phase 2: Index
+
+Replace `{{INDEX}}` with the full index grid content:
+
+```html
+<a href="#chapter-id">
+  Chapter Title
+  <span class="hint" tabindex="0" data-tip="One-sentence explanation.">?</span>
+</a>
+```
+
+Generate all index links in one replacement. Plan all chapters before this step.
+
+### Phase 3: Chapters
+
+For each chapter, replace `<!-- END_CHAPTERS -->` with:
+
+```html
+<details class="chapter level-1" id="chapter-id" open>
+  <summary><h2>Chapter Title</h2></summary>
+  <div class="content">
+    <!-- chapter content here -->
+  </div>
+</details>
+<!-- END_CHAPTERS -->
+```
+
+Rules:
+- One chapter per `str_replace` call.
+- The first chapter must be an overview with one or more charts before detailed prose.
+- If a chapter exceeds ~150 lines of HTML, split it into two injections using the same anchor pattern.
+- Use `level-1` class on all top-level chapters.
+- Use green `h3` for subsections, purple `h4` for sub-subsections.
+- Follow the content pattern: framing sentence → chart → details/table → code → callout.
+- Sections are open by default (include the `open` attribute).
+
+### Phase 4: Done
+
+The `<!-- END_CHAPTERS -->` anchor remains in the file (invisible HTML comment). No cleanup needed. The JS toolbar controls and syntax highlighter work automatically on the injected content.
+
+## Key Constraints
+
+- Never regenerate CSS or JS — they are baked into the template.
+- Never produce the entire document in one tool call.
+- Each `str_replace` must have a unique, reliable match target.
+- Code snippets go inside `<pre><code>...</code></pre>` — the template JS highlights them automatically.
+- Charts use inline SVG with the classes defined in the template CSS.
