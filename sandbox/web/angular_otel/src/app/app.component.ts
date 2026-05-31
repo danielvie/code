@@ -16,7 +16,7 @@ export class AppComponent implements OnInit {
   private readonly pointerTrail: MouseEvent[] = [];
   private readonly interactionSnapshots: TreeNode[][] = [];
 
-  readonly dataset = signal<CatalogDataset>('small');
+  readonly dataset = signal<CatalogDataset>('large');
   readonly query = signal('');
   readonly tree = signal<TreeNode[]>([]);
   readonly totalAnimals = signal(0);
@@ -51,7 +51,7 @@ export class AppComponent implements OnInit {
   });
 
   ngOnInit(): void {
-    this.loadDataset('small');
+    this.loadDataset('large');
   }
 
   changeDataset(dataset: CatalogDataset): void {

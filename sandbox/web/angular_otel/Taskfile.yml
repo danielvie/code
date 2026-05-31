@@ -56,6 +56,15 @@ tasks:
     cmds:
       - mvn test
 
+  run:all:
+    desc: Run backend + frontend
+    deps: [back:run, web:run]
+
+  kill:
+    desc: Kill processes running in :4200 and :8080
+    cmds:
+      - powershell -NoProfile -Command 'Get-NetTCPConnection -LocalPort 4200,8080 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue }'
+
   generate-data:
     desc: Generate small and large legacy frontend datasets
     cmds:

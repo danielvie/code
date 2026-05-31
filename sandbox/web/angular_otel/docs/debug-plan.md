@@ -59,7 +59,7 @@ Add entries here as investigation proceeds.
 
 | ID | Symptom | Reproduction | Evidence | Hypothesis | Status | Fix |
 | --- | --- | --- | --- | --- | --- | --- |
-| TBD | TBD | TBD | TBD | TBD | Not started | TBD |
+| FE-001 | UI becomes less responsive during repeated tree use and mouse movement | Use the app, expand/collapse/select tree nodes, then move the mouse over the catalog tree | Performance trace shows repeated `mousemove` tasks around 30-38 ms each; call tree routes through Zone.js; app template work is smaller than event/task overhead; Event Listeners shows `mousemove` on `.tree` and `Window` | Excessive or accumulating mousemove work/listeners are causing repeated Angular/Zone tasks and main-thread pressure | Investigating | TBD |
 
 ## Rules
 
