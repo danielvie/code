@@ -1,0 +1,42 @@
+version: "3"
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Run the React app on http://localhost:5173
+    cmds:
+      - bun run dev
+      
+  run:all:
+    desc: Run web + telemetry
+    deps: [run, observability]
+
+  observability:
+    desc: Run OpenTelemetry Collector and Jaeger
+    cmds:
+      - docker compose up collector jaeger
+
+  test:
+    desc: Type-check the project
+    cmds:
+      - bun run test
+
+  install:
+    desc: Install the dependencies
+    cmds:
+      - bun install
+
+  build:
+    desc: Build the project
+    cmds:
+      - bun run build
+
+  clear:
+    desc: Stop observability containers and remove local build output
+    cmds:
+      - docker compose down
+      - rm -rf dist
