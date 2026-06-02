@@ -1,0 +1,23 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  run:
+    aliases: ["r"]
+    desc: "Run the Application"
+    cmds:
+      - uv run -m app.main --birth_day 27 --birth_month 10
+
+  jaeger:
+    desc: "Start Jaeger for local OTEL tracing (http://localhost:16686)"
+    aliases: [j]
+    cmds:
+      - docker compose up -d jaeger
+
+  clear:
+    desc: "Stop and remove local containers"
+    cmds:
+      - docker compose down

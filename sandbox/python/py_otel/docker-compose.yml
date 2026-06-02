@@ -1,0 +1,10 @@
+services:
+  jaeger:
+    image: jaegertracing/all-in-one:1.63.0
+    container_name: py-otel-jaeger
+    ports:
+      - "16686:16686" # Jaeger UI
+      - "6004:4317"   # OTLP gRPC collector for app/main.py
+      - "4318:4318"   # OTLP HTTP collector
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
