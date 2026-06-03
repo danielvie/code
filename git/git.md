@@ -12,6 +12,11 @@ git config --global user.email "youremail@yourdomain.com"
 	email = youremail@yourdomain.com
 ```
 
+patch
+```bash
+git format-patch {hash-init}..{hash-end} --stdout > my-patch.patch
+```
+
 Set grep to Peal compatible regex
 ```bash
 [grep]
