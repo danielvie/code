@@ -1,7 +1,6 @@
-version: '3'
+version: "3"
 
 tasks:
-
   default:
     cmds:
       - task --list
@@ -16,3 +15,52 @@ tasks:
     desc: "Run the Application"
     cmds:
       - uv run -m app.main -p {{.CLI_ARGS}}
+
+  test_step2_tool_read_advertising:
+    desc: "Run step2_tool_read_advertising test"
+    vars:
+      PROMPT: "how many tools are available in this session?"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test_step3_tool_read_execute:
+    desc: "Run step3_tool_read_execute test"
+    vars:
+      PROMPT: "what is the content of Taskfile.yml?"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test_step4_agent_loop:
+    desc: "Run step4_agent_loop test"
+    vars:
+      PROMPT: "Read README.md and ./app/main.py and write a summary of the project"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test_step5_tool_write:
+    desc: "Run step5_tool_write test"
+    vars:
+      PROMPT: "read app/main.py and write a summary.md with the actions it is performing"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test_step6_tool_bash:
+    desc: "Run step6_tool_bash test"
+    vars:
+      PROMPT: "read app/main.py and write a summary.md with the actions it is performing"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test_step7_dispacher:
+    desc: "Run step7_dispacher test"
+    vars:
+      PROMPT: "read app/main.py and write a summary.md with the actions it is performing"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test_step8_mcp:
+    desc: "Run step8_mcp test"
+    vars:
+      PROMPT: "read app/main.py and write a summary.md with the actions it is performing"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"

@@ -1,0 +1,76 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  hi:
+    desc: "Run a test prompt"
+    cmds:
+      - uv run -m app.main -p "hi"
+
+  run:
+    aliases: ["r"]
+    desc: "Run the Application"
+    cmds:
+      - uv run -m app.main -p {{.CLI_ARGS}}
+
+  run:mcp:
+    desc: "Run the Application; MCP auto-loads from mpc.json"
+    cmds:
+      - uv run -m app.main -p {{.CLI_ARGS}}
+
+  yahoo:
+    desc: "Open Yahoo using the Chrome DevTools MCP"
+    cmds:
+      - uv run -m app.main -p "Use the chrome-devtools MCP navigate tool to go to https://www.yahoo.com. Then use evaluate to print document.title."
+
+  test:mcp:example:
+    desc: "Test the example MCP server"
+    cmds:
+      - uv run -m app.main -p "Use the example MCP list_project_files tool. Print only the tool result."
+
+  test:mcp:random:
+    desc: "Test the random MCP server"
+    cmds:
+      - uv run -m app.main -p "Call the random MCP tool. Print the tool result exactly as returned, including the RANDOM_MCP_USED prefix and number."
+
+
+  test:mcp:random:roll-die:
+    desc: "Test the random MCP server to roll a die of 20 sides"
+    vars:
+      PROMPT: "Call the random stuff MCP tool. Roll a die of 20 sides"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test:mcp:random:flip:
+    desc: "Test the random MCP server to flip a coin"
+    vars:
+      PROMPT: "Call the random stuff MCP tool. Flip a coin"
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  test:mcp:chrome-devtools:
+    desc: "Test the Chrome DevTools MCP server"
+    cmds:
+      - uv run -m app.main -p "Use the chrome-devtools MCP navigate tool to go to https://www.yahoo.com. Then use evaluate to print document.title."
+
+  test:mcp:
+    desc: "Test all MCP servers"
+    cmds:
+      - task test:mcp:example
+      - task test:mcp:random
+      - task test:mcp:chrome-devtools
+
+  test:
+    desc: "Test the Step"
+    vars:
+      PROMPT: "Call the random MCP tool. Print the tool result exactly as returned, including the RANDOM_MCP_USED prefix and number."
+    cmds:
+      - uv run -m app.main -p "{{.PROMPT}}"
+
+  clear:
+    desc: "Clear generated caches and build artifacts"
+    cmds:
+      - rm -rf build .pytest_cache app/__pycache__ mcp_servers/__pycache__
