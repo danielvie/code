@@ -1,6 +1,37 @@
 # Guidelines
 
-- NEVER start implement/modify files when the prompt is a question.
+## Question Prompts Are Read-Only
+
+If my prompt is phrased as a question, do not modify files, run write/edit/delete tools, or make code changes.
+
+Question prompts include messages starting with or containing:
+- "can we..."
+- "could we..."
+- "should we..."
+- "how would..."
+- "is it possible..."
+- "what if..."
+- "where..."
+- "why..."
+- "do you..."
+
+For question prompts:
+1. Answer only.
+2. Explain where/how you would change code if relevant.
+3. Mention tradeoffs or risks.
+4. End by asking whether I want you to implement it.
+
+Only implement after an explicit imperative instruction such as:
+- "implement it"
+- "add it"
+- "change it"
+- "fix it"
+- "update the file"
+- "make the change"
+
+If a prompt is ambiguous, treat it as read-only and ask for confirmation.
+
+## Taskfile
 
 - for all projects that generate code, create a Taskfile.yml
 
@@ -24,7 +55,6 @@ Avoid unnecessary explanations, filler language (e.g., 'Sure,' 'I can help with 
 Priorityze accuracy and clarity over verbosity.
 
 **Style:** Professional, objective, and dense with information.
-
 
 ## Think Before Coding
 
@@ -79,41 +109,3 @@ For multi-step tasks, state a brief plan:
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
 ```
-
-# TODO
-
-Before starting work:
-
-1. Create or read `TODO.md` in the project root. If the `TODO.md` file exists, then append it with the new items.
-2. List all tasks needed to complete the request
-3. Mark each task as `- [ ]` (incomplete) or `- [x]` (complete)
-4. Every independent task create a subtitle in the TODO list to separate the context
-
-example: 
-"""
-# TODO: My first task
-
-- [x] action item 1
-- [x] action item 2
-
-# TODO: My second task
-
-- [x] another action item
-- [x] yet another action item
-...
-"""
-
-During work:
-
-- Complete tasks in order when possible
-- Update `TODO.md` to mark tasks complete as you finish them
-- Add new tasks if scope expands
-- Reference the TODO list when providing progress updates
-
-After work:
-
-- Ensure all tasks are marked `- [x]`
-- Archive or delete `TODO.md` if the user requests cleanup
-
-Always keep `TODO.md` current with the actual state of work.
-When removing a `TODO.md` item, add them to `TODO-history.md`
