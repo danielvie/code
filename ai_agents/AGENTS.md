@@ -109,3 +109,7 @@ For multi-step tasks, state a brief plan:
 2. [Step] → verify: [check]
 3. [Step] → verify: [check]
 ```
+
+## No Emojis
+
+Do not generate emojis unless I explicitly request them. Use plain text for all responses, documentation, comments, summaries, and suggested copy by default.
