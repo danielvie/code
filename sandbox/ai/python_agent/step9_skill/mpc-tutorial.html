@@ -1,0 +1,2042 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>
+            MCP Tutorial: Build and Use Model Context Protocol Servers
+        </title>
+        <style>
+            :root {
+                --ink: #182025;
+                --muted: #60707a;
+                --line: #d7e1e7;
+                --paper: #fbfcfb;
+                --panel: #f3f7f5;
+                --level-1: #365da8;
+                --level-2: #16645a;
+                --level-3: #5b4c94;
+                --code: #101820;
+            }
+
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+
+            body {
+                font-family: "Segoe UI", Candara, Tahoma, sans-serif;
+                color: var(--ink);
+                line-height: 1.55;
+                background:
+                    linear-gradient(
+                            90deg,
+                            rgba(24, 32, 37, 0.035) 1px,
+                            transparent 1px
+                        )
+                        0 0 / 28px 28px,
+                    linear-gradient(
+                            rgba(24, 32, 37, 0.025) 1px,
+                            transparent 1px
+                        )
+                        0 0 / 28px 28px,
+                    var(--paper);
+            }
+
+            html {
+                scroll-behavior: smooth;
+            }
+
+            main {
+                max-width: 1180px;
+                margin: 0 auto;
+                padding: 32px 20px 70px;
+            }
+
+            h1 {
+                font-size: clamp(30px, 5vw, 54px);
+                line-height: 1.15;
+                margin-bottom: 8px;
+            }
+            h2 {
+                font-size: 24px;
+                margin: 0;
+            }
+            h3 {
+                font-size: 18px;
+                margin-top: 24px;
+                border-left: 4px solid var(--level-2);
+                padding-left: 10px;
+            }
+            h4,
+            .sub-subsection-label {
+                color: var(--level-3);
+                font-weight: 700;
+                text-transform: uppercase;
+                font-size: 13px;
+                letter-spacing: 0.04em;
+                margin-top: 18px;
+            }
+
+            p {
+                margin: 10px 0;
+            }
+            code {
+                background: #edf2f0;
+                padding: 2px 6px;
+                border-radius: 4px;
+                font-size: 0.92em;
+            }
+
+            /* Hero */
+            .hero {
+                display: grid;
+                grid-template-columns: 1fr 280px;
+                gap: 32px;
+                align-items: start;
+                margin-bottom: 28px;
+            }
+            .lede {
+                font-size: 18px;
+                color: var(--muted);
+                margin-top: 6px;
+            }
+            .meta {
+                background: var(--panel);
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                padding: 16px;
+                font-size: 14px;
+            }
+            .meta ul {
+                list-style: none;
+            }
+            .meta li {
+                padding: 4px 0;
+                border-bottom: 1px solid var(--line);
+            }
+            .meta li:last-child {
+                border-bottom: none;
+            }
+            .chips {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                margin-top: 12px;
+            }
+            .chip {
+                background: var(--panel);
+                border: 1px solid var(--line);
+                border-radius: 999px;
+                padding: 4px 12px;
+                font-size: 12px;
+                color: var(--muted);
+            }
+
+            /* Toolbar */
+            .toolbar {
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+            }
+            .toolbar button {
+                background: var(--panel);
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                padding: 6px 14px;
+                font-size: 13px;
+                cursor: pointer;
+            }
+            .toolbar button:hover {
+                background: #e8efec;
+            }
+
+            /* Index */
+            .index {
+                background: var(--panel);
+                border: 1px solid var(--line);
+                border-radius: 10px;
+                padding: 20px 24px;
+                margin-bottom: 28px;
+            }
+            .index h2 {
+                font-size: 18px;
+                margin-bottom: 12px;
+            }
+            .index-grid {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            .index a {
+                display: block;
+                padding: 10px 12px;
+                background: #fff;
+                border: 1px solid var(--line);
+                border-radius: 6px;
+                text-decoration: none;
+                color: var(--ink);
+                font-size: 14px;
+                position: relative;
+            }
+            .index a:hover {
+                border-color: var(--level-1);
+            }
+            .hint {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 18px;
+                height: 18px;
+                border-radius: 50%;
+                background: var(--line);
+                font-size: 11px;
+                color: var(--muted);
+                margin-left: 6px;
+                cursor: help;
+                position: relative;
+            }
+            .hint::after {
+                content: attr(data-tip);
+                position: absolute;
+                bottom: 130%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: var(--ink);
+                color: #fff;
+                font-size: 12px;
+                padding: 6px 10px;
+                border-radius: 6px;
+                white-space: nowrap;
+                max-width: 260px;
+                white-space: normal;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity 0.2s;
+                z-index: 10;
+            }
+            .hint:hover::after,
+            .hint:focus::after {
+                opacity: 1;
+            }
+
+            /* Chapters */
+            details.chapter {
+                border: 1px solid var(--line);
+                border-left: 4px solid var(--level-1);
+                border-radius: 8px;
+                margin-bottom: 18px;
+                background: #fff;
+            }
+            details.chapter > summary {
+                padding: 16px 20px;
+                cursor: pointer;
+                list-style: none;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+            details.chapter > summary::-webkit-details-marker {
+                display: none;
+            }
+            details.chapter > summary::after {
+                content: "show";
+                border: 1px solid var(--line);
+                color: var(--muted);
+                border-radius: 999px;
+                padding: 3px 10px;
+                font-size: 12px;
+                text-transform: uppercase;
+                letter-spacing: 0.04em;
+            }
+            details.chapter[open] > summary::after {
+                content: "hide";
+            }
+            details.chapter .content {
+                padding: 0 20px 20px;
+            }
+            details.chapter .content[style] {
+                animation: reveal 0.2s ease;
+            }
+            @keyframes reveal {
+                from {
+                    opacity: 0;
+                    transform: translateY(-4px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            /* Cards */
+            .cards {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 14px;
+                margin: 16px 0;
+            }
+            .card {
+                background: var(--panel);
+                border: 1px solid var(--line);
+                border-radius: 8px;
+                padding: 14px;
+            }
+            .card strong {
+                display: block;
+                margin-bottom: 4px;
+            }
+
+            /* Charts */
+            .chart {
+                margin: 16px 0;
+                overflow-x: auto;
+            }
+            .chart svg {
+                max-width: 100%;
+                height: auto;
+            }
+            .box {
+                fill: #fff;
+                stroke: #b8c6cd;
+                stroke-width: 1.3;
+                rx: 7;
+            }
+            .box-level-1,
+            .chart-level-1 {
+                fill: rgba(54, 93, 168, 0.1);
+                stroke: var(--level-1);
+            }
+            .box-level-2,
+            .chart-level-2 {
+                fill: rgba(22, 100, 90, 0.1);
+                stroke: var(--level-2);
+            }
+            .box-level-3,
+            .chart-level-3 {
+                fill: rgba(91, 76, 148, 0.1);
+                stroke: var(--level-3);
+            }
+            .chart-muted {
+                fill: rgba(96, 112, 122, 0.08);
+                stroke: #9aaab2;
+            }
+            .chart-warn {
+                fill: #fff4df;
+                stroke: #b57418;
+            }
+            .arrow {
+                stroke: #56666f;
+                stroke-width: 1.5;
+                fill: none;
+                marker-end: url(#arrow);
+            }
+            .dash {
+                stroke-dasharray: 6 5;
+            }
+            .label {
+                fill: var(--ink);
+                font-size: 13px;
+                font-weight: 650;
+            }
+            .small {
+                fill: var(--muted);
+                font-size: 12px;
+            }
+            .lane {
+                fill: rgba(96, 112, 122, 0.07);
+                stroke: #d7e1e7;
+            }
+
+            /* Tables */
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 14px 0;
+                font-size: 14px;
+            }
+            th,
+            td {
+                padding: 8px 12px;
+                border: 1px solid var(--line);
+                text-align: left;
+            }
+            th {
+                background: var(--panel);
+                font-weight: 600;
+            }
+
+            /* Code */
+            pre {
+                margin: 12px 0;
+                padding: 14px;
+                overflow-x: auto;
+                border-radius: 8px;
+                border: 1px solid #293640;
+                background: var(--code);
+                color: #dce8e5;
+                font-size: 13px;
+                line-height: 1.45;
+            }
+            pre code {
+                padding: 0;
+                border: 0;
+                background: transparent;
+                color: inherit;
+                font-size: inherit;
+            }
+            .tok-comment {
+                color: #91a8a2;
+                font-style: italic;
+            }
+            .tok-keyword {
+                color: #7dd3fc;
+                font-weight: 700;
+            }
+            .tok-type {
+                color: #a7f3d0;
+            }
+            .tok-fn {
+                color: #fde68a;
+            }
+            .tok-string {
+                color: #fda4af;
+            }
+            .tok-number {
+                color: #c4b5fd;
+            }
+            .tok-literal {
+                color: #f9a8d4;
+                font-weight: 700;
+            }
+            .tok-operator {
+                color: #93c5fd;
+            }
+
+            /* Callout */
+            .callout {
+                background: #f0f7f4;
+                border-left: 4px solid var(--level-2);
+                border-radius: 6px;
+                padding: 12px 16px;
+                margin: 14px 0;
+                font-size: 14px;
+            }
+
+            /* Two-column layout */
+            .twocol {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin: 16px 0;
+            }
+
+            /* Responsive */
+            @media (max-width: 900px) {
+                .hero {
+                    grid-template-columns: 1fr;
+                }
+                .index-grid {
+                    grid-template-columns: 1fr;
+                }
+                .cards {
+                    grid-template-columns: 1fr;
+                }
+                .twocol {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <main>
+            <section class="hero">
+                <div>
+                    <h1>
+                        MCP Tutorial: Build and Use Model Context Protocol
+                        Servers
+                    </h1>
+                    <p class="lede">
+                        A practical guide to what MCP is, how tools flow between
+                        agents and servers, and how to implement MCP servers in
+                        Python and TypeScript.
+                    </p>
+                    <div class="chips">
+                        <span class="chip">MCP</span
+                        ><span class="chip">Python</span
+                        ><span class="chip">TypeScript</span
+                        ><span class="chip">Tools</span
+                        ><span class="chip">Agent Architecture</span>
+                    </div>
+                </div>
+                <div class="meta">
+                    <ul>
+                        <li>
+                            <strong>Topic:</strong> Model Context Protocol (MCP)
+                        </li>
+                        <li><strong>Languages:</strong> Python, TypeScript</li>
+                        <li>
+                            <strong>Audience:</strong> Agent builders and tool
+                            authors
+                        </li>
+                        <li>
+                            <strong>Output:</strong> Standalone implementation
+                            tutorial
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+            <div class="toolbar">
+                <button type="button" data-action="open-all">
+                    Open all sections
+                </button>
+                <button type="button" data-action="close-all">
+                    Close all sections
+                </button>
+            </div>
+
+            <nav class="index" aria-label="Documentation index">
+                <h2>Documentation Index</h2>
+                <div class="index-grid">
+                    <a href="#overview"
+                        >What MCP Is
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="The protocol shape and why agents use it."
+                            >?</span
+                        ></a
+                    >
+                    <a href="#mental-model"
+                        >Mental Model
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="Hosts, clients, servers, tools, resources, and prompts."
+                            >?</span
+                        ></a
+                    >
+                    <a href="#python-server"
+                        >Python MCP Server
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="Build a minimal MCP tool server with FastMCP."
+                            >?</span
+                        ></a
+                    >
+                    <a href="#typescript-server"
+                        >TypeScript MCP Server
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="Build an equivalent MCP tool server in TypeScript."
+                            >?</span
+                        ></a
+                    >
+                    <a href="#client-integration"
+                        >Agent Client Integration
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="How an agent loads MCP tools and dispatches calls."
+                            >?</span
+                        ></a
+                    >
+                    <a href="#testing"
+                        >Testing and Debugging
+                        <span
+                            class="hint"
+                            tabindex="0"
+                            data-tip="Smoke tests, prompt tests, and common failure modes."
+                            >?</span
+                        ></a
+                    >
+                </div>
+            </nav>
+
+            <details class="chapter level-1" id="overview" open>
+                <summary><h2>What MCP Is</h2></summary>
+                <div class="content">
+                    <p>
+                        Model Context Protocol (MCP) is a standard way for an AI
+                        application to discover and call external capabilities
+                        without hardcoding every integration into the model
+                        client.
+                    </p>
+                    <div class="chart" aria-label="MCP architecture overview">
+                        <svg viewBox="0 0 1040 330" role="img">
+                            <defs>
+                                <marker
+                                    id="overview-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="55"
+                                y="115"
+                                width="165"
+                                height="78"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="92" y="148" class="label">AI Host</text>
+                            <text x="78" y="170" class="small">
+                                chat app / IDE
+                            </text>
+                            <rect
+                                x="300"
+                                y="90"
+                                width="180"
+                                height="128"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="346" y="124" class="label">
+                                MCP Client
+                            </text>
+                            <text x="324" y="150" class="small">
+                                connects to servers
+                            </text>
+                            <text x="324" y="172" class="small">
+                                lists tools
+                            </text>
+                            <text x="324" y="194" class="small">
+                                calls tools
+                            </text>
+                            <rect
+                                x="570"
+                                y="55"
+                                width="180"
+                                height="88"
+                                rx="7"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="610" y="90" class="label">
+                                Tool Server
+                            </text>
+                            <text x="604" y="114" class="small">
+                                files, browser, DB
+                            </text>
+                            <rect
+                                x="570"
+                                y="185"
+                                width="180"
+                                height="88"
+                                rx="7"
+                                class="chart-level-3"
+                            ></rect>
+                            <text x="602" y="220" class="label">
+                                Data System
+                            </text>
+                            <text x="596" y="244" class="small">
+                                API, docs, repo
+                            </text>
+                            <rect
+                                x="830"
+                                y="115"
+                                width="150"
+                                height="78"
+                                rx="7"
+                                class="chart-muted"
+                            ></rect>
+                            <text x="872" y="148" class="label">Model</text>
+                            <text x="854" y="170" class="small">
+                                chooses tools
+                            </text>
+                            <path
+                                d="M220 154 L300 154"
+                                class="arrow"
+                                style="marker-end: url(#overview-arrow)"
+                            ></path>
+                            <path
+                                d="M480 122 L570 100"
+                                class="arrow"
+                                style="marker-end: url(#overview-arrow)"
+                            ></path>
+                            <path
+                                d="M570 230 L480 184"
+                                class="arrow dash"
+                                style="marker-end: url(#overview-arrow)"
+                            ></path>
+                            <path
+                                d="M750 154 L830 154"
+                                class="arrow"
+                                style="marker-end: url(#overview-arrow)"
+                            ></path>
+                            <text x="105" y="295" class="small">
+                                MCP separates the agent from the integrations:
+                                the host speaks MCP; each server owns one
+                                external capability boundary.
+                            </text>
+                        </svg>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>Problem without MCP</th>
+                            <th>MCP approach</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                Every agent hardcodes filesystem, browser,
+                                database, and API integrations.
+                            </td>
+                            <td>
+                                Each integration runs as an MCP server with
+                                discoverable tools.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Tool schemas are copied manually into the agent.
+                            </td>
+                            <td>
+                                The client asks the server for tool metadata at
+                                startup.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                Changing an integration requires changing the
+                                agent core.
+                            </td>
+                            <td>
+                                Changing an integration usually means changing
+                                only the MCP server or config.
+                            </td>
+                        </tr>
+                    </table>
+                    <pre><code># Simple idea
+Agent host → MCP client → MCP server → external system
+Model sees server tools as callable functions.</code></pre>
+                    <div class="callout">
+                        <strong>Rule:</strong> MCP is not the model. MCP is the
+                        protocol layer that lets a model-powered host discover
+                        and call external capabilities safely and consistently.
+                    </div>
+                </div>
+            </details>
+
+            <details class="chapter level-1" id="mental-model" open>
+                <summary><h2>Mental Model</h2></summary>
+                <div class="content">
+                    <p>
+                        The most useful way to understand MCP is to separate the
+                        process roles from the things they expose.
+                    </p>
+                    <div class="chart" aria-label="MCP request sequence">
+                        <svg viewBox="0 0 1040 310" role="img">
+                            <defs>
+                                <marker
+                                    id="seq-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <text x="110" y="32" class="label">Host</text>
+                            <text x="360" y="32" class="label">MCP Client</text>
+                            <text x="635" y="32" class="label">MCP Server</text>
+                            <text x="875" y="32" class="label">System</text>
+                            <line
+                                x1="130"
+                                y1="50"
+                                x2="130"
+                                y2="270"
+                                class="dash"
+                                stroke="#9aaab2"
+                            ></line>
+                            <line
+                                x1="400"
+                                y1="50"
+                                x2="400"
+                                y2="270"
+                                class="dash"
+                                stroke="#9aaab2"
+                            ></line>
+                            <line
+                                x1="680"
+                                y1="50"
+                                x2="680"
+                                y2="270"
+                                class="dash"
+                                stroke="#9aaab2"
+                            ></line>
+                            <line
+                                x1="900"
+                                y1="50"
+                                x2="900"
+                                y2="270"
+                                class="dash"
+                                stroke="#9aaab2"
+                            ></line>
+                            <path
+                                d="M130 80 L680 80"
+                                class="arrow"
+                                style="marker-end: url(#seq-arrow)"
+                            ></path>
+                            <text x="320" y="72" class="small">initialize</text>
+                            <path
+                                d="M400 120 L680 120"
+                                class="arrow"
+                                style="marker-end: url(#seq-arrow)"
+                            ></path>
+                            <text x="495" y="112" class="small">
+                                list_tools
+                            </text>
+                            <path
+                                d="M680 155 L400 155"
+                                class="arrow dash"
+                                style="marker-end: url(#seq-arrow)"
+                            ></path>
+                            <text x="495" y="147" class="small">schemas</text>
+                            <path
+                                d="M130 195 L400 195"
+                                class="arrow"
+                                style="marker-end: url(#seq-arrow)"
+                            ></path>
+                            <text x="205" y="187" class="small">
+                                model selects tool
+                            </text>
+                            <path
+                                d="M400 225 L680 225"
+                                class="arrow"
+                                style="marker-end: url(#seq-arrow)"
+                            ></path>
+                            <text x="492" y="217" class="small">call_tool</text>
+                            <path
+                                d="M680 255 L900 255"
+                                class="arrow"
+                                style="marker-end: url(#seq-arrow)"
+                            ></path>
+                            <text x="745" y="247" class="small">do work</text>
+                        </svg>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>Term</th>
+                            <th>Meaning</th>
+                            <th>Example</th>
+                        </tr>
+                        <tr>
+                            <td>Host</td>
+                            <td>
+                                The application using the model and MCP clients.
+                            </td>
+                            <td>IDE agent, desktop chat app, CLI agent.</td>
+                        </tr>
+                        <tr>
+                            <td>Client</td>
+                            <td>
+                                The protocol object that connects to one MCP
+                                server.
+                            </td>
+                            <td>A Python <code>ClientSession</code>.</td>
+                        </tr>
+                        <tr>
+                            <td>Server</td>
+                            <td>
+                                A process that exposes tools, resources, or
+                                prompts.
+                            </td>
+                            <td>
+                                Filesystem server, browser server, database
+                                server.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Tool</td>
+                            <td>
+                                A callable operation with JSON input and output
+                                content.
+                            </td>
+                            <td>
+                                <code>random_number</code>,
+                                <code>navigate</code>,
+                                <code>query_database</code>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Resource</td>
+                            <td>
+                                Readable contextual data, often URI-addressed.
+                            </td>
+                            <td>Documents, repo files, logs.</td>
+                        </tr>
+                        <tr>
+                            <td>Prompt</td>
+                            <td>A reusable server-provided prompt template.</td>
+                            <td>
+                                Code review prompt, incident summary prompt.
+                            </td>
+                        </tr>
+                    </table>
+                    <pre><code>{
+  "mcpServers": {
+    "browser": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    }
+  }
+}</code></pre>
+                    <div class="callout">
+                        <strong>Design implication:</strong> one host can
+                        connect to many servers, but each server should have a
+                        narrow responsibility so tool names and permissions stay
+                        understandable.
+                    </div>
+                </div>
+            </details>
+
+            <details class="chapter level-1" id="python-server" open>
+                <summary><h2>Python MCP Server</h2></summary>
+                <div class="content">
+                    <p>
+                        A Python MCP server is just a process that registers
+                        functions as MCP tools and runs a transport, commonly
+                        stdio for local agents.
+                    </p>
+                    <div
+                        class="chart"
+                        aria-label="Python MCP server file layout"
+                    >
+                        <svg viewBox="0 0 1040 250" role="img">
+                            <defs>
+                                <marker
+                                    id="py-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="70"
+                                y="80"
+                                width="210"
+                                height="80"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="112" y="113" class="label">
+                                mcp_servers/
+                            </text>
+                            <text x="100" y="136" class="small">
+                                external server code
+                            </text>
+                            <rect
+                                x="390"
+                                y="80"
+                                width="230"
+                                height="80"
+                                rx="7"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="438" y="113" class="label">FastMCP</text>
+                            <text x="420" y="136" class="small">
+                                registers @mcp.tool
+                            </text>
+                            <rect
+                                x="730"
+                                y="80"
+                                width="210"
+                                height="80"
+                                rx="7"
+                                class="chart-level-3"
+                            ></rect>
+                            <text x="762" y="113" class="label">
+                                Agent config
+                            </text>
+                            <text x="755" y="136" class="small">
+                                uv run python -m
+                            </text>
+                            <path
+                                d="M280 120 L390 120"
+                                class="arrow"
+                                style="marker-end: url(#py-arrow)"
+                            ></path>
+                            <path
+                                d="M620 120 L730 120"
+                                class="arrow"
+                                style="marker-end: url(#py-arrow)"
+                            ></path>
+                            <text x="115" y="205" class="small">
+                                Keeping MCP servers outside the main app package
+                                makes the boundary visible: the agent runs them
+                                as external processes.
+                            </text>
+                        </svg>
+                    </div>
+                    <h3>Minimal Python server</h3>
+                    <pre><code>from random import randint
+from mcp.server.fastmcp import FastMCP
+
+mcp = FastMCP("random-number")
+
+@mcp.tool()
+def random_number() -&gt; int:
+    """Return a random integer from 0 to 1000."""
+    return randint(0, 1000)
+
+if __name__ == "__main__":
+    mcp.run()</code></pre>
+                    <h3>Run from config</h3>
+                    <pre><code>{
+  "mcpServers": {
+    "random": {
+      "command": "uv",
+      "args": ["run", "python", "-m", "mcp_servers.random_mcp_server"]
+    }
+  }
+}</code></pre>
+                    <table>
+                        <tr>
+                            <th>Line</th>
+                            <th>Purpose</th>
+                        </tr>
+                        <tr>
+                            <td><code>FastMCP("random-number")</code></td>
+                            <td>
+                                Creates the MCP server instance and names it for
+                                diagnostics.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>@mcp.tool()</code></td>
+                            <td>
+                                Publishes a Python function as a model-callable
+                                MCP tool.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>mcp.run()</code></td>
+                            <td>
+                                Starts the server transport so an MCP client can
+                                connect.
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="callout">
+                        <strong>Rule:</strong> tool docstrings matter. They
+                        become part of the tool description the model uses to
+                        decide when to call the tool.
+                    </div>
+                </div>
+            </details>
+
+            <details class="chapter level-1" id="typescript-server" open>
+                <summary><h2>TypeScript MCP Server</h2></summary>
+                <div class="content">
+                    <p>
+                        A TypeScript MCP server follows the same shape: define a
+                        server, register tool schemas, implement handlers, and
+                        run stdio transport.
+                    </p>
+                    <div class="chart" aria-label="TypeScript MCP server flow">
+                        <svg viewBox="0 0 1040 245" role="img">
+                            <defs>
+                                <marker
+                                    id="ts-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="70"
+                                y="82"
+                                width="190"
+                                height="76"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="107" y="113" class="label">
+                                package.json
+                            </text>
+                            <text x="98" y="136" class="small">
+                                bin command
+                            </text>
+                            <rect
+                                x="335"
+                                y="82"
+                                width="210"
+                                height="76"
+                                rx="7"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="388" y="113" class="label">server.ts</text>
+                            <text x="360" y="136" class="small">
+                                register tool schema
+                            </text>
+                            <rect
+                                x="620"
+                                y="82"
+                                width="210"
+                                height="76"
+                                rx="7"
+                                class="chart-level-3"
+                            ></rect>
+                            <text x="667" y="113" class="label">transport</text>
+                            <text x="645" y="136" class="small">
+                                StdioServerTransport
+                            </text>
+                            <path
+                                d="M260 120 L335 120"
+                                class="arrow"
+                                style="marker-end: url(#ts-arrow)"
+                            ></path>
+                            <path
+                                d="M545 120 L620 120"
+                                class="arrow"
+                                style="marker-end: url(#ts-arrow)"
+                            ></path>
+                        </svg>
+                    </div>
+                    <h3>Minimal TypeScript server</h3>
+                    <pre><code>import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import {
+  CallToolRequestSchema,
+  ListToolsRequestSchema,
+} from "@modelcontextprotocol/sdk/types.js";
+
+const server = new Server(
+  { name: "random-number", version: "1.0.0" },
+  { capabilities: { tools: {} } },
+);
+
+server.setRequestHandler(ListToolsRequestSchema, async () =&gt; ({
+  tools: [{
+    name: "random_number",
+    description: "Return a random integer from 0 to 1000.",
+    inputSchema: { type: "object", properties: {} },
+  }],
+}));
+
+server.setRequestHandler(CallToolRequestSchema, async (request) =&gt; {
+  if (request.params.name !== "random_number") throw new Error("Unknown tool");
+  const value = Math.floor(Math.random() * 1001);
+  return { content: [{ type: "text", text: String(value) }] };
+});
+
+await server.connect(new StdioServerTransport());</code></pre>
+                    <h3>Package command</h3>
+                    <pre><code>{
+  "type": "module",
+  "bin": { "random-mcp": "dist/server.js" },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "latest"
+  }
+}</code></pre>
+                    <table>
+                        <tr>
+                            <th>Python FastMCP</th>
+                            <th>TypeScript SDK</th>
+                        </tr>
+                        <tr>
+                            <td>
+                                <code>@mcp.tool()</code> derives schema from the
+                                function.
+                            </td>
+                            <td>
+                                <code>ListToolsRequestSchema</code> returns
+                                explicit JSON schemas.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <code>mcp.run()</code> starts the default
+                                transport.
+                            </td>
+                            <td>
+                                <code
+                                    >server.connect(new
+                                    StdioServerTransport())</code
+                                >
+                                starts stdio.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Best for quick local tools.</td>
+                            <td>
+                                Best when you want explicit protocol control.
+                            </td>
+                        </tr>
+                    </table>
+                    <div class="callout">
+                        <strong>Compatibility:</strong> TypeScript MCP servers
+                        are still external processes. A Python agent can call a
+                        TypeScript MCP server as long as both speak MCP over the
+                        configured transport.
+                    </div>
+                </div>
+            </details>
+
+            <details class="chapter level-1" id="client-integration" open>
+                <summary><h2>Agent Client Integration</h2></summary>
+                <div class="content">
+                    <p>
+                        An MCP-capable agent loads server configs, starts server
+                        processes, lists tools, converts them into model tool
+                        specs, and routes tool calls back to the right server.
+                    </p>
+                    <div
+                        class="chart"
+                        aria-label="Agent MCP client integration pipeline"
+                    >
+                        <svg viewBox="0 0 1040 290" role="img">
+                            <defs>
+                                <marker
+                                    id="client-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="45"
+                                y="96"
+                                width="150"
+                                height="76"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="82" y="128" class="label">mpc.json</text>
+                            <text x="70" y="150" class="small">
+                                server config
+                            </text>
+                            <rect
+                                x="265"
+                                y="70"
+                                width="190"
+                                height="128"
+                                rx="7"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="312" y="103" class="label">
+                                MCPToolbox
+                            </text>
+                            <text x="292" y="128" class="small">
+                                start sessions
+                            </text>
+                            <text x="292" y="150" class="small">
+                                list tools
+                            </text>
+                            <text x="292" y="172" class="small">
+                                dispatch calls
+                            </text>
+                            <rect
+                                x="535"
+                                y="96"
+                                width="180"
+                                height="76"
+                                rx="7"
+                                class="chart-level-3"
+                            ></rect>
+                            <text x="572" y="128" class="label">
+                                Tool specs
+                            </text>
+                            <text x="560" y="150" class="small">
+                                model-visible
+                            </text>
+                            <rect
+                                x="795"
+                                y="96"
+                                width="180"
+                                height="76"
+                                rx="7"
+                                class="chart-muted"
+                            ></rect>
+                            <text x="842" y="128" class="label">Model</text>
+                            <text x="820" y="150" class="small">
+                                returns tool_call
+                            </text>
+                            <path
+                                d="M195 134 L265 134"
+                                class="arrow"
+                                style="marker-end: url(#client-arrow)"
+                            ></path>
+                            <path
+                                d="M455 134 L535 134"
+                                class="arrow"
+                                style="marker-end: url(#client-arrow)"
+                            ></path>
+                            <path
+                                d="M715 134 L795 134"
+                                class="arrow"
+                                style="marker-end: url(#client-arrow)"
+                            ></path>
+                            <path
+                                d="M795 180 L455 220"
+                                class="arrow dash"
+                                style="marker-end: url(#client-arrow)"
+                            ></path>
+                            <text x="130" y="250" class="small">
+                                Use a naming convention such as
+                                mcp__server__tool so dispatch can map a model
+                                tool call back to its MCP session.
+                            </text>
+                        </svg>
+                    </div>
+                    <pre><code>async with MCPToolbox("mpc.json") as mcp_toolbox:
+    tools = local_tools + mcp_toolbox.get_tools()
+    response = client.chat.completions.create(
+        model="...",
+        messages=messages,
+        tools=tools,
+    )</code></pre>
+                    <pre><code>tool_name = tool_call.function.name
+if mcp_toolbox.has_tool(tool_name):
+    result = await mcp_toolbox.execute(
+        tool_name=tool_name,
+        arguments=tool_call.function.arguments,
+    )
+else:
+    result = run_local_tool(tool_call)</code></pre>
+                    <table>
+                        <tr>
+                            <th>Client responsibility</th>
+                            <th>Why it exists</th>
+                        </tr>
+                        <tr>
+                            <td>Start server process</td>
+                            <td>
+                                The MCP server is independent from the main
+                                agent process.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>List server tools</td>
+                            <td>
+                                The model needs names, descriptions, and JSON
+                                schemas.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Track tool ownership</td>
+                            <td>
+                                The tool call must be routed to the server that
+                                owns it.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Stringify results</td>
+                            <td>
+                                The model consumes tool results as conversation
+                                messages.
+                            </td>
+                        </tr>
+                    </table>
+
+                    <h3>Inside a beginner-friendly MCP client</h3>
+                    <p>
+                        A minimal client adapter can be understood as four
+                        pieces of state: active server sessions, model-visible
+                        tool definitions, a map from tool name to server name,
+                        and a cleanup stack.
+                    </p>
+                    <div class="chart" aria-label="MCP client internal state">
+                        <svg viewBox="0 0 1040 300" role="img">
+                            <defs>
+                                <marker
+                                    id="state-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="60"
+                                y="52"
+                                width="220"
+                                height="84"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="95" y="86" class="label">
+                                server_sessions
+                            </text>
+                            <text x="86" y="110" class="small">
+                                random → ClientSession
+                            </text>
+                            <rect
+                                x="370"
+                                y="52"
+                                width="220"
+                                height="84"
+                                rx="7"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="405" y="86" class="label">
+                                openai_tools
+                            </text>
+                            <text x="395" y="110" class="small">
+                                schemas passed to model
+                            </text>
+                            <rect
+                                x="680"
+                                y="52"
+                                width="250"
+                                height="84"
+                                rx="7"
+                                class="chart-level-3"
+                            ></rect>
+                            <text x="710" y="86" class="label">
+                                tool_server_names
+                            </text>
+                            <text x="704" y="110" class="small">
+                                mcp__random__x → random
+                            </text>
+                            <rect
+                                x="215"
+                                y="190"
+                                width="230"
+                                height="72"
+                                rx="7"
+                                class="chart-muted"
+                            ></rect>
+                            <text x="270" y="220" class="label">
+                                exit_stack
+                            </text>
+                            <text x="244" y="244" class="small">
+                                closes streams/sessions
+                            </text>
+                            <rect
+                                x="565"
+                                y="190"
+                                width="230"
+                                height="72"
+                                rx="7"
+                                class="chart-warn"
+                            ></rect>
+                            <text x="610" y="220" class="label">execute()</text>
+                            <text x="592" y="244" class="small">
+                                routes tool call to server
+                            </text>
+                            <path
+                                d="M280 94 L370 94"
+                                class="arrow"
+                                style="marker-end: url(#state-arrow)"
+                            ></path>
+                            <path
+                                d="M590 94 L680 94"
+                                class="arrow"
+                                style="marker-end: url(#state-arrow)"
+                            ></path>
+                            <path
+                                d="M805 136 L705 190"
+                                class="arrow"
+                                style="marker-end: url(#state-arrow)"
+                            ></path>
+                        </svg>
+                    </div>
+                    <table>
+                        <tr>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Beginner meaning</th>
+                        </tr>
+                        <tr>
+                            <td><code>server_sessions</code></td>
+                            <td><code>dict[str, ClientSession]</code></td>
+                            <td>One live connection per MCP server.</td>
+                        </tr>
+                        <tr>
+                            <td><code>openai_tools</code></td>
+                            <td>
+                                <code
+                                    >list[ChatCompletionFunctionToolParam]</code
+                                >
+                            </td>
+                            <td>
+                                The converted tool schemas given to the model.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>tool_server_names</code></td>
+                            <td><code>dict[str, str]</code></td>
+                            <td>
+                                A lookup table that answers: “which server owns
+                                this tool?”
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><code>exit_stack</code></td>
+                            <td><code>AsyncExitStack</code></td>
+                            <td>
+                                A cleanup helper that closes all MCP sessions
+                                when the agent exits.
+                            </td>
+                        </tr>
+                    </table>
+
+                    <h3>Startup flow</h3>
+                    <p>
+                        At startup, the client does not know what tools exist.
+                        It must start every configured server and ask each
+                        server for its tool list.
+                    </p>
+                    <pre><code>async def load_servers(config_path):
+    config = read_json(config_path)
+
+    for server_name, server_config in config["mcpServers"].items():
+        session = await start_server(server_config)
+        server_sessions[server_name] = session
+        await add_server_tools(server_name, session)</code></pre>
+                    <table>
+                        <tr>
+                            <th>Step</th>
+                            <th>What happens</th>
+                            <th>Why it matters</th>
+                        </tr>
+                        <tr>
+                            <td>Read config</td>
+                            <td>Load commands from <code>mpc.json</code>.</td>
+                            <td>
+                                The agent can change servers without changing
+                                model-loop code.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Start process</td>
+                            <td>
+                                Run <code>uv</code>, <code>npx</code>, or
+                                another command over stdio.
+                            </td>
+                            <td>
+                                MCP servers stay external to the main program.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Initialize session</td>
+                            <td>
+                                Perform MCP handshake with
+                                <code>ClientSession.initialize()</code>.
+                            </td>
+                            <td>Both sides agree protocol capabilities.</td>
+                        </tr>
+                        <tr>
+                            <td>List tools</td>
+                            <td>Call <code>session.list_tools()</code>.</td>
+                            <td>
+                                The model receives current tool names,
+                                descriptions, and schemas.
+                            </td>
+                        </tr>
+                    </table>
+
+                    <h3>Tool name mapping</h3>
+                    <p>
+                        The model needs globally unique tool names. The tutorial
+                        client builds names with <code>mcp__server__tool</code>.
+                    </p>
+                    <pre><code>def make_openai_tool_name(server_name, mcp_tool_name):
+    return f"mcp__{server_name}__{mcp_tool_name}"
+
+# examples:
+# random + random_number → mcp__random__random_number
+# chrome-devtools + navigate → mcp__chrome-devtools__navigate</code></pre>
+                    <div class="callout">
+                        <strong>Why prefix names?</strong> Two servers may both
+                        expose a tool named <code>read</code>. Prefixing with
+                        the server name prevents collisions and makes dispatch
+                        simple.
+                    </div>
+
+                    <h3>Dispatch flow</h3>
+                    <p>
+                        When the model calls a tool, the client checks whether
+                        the name belongs to MCP. If yes, it strips the prefix
+                        and calls the original MCP tool on the owning server
+                        session.
+                    </p>
+                    <div class="chart" aria-label="MCP tool dispatch detail">
+                        <svg viewBox="0 0 1040 260" role="img">
+                            <defs>
+                                <marker
+                                    id="dispatch-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="55"
+                                y="88"
+                                width="220"
+                                height="76"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="86" y="120" class="label">
+                                tool_call.name
+                            </text>
+                            <text x="82" y="144" class="small">
+                                mcp__random__random_number
+                            </text>
+                            <rect
+                                x="360"
+                                y="88"
+                                width="220"
+                                height="76"
+                                rx="7"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="405" y="120" class="label">
+                                lookup server
+                            </text>
+                            <text x="420" y="144" class="small">random</text>
+                            <rect
+                                x="665"
+                                y="88"
+                                width="220"
+                                height="76"
+                                rx="7"
+                                class="chart-level-3"
+                            ></rect>
+                            <text x="705" y="120" class="label">
+                                call MCP tool
+                            </text>
+                            <text x="710" y="144" class="small">
+                                random_number({})
+                            </text>
+                            <path
+                                d="M275 126 L360 126"
+                                class="arrow"
+                                style="marker-end: url(#dispatch-arrow)"
+                            ></path>
+                            <path
+                                d="M580 126 L665 126"
+                                class="arrow"
+                                style="marker-end: url(#dispatch-arrow)"
+                            ></path>
+                            <text x="150" y="220" class="small">
+                                The model sees the prefixed OpenAI tool name;
+                                the MCP server receives only its original tool
+                                name.
+                            </text>
+                        </svg>
+                    </div>
+                    <pre><code>async def execute(tool_name, arguments):
+    server_name = tool_server_names[tool_name.lower()]
+    session = server_sessions[server_name]
+
+    mcp_tool_name = tool_name.split("__", 2)[2]
+    mcp_arguments = json.loads(arguments or "{}")
+
+    result = await session.call_tool(mcp_tool_name, mcp_arguments)
+    return content_to_text(result.content)</code></pre>
+
+                    <h3>Result conversion</h3>
+                    <p>
+                        MCP tools return content blocks. The agent needs one
+                        text string so it can append the result as a normal tool
+                        message.
+                    </p>
+                    <pre><code>def content_to_text(content):
+    parts = []
+    for item in content:
+        if getattr(item, "text", None) is not None:
+            parts.append(item.text)
+        else:
+            parts.append(json.dumps(item.model_dump()))
+    return "\n".join(parts)</code></pre>
+                    <div class="callout">
+                        <strong>Boundary:</strong> the agent should not import
+                        server implementation modules directly. It should talk
+                        to them through MCP, the same way it would talk to an
+                        external browser or database server.
+                    </div>
+                </div>
+            </details>
+
+            <details class="chapter level-1" id="testing" open>
+                <summary><h2>Testing and Debugging</h2></summary>
+                <div class="content">
+                    <p>
+                        MCP failures usually come from config, process startup,
+                        schema mismatch, or the model choosing the wrong tool.
+                    </p>
+                    <div class="chart" aria-label="MCP debugging decision tree">
+                        <svg viewBox="0 0 1040 300" role="img">
+                            <defs>
+                                <marker
+                                    id="debug-arrow"
+                                    markerWidth="8"
+                                    markerHeight="8"
+                                    refX="7"
+                                    refY="4"
+                                    orient="auto"
+                                >
+                                    <path
+                                        d="M0,0 L8,4 L0,8 Z"
+                                        fill="#56666f"
+                                    ></path>
+                                </marker>
+                            </defs>
+                            <rect
+                                x="70"
+                                y="40"
+                                width="190"
+                                height="60"
+                                rx="7"
+                                class="chart-level-1"
+                            ></rect>
+                            <text x="105" y="75" class="label">
+                                Config loads?
+                            </text>
+                            <rect
+                                x="330"
+                                y="40"
+                                width="190"
+                                height="60"
+                                rx="7"
+                                class="chart-level-2"
+                            ></rect>
+                            <text x="365" y="75" class="label">
+                                Server starts?
+                            </text>
+                            <rect
+                                x="590"
+                                y="40"
+                                width="190"
+                                height="60"
+                                rx="7"
+                                class="chart-level-3"
+                            ></rect>
+                            <text x="625" y="75" class="label">
+                                Tools listed?
+                            </text>
+                            <rect
+                                x="330"
+                                y="180"
+                                width="190"
+                                height="60"
+                                rx="7"
+                                class="chart-warn"
+                            ></rect>
+                            <text x="360" y="215" class="label">
+                                Fix command
+                            </text>
+                            <rect
+                                x="590"
+                                y="180"
+                                width="190"
+                                height="60"
+                                rx="7"
+                                class="chart-warn"
+                            ></rect>
+                            <text x="623" y="215" class="label">
+                                Fix schema
+                            </text>
+                            <rect
+                                x="830"
+                                y="110"
+                                width="150"
+                                height="60"
+                                rx="7"
+                                class="chart-muted"
+                            ></rect>
+                            <text x="862" y="145" class="label">
+                                Prompt test
+                            </text>
+                            <path
+                                d="M260 70 L330 70"
+                                class="arrow"
+                                style="marker-end: url(#debug-arrow)"
+                            ></path>
+                            <path
+                                d="M520 70 L590 70"
+                                class="arrow"
+                                style="marker-end: url(#debug-arrow)"
+                            ></path>
+                            <path
+                                d="M780 70 L900 110"
+                                class="arrow"
+                                style="marker-end: url(#debug-arrow)"
+                            ></path>
+                            <path
+                                d="M425 100 L425 180"
+                                class="arrow"
+                                style="marker-end: url(#debug-arrow)"
+                            ></path>
+                            <path
+                                d="M685 100 L685 180"
+                                class="arrow"
+                                style="marker-end: url(#debug-arrow)"
+                            ></path>
+                            <text x="110" y="270" class="small">
+                                Test the server directly first; only then test
+                                model behavior with a prompt that names the
+                                intended MCP tool.
+                            </text>
+                        </svg>
+                    </div>
+                    <h3>Prompt-based smoke tests</h3>
+                    <pre><code>test:mcp:random:
+  desc: "Test the random MCP server"
+  cmds:
+    - uv run -m app.main -p "Call the random MCP tool. Print the tool result exactly as returned."</code></pre>
+                    <h3>Common failures</h3>
+                    <table>
+                        <tr>
+                            <th>Symptom</th>
+                            <th>Likely cause</th>
+                            <th>Fix</th>
+                        </tr>
+                        <tr>
+                            <td>No tools appear</td>
+                            <td>
+                                Config path missing or server failed during
+                                initialize.
+                            </td>
+                            <td>
+                                Run the server command manually and inspect
+                                stderr.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Wrong tool called</td>
+                            <td>
+                                Prompt is vague or tool descriptions overlap.
+                            </td>
+                            <td>
+                                Name the target server/tool in the prompt and
+                                improve descriptions.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Old code is used</td>
+                            <td>
+                                Packaged command cache or stale build artifacts.
+                            </td>
+                            <td>
+                                Use <code>uv run python -m module</code> for
+                                local development.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>Browser does not visibly open</td>
+                            <td>
+                                Server is configured with
+                                <code>--headless</code>.
+                            </td>
+                            <td>Remove headless mode for visual debugging.</td>
+                        </tr>
+                    </table>
+                    <pre><code># Useful checks
+uv run python -m compileall app mcp_servers
+task test:mcp:random
+task test:mcp:chrome-devtools</code></pre>
+                    <div class="callout">
+                        <strong>Testing rule:</strong> separate protocol tests
+                        from model-choice tests. First verify the MCP tool can
+                        run; then verify the prompt makes the model choose it.
+                    </div>
+                </div>
+            </details>
+
+            <!-- END_CHAPTERS -->
+        </main>
+
+        <script>
+            // Toolbar controls
+            const chapters = Array.from(
+                document.querySelectorAll("details.chapter"),
+            );
+            document
+                .querySelector('[data-action="open-all"]')
+                .addEventListener("click", () => {
+                    chapters.forEach((ch) => {
+                        ch.open = true;
+                    });
+                });
+            document
+                .querySelector('[data-action="close-all"]')
+                .addEventListener("click", () => {
+                    chapters.forEach((ch) => {
+                        ch.open = false;
+                    });
+                });
+
+            // Syntax highlighter
+            const syntaxKeywords = new Set([
+                "async",
+                "await",
+                "break",
+                "case",
+                "catch",
+                "class",
+                "const",
+                "continue",
+                "default",
+                "do",
+                "else",
+                "enum",
+                "export",
+                "extends",
+                "finally",
+                "for",
+                "from",
+                "function",
+                "if",
+                "import",
+                "in",
+                "instanceof",
+                "interface",
+                "let",
+                "message",
+                "new",
+                "of",
+                "oneof",
+                "return",
+                "static",
+                "string",
+                "struct",
+                "switch",
+                "throw",
+                "try",
+                "type",
+                "typeof",
+                "uint32",
+                "uint32_t",
+                "var",
+                "void",
+                "volatile",
+                "while",
+                "yield",
+            ]);
+            const syntaxLiterals = new Set([
+                "false",
+                "true",
+                "null",
+                "undefined",
+                "NaN",
+                "Infinity",
+            ]);
+            const syntaxTypes = new Set([]);
+
+            const escapeHtml = (t) =>
+                t.replace(
+                    /[&<>]/g,
+                    (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c],
+                );
+            const colorToken = (cls, t) =>
+                `<span class="${cls}">${escapeHtml(t)}</span>`;
+
+            const highlightCodeBlock = (code) => {
+                const src = code.textContent;
+                let html = "",
+                    i = 0;
+                while (i < src.length) {
+                    const rest = src.slice(i);
+                    if (rest.startsWith("//")) {
+                        const end = src.indexOf("\n", i);
+                        const n = end === -1 ? src.length : end;
+                        html += colorToken("tok-comment", src.slice(i, n));
+                        i = n;
+                        continue;
+                    }
+                    if (src[i] === "#" && (i === 0 || src[i - 1] === "\n")) {
+                        const end = src.indexOf("\n", i);
+                        const n = end === -1 ? src.length : end;
+                        html += colorToken("tok-comment", src.slice(i, n));
+                        i = n;
+                        continue;
+                    }
+                    const sm = rest.match(/^"([^"\\]|\\.)*"|^'([^'\\]|\\.)*'/);
+                    if (sm) {
+                        html += colorToken("tok-string", sm[0]);
+                        i += sm[0].length;
+                        continue;
+                    }
+                    const nm = rest.match(
+                        /^(0x[\da-fA-F]+|\d+(?:\.\d+)?f?|\d+K)\b/,
+                    );
+                    if (nm) {
+                        html += colorToken("tok-number", nm[0]);
+                        i += nm[0].length;
+                        continue;
+                    }
+                    const wm = rest.match(/^[A-Za-z_][\w:]*/);
+                    if (wm) {
+                        const w = wm[0],
+                            after = src.slice(i + w.length);
+                        if (syntaxKeywords.has(w))
+                            html += colorToken("tok-keyword", w);
+                        else if (syntaxLiterals.has(w))
+                            html += colorToken("tok-literal", w);
+                        else if (syntaxTypes.has(w) || /^[A-Z][\w:]*$/.test(w))
+                            html += colorToken("tok-type", w);
+                        else if (/^\s*\(/.test(after))
+                            html += colorToken("tok-fn", w);
+                        else html += escapeHtml(w);
+                        i += w.length;
+                        continue;
+                    }
+                    if (/^[{}()[\];,.=:+\-*/&|!<>]/.test(rest)) {
+                        html += colorToken("tok-operator", src[i]);
+                        i++;
+                        continue;
+                    }
+                    html += escapeHtml(src[i]);
+                    i++;
+                }
+                code.innerHTML = html;
+            };
+            document.querySelectorAll("pre code").forEach(highlightCodeBlock);
+        </script>
+    </body>
+</html>
