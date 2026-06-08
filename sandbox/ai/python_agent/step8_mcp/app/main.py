@@ -8,7 +8,6 @@ from typing import cast
 from openai import OpenAI
 from openai.types.chat import (
     ChatCompletionAssistantMessageParam,
-    ChatCompletionMessageFunctionToolCall,
     ChatCompletionMessageParam,
 )
 
@@ -60,16 +59,15 @@ async def main():
                             f"unsupported tool call type: {tool_call.type}"
                         )
 
-                    function_tool_call = cast(ChatCompletionMessageFunctionToolCall, tool_call)
-                    tool_name = function_tool_call.function.name
+                    tool_name = tool_call.function.name
                     if mcp_toolbox.has_tool(tool_name):
                         print(f"MCP tool called: {tool_name}", file=sys.stderr, flush=True)
                         result = await mcp_toolbox.execute(
                             tool_name=tool_name,
-                            arguments=function_tool_call.function.arguments,
+                            arguments=tool_call.function.arguments,
                         )
                     else:
-                        result = tool_executer(tool_call=function_tool_call)
+                        result = tool_executer(tool_call=tool_call)
 
                     messages.append(
                         {
