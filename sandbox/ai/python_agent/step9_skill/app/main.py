@@ -12,6 +12,7 @@ from openai.types.chat import (
 )
 
 from app.mcp_client import MCPToolbox
+from app.skills import build_skill_context
 from app.tools import tool_executer, tool_get_tools
 
 API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -28,7 +29,14 @@ async def main():
 
     client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-    messages: list[ChatCompletionMessageParam] = [{"role": "user", "content": args.p}]
+    skill_context = build_skill_context(args.p)
+    print(f"Skills found: {skill_context.found_names}", file=sys.stderr, flush=True)
+    print(f"Skills used: {skill_context.used_names}", file=sys.stderr, flush=True)
+
+    messages: list[ChatCompletionMessageParam] = [
+        *skill_context.messages,
+        {"role": "user", "content": args.p},
+    ]
 
     mcp_config = MCP_CONFIG_PATH if Path(MCP_CONFIG_PATH).exists() else None
 
@@ -77,6 +85,7 @@ async def main():
                         }
                     )
             else:
+                print('\n')
                 print(response.choices[0].message.content)
                 break
 

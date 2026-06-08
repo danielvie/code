@@ -7,10 +7,6 @@
     "random-stuff": {
       "command": "uv",
       "args": ["run", "python", "-m", "mcp_servers.random_mcp_server"]
-    },
-    "chrome-devtools": {
-      "command": "npx",
-      "args": ["-y", "chrome-devtools-mcp@latest", "--slim"]
     }
   }
 }

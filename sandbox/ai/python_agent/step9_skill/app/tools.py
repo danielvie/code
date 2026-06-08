@@ -1,8 +1,14 @@
-from typing import cast
 import json
 import subprocess
+from pathlib import Path
+from typing import cast
 
-from openai.types.chat import ChatCompletionFunctionToolParam, ChatCompletionMessageToolCall
+from openai.types.chat import (
+    ChatCompletionFunctionToolParam,
+    ChatCompletionMessageToolCall,
+)
+
+SKILLS_PATH = Path(".agents/skills")
 
 tool_read_spec: ChatCompletionFunctionToolParam = {
     "type": "function",
@@ -59,6 +65,24 @@ tool_bash_spec: ChatCompletionFunctionToolParam = {
     },
 }
 
+tool_load_skill_spec: ChatCompletionFunctionToolParam = {
+    "type": "function",
+    "function": {
+        "name": "LoadSkill",
+        "description": "Load the full instructions for a matched local skill",
+        "parameters": {
+            "type": "object",
+            "required": ["name"],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "The skill name to load",
+                }
+            },
+        },
+    },
+}
+
 
 def tool_read(tool_call_function) -> str:
     args = tool_call_function.function.arguments
@@ -89,23 +113,32 @@ def tool_write(tool_call_function) -> str:
 def tool_bash(tool_call_function) -> str:
     args = tool_call_function.function.arguments
     command = json.loads(args)["command"]
-    
+
     print(f"command: `{command}`")
-    result = subprocess.run(
-        command,
-        shell=True,
-        capture_output=True,
-        text=True
-    )
-    
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
     return result.stdout
+
+
+def tool_load_skill(tool_call_function) -> str:
+    args = tool_call_function.function.arguments
+    name = json.loads(args)["name"]
+    skill_path = SKILLS_PATH / name / "SKILL.md"
+
+    try:
+        return skill_path.read_text(encoding="utf-8")
+    except OSError as e:
+        return f"Error loading skill: {e}"
+
 
 def tool_get_tools() -> list[ChatCompletionFunctionToolParam]:
     return [
         tool_read_spec,
         tool_write_spec,
         tool_bash_spec,
+        tool_load_skill_spec,
     ]
+
 
 def tool_executer(tool_call) -> str:
     if tool_call.type != "function":
@@ -114,13 +147,15 @@ def tool_executer(tool_call) -> str:
     function_call = cast(ChatCompletionMessageToolCall, tool_call)
     functoin_name = function_call.function.name.lower()
 
-    result = ''
-    match(functoin_name):
+    result = ""
+    match functoin_name:
         case "read":
             result = tool_read(function_call)
         case "write":
             result = tool_write(function_call)
         case "bash":
             result = tool_bash(function_call)
+        case "loadskill":
+            result = tool_load_skill(function_call)
 
     return result
