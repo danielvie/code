@@ -1,0 +1,23 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Run the MCP server with uvx
+    cmds:
+      - uvx --from . example-mcp
+
+  test:
+    desc: Run tests
+    cmds:
+      - uv run pytest
+
+  clean:
+    desc: Remove generated Python cache and build artifacts
+    cmds:
+      - find . -type d -name __pycache__ -prune -exec rm -rf {} +
+      - rm -rf .pytest_cache .ruff_cache dist build *.egg-info src/*.egg-info

@@ -1,0 +1,32 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Run the MCP server over stdio
+    cmds:
+      - cargo run
+
+  build:debug:
+    desc: Build Debug
+    cmds:
+      - cargo build
+
+  build:release:
+    desc: Build Release
+    cmds:
+      - cargo build --release
+
+  test:
+    desc: Run Rust tests
+    cmds:
+      - cargo test
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - cargo clean

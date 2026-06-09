@@ -1,0 +1,1 @@
+"""Example MCP server package."""

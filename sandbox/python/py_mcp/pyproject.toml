@@ -1,0 +1,16 @@
+[project]
+name = "example-mcp"
+version = "0.1.0"
+description = "Example Python MCP server with random tools"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "mcp>=1.0.0",
+]
+
+[project.scripts]
+example-mcp = "example_mcp.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
