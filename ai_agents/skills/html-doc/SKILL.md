@@ -19,6 +19,7 @@ Read before generating:
 - `references/template.html` — the reusable HTML shell (copy verbatim to target path).
 - `references/charts-guide.md` — chart selection rules, SVG patterns, coordinate formulas, examples.
 - `references/writing-guide.md` — content pattern, writing style, accessibility, quality checklist.
+- `references/diff-guide.md` — side-by-side code diff panels: HTML structure, line types, rules.
 
 ## Generation Workflow
 

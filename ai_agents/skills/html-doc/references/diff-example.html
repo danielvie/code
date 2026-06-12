@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Diff Example</title>
+<style>
+  :root { --code: #101820; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Segoe UI", sans-serif; background: #fbfcfb; color: #182025; padding: 32px 20px; max-width: 1180px; margin: 0 auto; }
+  h3 { font-size: 18px; margin-bottom: 10px; }
+  p { margin: 8px 0; font-size: 14px; color: #60707a; }
+
+  /* Code tokens */
+  .tok-comment { color: #91a8a2; font-style: italic; }
+  .tok-keyword { color: #7dd3fc; font-weight: 700; }
+  .tok-type { color: #a7f3d0; }
+  .tok-fn { color: #fde68a; }
+  .tok-string { color: #fda4af; }
+  .tok-number { color: #c4b5fd; }
+  .tok-literal { color: #f9a8d4; font-weight: 700; }
+  .tok-operator { color: #93c5fd; }
+
+  /* Diff panels */
+  .diff-container { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 12px 0; border-radius: 6px; overflow: hidden; border: 1px solid #293640; }
+  .diff-panel { overflow-x: auto; background: #1e1e1e; font-size: 13px; font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace; }
+  .diff-panel + .diff-panel { border-left: 1px solid #293640; }
+  .diff-panel pre { padding: 0; margin: 0; background: transparent; border: none; border-radius: 0; color: #dce8e5; }
+  .diff-panel code { display: block; }
+  .diff-panel-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 14px; background: #252526; border-bottom: 1px solid #293640; }
+  .diff-panel-before .diff-panel-label { color: #f87171; }
+  .diff-panel-after .diff-panel-label { color: #4ade80; }
+  .diff-hash { color: #8b8b8b; font-weight: 400; font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace; margin-left: 6px; }
+  .diff-line { display: flex; line-height: 20px; height: 20px; white-space: pre; }
+  .diff-ln { display: inline-block; width: 36px; min-width: 36px; text-align: right; padding-right: 8px; color: #5a5a5a; user-select: none; font-size: 12px; }
+  .diff-content { flex: 1; padding-left: 6px; }
+  .diff-line.removed { background: rgba(255,0,0,0.12); }
+  .diff-line.removed .diff-ln { color: #8b4444; }
+  .diff-line.removed .diff-content { border-left: 2px solid #f14c4c; }
+  .diff-line.added { background: rgba(0,180,0,0.1); }
+  .diff-line.added .diff-ln { color: #3d7d3d; }
+  .diff-line.added .diff-content { border-left: 2px solid #4ec94e; }
+  .diff-line.context .diff-content { border-left: 2px solid transparent; }
+  @media (max-width: 900px) { .diff-container { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<h3>Example: AppComponent keyboard tracking bootstrap</h3>
+<div class="diff-container">
+  <div class="diff-panel diff-panel-before">
+    <span class="diff-panel-label">Before <span class="diff-hash">6fc4780f5d</span></span>
+    <pre><code><span class="diff-line-removed">import { Component, ViewEncapsulation, OnInit } from "@angular/core";</span>
+<span class="diff-line-context">import { PrimeNGConfig } from 'primeng/api';</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-removed">export class AppComponent implements OnInit {</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-removed">  constructor(private primengConfig: PrimeNGConfig) {}</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-context">  ngOnInit() {</span>
+<span class="diff-line-context">    this.primengConfig.ripple = true;</span>
+<span class="diff-line-context">  }</span>
+<span class="diff-line-context">}</span></code></pre>
+  </div>
+  <div class="diff-panel diff-panel-after">
+    <span class="diff-panel-label">After</span>
+    <pre><code><span class="diff-line-added">import { Component, OnDestroy, OnInit, ViewEncapsulation } from "@angular/core";</span>
+<span class="diff-line-context">import { PrimeNGConfig } from 'primeng/api';</span>
+<span class="diff-line-added">import { RefresherService } from './refresher/refresher.service';</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-added">export class AppComponent implements OnInit, OnDestroy {</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-added">  constructor(</span>
+<span class="diff-line-added">    private primengConfig: PrimeNGConfig,</span>
+<span class="diff-line-added">    private refresherService: RefresherService</span>
+<span class="diff-line-added">  ) {}</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-context">  ngOnInit() {</span>
+<span class="diff-line-context">    this.primengConfig.ripple = true;</span>
+<span class="diff-line-added">    this.refresherService.initializeControlKeyTracking();</span>
+<span class="diff-line-context">  }</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-added">  ngOnDestroy() {</span>
+<span class="diff-line-added">    this.refresherService.destroyControlKeyTracking();</span>
+<span class="diff-line-added">  }</span>
+<span class="diff-line-context">}</span></code></pre>
+  </div>
+</div>
+<p>The root component now bootstraps a shared keyboard tracker and tears it down on destroy.</p>
+
+<h3>Example: Replacing @HostListener with scoped listener</h3>
+<div class="diff-container">
+  <div class="diff-panel diff-panel-before">
+    <span class="diff-panel-label">Before <span class="diff-hash">6fc4780f5d</span></span>
+    <pre><code><span class="diff-line-removed">@HostListener('document:keydown', ['$event'])</span>
+<span class="diff-line-removed">handleKeyboardEvent(event: KeyboardEvent) {</span>
+<span class="diff-line-removed">  if ((event.ctrlKey || event.metaKey) && event.key === 'c') {</span>
+<span class="diff-line-removed">    event.preventDefault();</span>
+<span class="diff-line-removed">    if (this.multiSelectedAttributes.length > 0) {</span>
+<span class="diff-line-removed">      const table = this.generateTable(this.multiSelectedAttributes);</span>
+<span class="diff-line-removed">      this.copyToClipBoard(table);</span>
+<span class="diff-line-removed">    }</span>
+<span class="diff-line-removed">  }</span>
+<span class="diff-line-removed">}</span></code></pre>
+  </div>
+  <div class="diff-panel diff-panel-after">
+    <span class="diff-panel-label">After</span>
+    <pre><code><span class="diff-line-added">private removeGlobalKeydownListener?: () => void;</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-added">ngOnInit() { this.setupGlobalKeydownListener(); }</span>
+<span class="diff-line-added">ngOnDestroy() { this.removeGlobalKeydownListener?.(); }</span>
+<span class="diff-line-context"></span>
+<span class="diff-line-added">private setupGlobalKeydownListener() {</span>
+<span class="diff-line-added">  this._ngZone.runOutsideAngular(() => {</span>
+<span class="diff-line-added">    const listener = (event: KeyboardEvent) => {</span>
+<span class="diff-line-added">      const isCopy = this.isTabActive && event.ctrlKey && event.key === 'c';</span>
+<span class="diff-line-added">      if (!isCopy) return;</span>
+<span class="diff-line-added">      this._ngZone.run(() => this.handleCopyShortcut(event));</span>
+<span class="diff-line-added">    };</span>
+<span class="diff-line-added">    document.addEventListener('keydown', listener);</span>
+<span class="diff-line-added">    this.removeGlobalKeydownListener = () =></span>
+<span class="diff-line-added">      document.removeEventListener('keydown', listener);</span>
+<span class="diff-line-added">  });</span>
+<span class="diff-line-added">}</span></code></pre>
+  </div>
+</div>
+<p>The <code>@HostListener</code> is replaced with an explicit listener gated by <code>isTabActive</code> and properly cleaned up on destroy.</p>
+
+<script>
+  const syntaxKeywords = new Set(["async","await","break","case","catch","class","const","continue","default","do","else","enum","export","extends","finally","for","from","function","if","import","in","instanceof","interface","let","new","of","return","static","switch","throw","try","type","typeof","var","void","while","yield","private"]);
+  const syntaxLiterals = new Set(["false","true","null","undefined","NaN","Infinity"]);
+  const escapeHtml = t => t.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"})[c]);
+  const colorToken = (cls, t) => `<span class="${cls}">${escapeHtml(t)}</span>`;
+
+  document.querySelectorAll('.diff-panel pre code').forEach(code => {
+    const spans = code.querySelectorAll('.diff-line-removed, .diff-line-added, .diff-line-context');
+    if (!spans.length) return;
+    let lineNum = 1, html = '';
+    spans.forEach(span => {
+      const type = span.classList.contains('diff-line-removed') ? 'removed' :
+                   span.classList.contains('diff-line-added') ? 'added' : 'context';
+      const src = span.textContent;
+      let highlighted = '', i = 0;
+      while (i < src.length) {
+        const rest = src.slice(i);
+        if (rest.startsWith("//")) { const end = src.indexOf("\n", i); const n = end===-1?src.length:end; highlighted += colorToken("tok-comment", src.slice(i,n)); i=n; continue; }
+        const sm = rest.match(/^"([^"\\]|\\.)*"|^'([^'\\]|\\.)*'/);
+        if (sm) { highlighted += colorToken("tok-string", sm[0]); i += sm[0].length; continue; }
+        const nm = rest.match(/^(0x[\da-fA-F]+|\d+(?:\.\d+)?f?)\b/);
+        if (nm) { highlighted += colorToken("tok-number", nm[0]); i += nm[0].length; continue; }
+        const wm = rest.match(/^[@A-Za-z_][\w:]*/);
+        if (wm) {
+          const w = wm[0], after = src.slice(i+w.length);
+          if (syntaxKeywords.has(w)) highlighted += colorToken("tok-keyword", w);
+          else if (syntaxLiterals.has(w)) highlighted += colorToken("tok-literal", w);
+          else if (/^[A-Z][\w:]*$/.test(w)) highlighted += colorToken("tok-type", w);
+          else if (/^\s*\(/.test(after)) highlighted += colorToken("tok-fn", w);
+          else if (w.startsWith('@')) highlighted += colorToken("tok-fn", w);
+          else highlighted += escapeHtml(w);
+          i += w.length; continue;
+        }
+        if (/^[{}()[\];,.=:+\-*/&|!<>?]/.test(rest)) { highlighted += colorToken("tok-operator", src[i]); i++; continue; }
+        highlighted += escapeHtml(src[i]); i++;
+      }
+      html += `<div class="diff-line ${type}"><span class="diff-ln">${lineNum}</span><span class="diff-content">${highlighted}</span></div>`;
+      lineNum++;
+    });
+    code.innerHTML = html;
+  });
+</script>
+</body>
+</html>

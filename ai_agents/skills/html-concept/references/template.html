@@ -22,6 +22,7 @@
       body {
         font-family: "Segoe UI", Candara, Tahoma, sans-serif;
         color: var(--ink);
+        font-size: 16px;
         line-height: 1.55;
         background:
           linear-gradient(90deg, rgba(24,32,37,0.035) 1px, transparent 1px) 0 0 / 28px 28px,
@@ -40,9 +41,9 @@
       h1 { font-size: clamp(30px, 5vw, 54px); line-height: 1.15; margin-bottom: 8px; }
       h2 { font-size: 24px; margin: 0; }
       h3 { font-size: 18px; margin-top: 24px; border-left: 4px solid var(--level-2); padding-left: 10px; }
-      h4, .sub-subsection-label { color: var(--level-3); font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.04em; margin-top: 18px; }
+      h4, .sub-subsection-label { color: var(--level-3); font-weight: 700; text-transform: uppercase; font-size: 13px; letter-spacing: 0.04em; margin-top: 14px; }
 
-      p { margin: 10px 0; }
+      p { margin: 6px 0; }
       code { background: #edf2f0; padding: 2px 6px; border-radius: 4px; font-size: 0.92em; }
 
       /* Hero */
@@ -55,50 +56,27 @@
       .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
       .chip { background: var(--panel); border: 1px solid var(--line); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: var(--muted); }
 
-      /* Toolbar */
-      .toolbar { display: flex; gap: 10px; margin-bottom: 20px; }
-      .toolbar button { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 6px 14px; font-size: 13px; cursor: pointer; }
-      .toolbar button:hover { background: #e8efec; }
+      /* Charts */
+      .chart { margin: 16px 0; overflow-x: auto; }
+      .chart svg { max-width: 100%; height: auto; }
+      .chart-muted { fill: rgba(96,112,122,0.08); stroke: #9aaab2; }
+      .chart-warn { fill: #fff4df; stroke: #b57418; }
+      .chart-level-1 { fill: rgba(54,93,168,0.1); stroke: var(--level-1); }
+      .chart-level-2 { fill: rgba(22,100,90,0.1); stroke: var(--level-2); }
+      .chart-level-3 { fill: rgba(91,76,148,0.1); stroke: var(--level-3); }
+      .arrow { stroke: #56666f; stroke-width: 1.5; fill: none; }
+      .dash { stroke-dasharray: 6 5; }
+      .label { fill: var(--ink); font-size: 13px; font-weight: 650; }
+      .small { fill: var(--muted); font-size: 12px; }
+      .lane { fill: rgba(96,112,122,0.07); stroke: #d7e1e7; }
 
-      /* Index */
-      .index { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 20px 24px; margin-bottom: 28px; }
-      .index h2 { font-size: 18px; margin-bottom: 12px; }
-      .index-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-      .index a { display: block; padding: 10px 12px; background: #fff; border: 1px solid var(--line); border-radius: 6px; text-decoration: none; color: var(--ink); font-size: 14px; position: relative; }
-      .index a:hover { border-color: var(--level-1); }
-      .hint { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; border-radius: 50%; background: var(--line); font-size: 11px; color: var(--muted); margin-left: 6px; cursor: help; position: relative; }
-      .hint::after { content: attr(data-tip); position: absolute; bottom: 130%; left: 50%; transform: translateX(-50%); background: var(--ink); color: #fff; font-size: 12px; padding: 6px 10px; border-radius: 6px; white-space: nowrap; max-width: 260px; white-space: normal; opacity: 0; pointer-events: none; transition: opacity 0.2s; z-index: 10; }
-      .hint:hover::after, .hint:focus::after { opacity: 1; }
-
-      /* Chapters */
-      details.chapter { border: 1px solid var(--line); border-left: 4px solid var(--level-1); border-radius: 8px; margin-bottom: 18px; background: #fff; }
-      details.chapter > summary { padding: 16px 20px; cursor: pointer; list-style: none; display: flex; align-items: center; justify-content: space-between; }
-      details.chapter > summary::-webkit-details-marker { display: none; }
-      details.chapter > summary::after { content: "show"; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 3px 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; }
-      details.chapter[open] > summary::after { content: "hide"; }
-      details.chapter .content { padding: 0 20px 20px; }
-      details.chapter .content[style] { animation: reveal 0.2s ease; }
-      @keyframes reveal { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: translateY(0); } }
+      /* Sections */
+      .visuals, .code-details { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
 
       /* Cards */
       .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 16px 0; }
       .card { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px; }
       .card strong { display: block; margin-bottom: 4px; }
-
-      /* Charts */
-      .chart { margin: 16px 0; overflow-x: auto; }
-      .chart svg { max-width: 100%; height: auto; }
-      .box { fill: #fff; stroke: #b8c6cd; stroke-width: 1.3; rx: 7; }
-      .box-level-1, .chart-level-1 { fill: rgba(54,93,168,0.1); stroke: var(--level-1); }
-      .box-level-2, .chart-level-2 { fill: rgba(22,100,90,0.1); stroke: var(--level-2); }
-      .box-level-3, .chart-level-3 { fill: rgba(91,76,148,0.1); stroke: var(--level-3); }
-      .chart-muted { fill: rgba(96,112,122,0.08); stroke: #9aaab2; }
-      .chart-warn { fill: #fff4df; stroke: #b57418; }
-      .arrow { stroke: #56666f; stroke-width: 1.5; fill: none; marker-end: url(#arrow); }
-      .dash { stroke-dasharray: 6 5; }
-      .label { fill: var(--ink); font-size: 13px; font-weight: 650; }
-      .small { fill: var(--muted); font-size: 12px; }
-      .lane { fill: rgba(96,112,122,0.07); stroke: #d7e1e7; }
 
       /* Tables */
       table { width: 100%; border-collapse: collapse; margin: 14px 0; font-size: 14px; }
@@ -106,7 +84,7 @@
       th { background: var(--panel); font-weight: 600; }
 
       /* Code */
-      pre { margin: 12px 0; padding: 14px; overflow-x: auto; border-radius: 8px; border: 1px solid #293640; background: var(--code); color: #dce8e5; font-size: 13px; line-height: 1.45; }
+      pre { margin: 0; padding: 14px; overflow-x: auto; border-radius: 0; border: none; background: var(--code); color: #dce8e5; font-size: 13px; line-height: 1.45; }
       pre code { padding: 0; border: 0; background: transparent; color: inherit; font-size: inherit; }
       .tok-comment { color: #91a8a2; font-style: italic; }
       .tok-keyword { color: #7dd3fc; font-weight: 700; }
@@ -117,6 +95,27 @@
       .tok-literal { color: #f9a8d4; font-weight: 700; }
       .tok-operator { color: #93c5fd; }
 
+      /* Diff panels */
+      .diff-container { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin: 10px 0; border-radius: 6px; overflow: hidden; border: 1px solid #293640; }
+      .diff-panel { overflow-x: auto; background: #1e1e1e; font-size: 13px; font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace; }
+      .diff-panel + .diff-panel { border-left: 1px solid #293640; }
+      .diff-panel pre { padding: 0; margin: 0; background: transparent; border: none; border-radius: 0; }
+      .diff-panel code { display: block; }
+      .diff-panel-label { display: block; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 4px 14px; background: #252526; border-bottom: 1px solid #293640; }
+      .diff-panel-before .diff-panel-label { color: #f87171; }
+      .diff-panel-after .diff-panel-label { color: #4ade80; }
+      .diff-hash { color: #8b8b8b; font-weight: 400; font-family: 'Cascadia Code', 'Fira Code', Consolas, monospace; margin-left: 6px; }
+      .diff-line { display: flex; line-height: 20px; height: 20px; white-space: pre; }
+      .diff-ln { display: inline-block; width: 36px; min-width: 36px; text-align: right; padding-right: 8px; color: #5a5a5a; user-select: none; font-size: 12px; }
+      .diff-content { flex: 1; padding-left: 6px; }
+      .diff-line.removed { background: rgba(255,0,0,0.12); }
+      .diff-line.removed .diff-ln { color: #8b4444; }
+      .diff-line.removed .diff-content { border-left: 2px solid #f14c4c; }
+      .diff-line.added { background: rgba(0,180,0,0.1); }
+      .diff-line.added .diff-ln { color: #3d7d3d; }
+      .diff-line.added .diff-content { border-left: 2px solid #4ec94e; }
+      .diff-line.context .diff-content { border-left: 2px solid transparent; }
+
       /* Callout */
       .callout { background: #f0f7f4; border-left: 4px solid var(--level-2); border-radius: 6px; padding: 12px 16px; margin: 14px 0; font-size: 14px; }
 
@@ -126,9 +125,9 @@
       /* Responsive */
       @media (max-width: 900px) {
         .hero { grid-template-columns: 1fr; }
-        .index-grid { grid-template-columns: 1fr; }
         .cards { grid-template-columns: 1fr; }
         .twocol { grid-template-columns: 1fr; }
+        .diff-container { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -144,48 +143,21 @@
           <ul>{{META_ITEMS}}</ul>
         </div>
       </section>
-
-      <div class="toolbar">
-        <button type="button" data-action="open-all">Open all sections</button>
-        <button type="button" data-action="close-all">Close all sections</button>
-      </div>
-
-      <nav class="index" aria-label="Documentation index">
-        <h2>Documentation Index</h2>
-        <div class="index-grid">
-          {{INDEX}}
-        </div>
-      </nav>
-
       <!-- END_CHAPTERS -->
     </main>
 
     <script>
-      // Toolbar controls
-      const chapters = Array.from(document.querySelectorAll("details.chapter"));
-      document.querySelector('[data-action="open-all"]').addEventListener("click", () => {
-        chapters.forEach(ch => { ch.open = true; });
-      });
-      document.querySelector('[data-action="close-all"]').addEventListener("click", () => {
-        chapters.forEach(ch => { ch.open = false; });
-      });
-
-      // Syntax highlighter
       const syntaxKeywords = new Set([
         "async","await","break","case","catch","class","const","continue","default",
         "do","else","enum","export","extends","finally","for","from","function","if",
-        "import","in","instanceof","interface","let","message","new","of","oneof",
-        "return","static","string","struct","switch","throw","try","type","typeof",
-        "uint32","uint32_t","var","void","volatile","while","yield"
+        "import","in","instanceof","interface","let","new","of","return","static",
+        "switch","throw","try","type","typeof","var","void","while","yield","private"
       ]);
       const syntaxLiterals = new Set(["false","true","null","undefined","NaN","Infinity"]);
-      const syntaxTypes = new Set([]);
-
       const escapeHtml = t => t.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"})[c]);
       const colorToken = (cls, t) => `<span class="${cls}">${escapeHtml(t)}</span>`;
 
-      const highlightCodeBlock = code => {
-        const src = code.textContent;
+      function highlightText(src) {
         let html = "", i = 0;
         while (i < src.length) {
           const rest = src.slice(i);
@@ -193,24 +165,46 @@
           if (src[i]==="#" && (i===0||src[i-1]==="\n")) { const end = src.indexOf("\n", i); const n = end===-1?src.length:end; html += colorToken("tok-comment", src.slice(i,n)); i=n; continue; }
           const sm = rest.match(/^"([^"\\]|\\.)*"|^'([^'\\]|\\.)*'/);
           if (sm) { html += colorToken("tok-string", sm[0]); i += sm[0].length; continue; }
-          const nm = rest.match(/^(0x[\da-fA-F]+|\d+(?:\.\d+)?f?|\d+K)\b/);
+          const nm = rest.match(/^(0x[\da-fA-F]+|\d+(?:\.\d+)?f?)\b/);
           if (nm) { html += colorToken("tok-number", nm[0]); i += nm[0].length; continue; }
-          const wm = rest.match(/^[A-Za-z_][\w:]*/);
+          const wm = rest.match(/^[@A-Za-z_][\w:]*/);
           if (wm) {
             const w = wm[0], after = src.slice(i+w.length);
             if (syntaxKeywords.has(w)) html += colorToken("tok-keyword", w);
             else if (syntaxLiterals.has(w)) html += colorToken("tok-literal", w);
-            else if (syntaxTypes.has(w)||/^[A-Z][\w:]*$/.test(w)) html += colorToken("tok-type", w);
+            else if (/^[A-Z][\w:]*$/.test(w)) html += colorToken("tok-type", w);
             else if (/^\s*\(/.test(after)) html += colorToken("tok-fn", w);
+            else if (w.startsWith('@')) html += colorToken("tok-fn", w);
             else html += escapeHtml(w);
             i += w.length; continue;
           }
-          if (/^[{}()[\];,.=:+\-*/&|!<>]/.test(rest)) { html += colorToken("tok-operator", src[i]); i++; continue; }
+          if (/^[{}()[\];,.=:+\-*/&|!<>?]/.test(rest)) { html += colorToken("tok-operator", src[i]); i++; continue; }
           html += escapeHtml(src[i]); i++;
         }
+        return html;
+      }
+
+      // Syntax highlight regular code blocks
+      document.querySelectorAll("pre code").forEach(code => {
+        if (code.closest('.diff-panel')) return;
+        code.innerHTML = highlightText(code.textContent);
+      });
+
+      // Diff panels: transform diff-line spans into line-numbered, syntax-highlighted rows
+      document.querySelectorAll('.diff-panel pre code').forEach(code => {
+        const spans = code.querySelectorAll('.diff-line-removed, .diff-line-added, .diff-line-context');
+        if (!spans.length) return;
+        let lineNum = 1, html = '';
+        spans.forEach(span => {
+          const type = span.classList.contains('diff-line-removed') ? 'removed' :
+                       span.classList.contains('diff-line-added') ? 'added' : 'context';
+          const text = span.textContent;
+          const highlighted = highlightText(text);
+          html += `<div class="diff-line ${type}"><span class="diff-ln">${lineNum}</span><span class="diff-content">${highlighted}</span></div>`;
+          lineNum++;
+        });
         code.innerHTML = html;
-      };
-      document.querySelectorAll("pre code").forEach(highlightCodeBlock);
+      });
     </script>
   </body>
 </html>
