@@ -9,18 +9,14 @@ vars:
   TIMESTEP: 0.01
   RESTITUTION: 0.5
   FRICTION: 0.5
-  RPM: 750
-  FASTRPM: 4000
+  RPM: 4000
   TILT: 5
   EXT: '{{if eq OS "windows"}}.exe{{end}}'
   DEFINES: >-
     -DW={{.WIDTH}} -DH={{.HEIGHT}} -Ddt={{.TIMESTEP}}
     -De={{.RESTITUTION}} -Du={{.FRICTION}} -Drpm={{.RPM}}
     -Dtilt={{.TILT}}
-  DEFINES_FAST: >-
-    -DW={{.WIDTH}} -DH={{.HEIGHT}} -Ddt={{.TIMESTEP}}
-    -De={{.RESTITUTION}} -Du={{.FRICTION}} -Drpm={{.FASTRPM}}
-    -Dtilt={{.TILT}}
+    
   APP: "build/tipple.exe"
 
 silent: true
@@ -36,13 +32,12 @@ tasks:
     desc: Build prog and tipple with zig cc
     cmds:
       - mkdir -p build
-      - "{{.CC}} {{.CFLAGS}} {{.DEFINES_FAST}} prog.c -o {{.APP}}"
+      - "{{.CC}} {{.CFLAGS}} {{.DEFINES}} prog.c -o {{.APP}}"
 
   run:
     aliases: [r]
     desc: Run the fast tipple-top simulation (tippe-top2.txt)
     vars:
-      EXE: "build/tipple.exe"
       MODEL: "./model/tippe-top2.txt"
     deps:
       - build
