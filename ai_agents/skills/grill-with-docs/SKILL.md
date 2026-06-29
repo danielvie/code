@@ -102,4 +102,4 @@ When referring to an item to fix, include the identifier first.
 
 After each answer, summarize the accepted decision before asking the next question.
 
-When asked to limit the number of questions, prioritize the questions that close the largest gaps in shared understanding.
+When asked to limit the session to N questions, prioritize the questions that close the largest gaps in shared understanding. You may end early if shared understanding is reached.
