@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  build:
+    aliases: [b]
+    desc: "Run main application"
+    cmds:
+      - cargo build
+      
+  run:
+    aliases: [r]
+    desc: "Run main application"
+    cmds:
+      - cargo run
