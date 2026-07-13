@@ -8,7 +8,8 @@ Interview me relentlessly about every aspect of this plan until we reach a share
 
 Ask the questions one at a time.
 
-If a question can be answered by exploring the codebase, explore the codebase instead.
+If a *fact* can be found by exploring the environment (filesystem, tools, etc.), look it up rather than asking me. The *decisions*, though, are mine — put each one to me and wait for my answer.
+Do not act on it until I confirm we have reached a shared understanding.
 
 # supporting info
 Assign every question a stable identifier: `Q1`, `Q2`, `Q3`, ...
