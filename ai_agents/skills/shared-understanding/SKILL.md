@@ -1,5 +1,5 @@
 ---
-name: convergence
+name: shared-understanding
 description: Reach shared understanding of a problem, plan, design, or decision through collaborative analysis. Use when the user wants to combine context, evidence, critical questions, domain insights, and explicit tradeoffs into a shared model or recommendation.
 ---
 
@@ -18,3 +18,5 @@ Reach shared understanding of the problem, relevant evidence, assumptions, const
 - Stop when further discussion is unlikely to materially change the shared model or recommendation.
 
 Read and maintain the project's canonical engineering artifacts according to [artifacts.md](artifacts.md).
+
+Create artifact files lazily, only when there is resolved canonical information to record. Never create empty scaffolding. Once an artifact exists, keep it current.
