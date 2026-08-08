@@ -21,7 +21,6 @@ fn main() {
     let s2 = append(&s, ", you");
     let s3 = append(&s, ", me");
 
-
     let mut hallo = String::from("ik bin hier");
     
     hallo = takes_own_and_back(hallo);

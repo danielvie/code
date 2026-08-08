@@ -1,0 +1,8 @@
+# Rust build artifacts
+target/
+
+# CMake/Ninja out-of-source builds
+build/
+
+# Local tool caches
+.cache/
