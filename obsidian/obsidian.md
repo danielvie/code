@@ -52,3 +52,9 @@ tags includes #important
 # filter by date
 done 2025-01-01 2025-12-20
 ```
+
+pi agent wrapper (pi.cmd)
+```
+@echo off
+"C:\SANDBOX\APP\pi\pi.exe" %*
+```
