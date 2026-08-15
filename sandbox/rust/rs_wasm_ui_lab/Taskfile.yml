@@ -1,0 +1,41 @@
+version: "3"
+
+# PROTOTYPE: raw Rust/Wasm canvas UI with the smallest practical DOM bridge.
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  setup:
+    desc: Install the Wasm target and Trunk development server
+    cmds:
+      - rustup target add wasm32-unknown-unknown
+      - cargo install trunk --version 0.21.14 --locked
+    status:
+      - rustup target list --installed | grep -q wasm32-unknown-unknown
+      - trunk --version | grep -q "trunk 0.21.14"
+
+  build:
+    desc: Build an optimized browser bundle into dist/
+    deps: [setup]
+    cmds:
+      - trunk build --release
+
+  run:
+    desc: Build, serve, and open the experiment at http://127.0.0.1:8080
+    deps: [setup]
+    cmds:
+      - trunk serve --address 127.0.0.1 --port 8080 --open
+
+  test:
+    desc: Run pure Rust layout, virtualization, UTF-16, and editor navigation checks
+    cmds:
+      - cargo test
+
+  clean:
+    aliases: [clear]
+    desc: Remove Rust and browser build output
+    cmds:
+      - cargo clean
+      - rm -rf dist
