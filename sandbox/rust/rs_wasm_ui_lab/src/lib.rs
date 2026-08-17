@@ -8,6 +8,30 @@ use unicode_segmentation::UnicodeSegmentation;
 
 const ITEM_COUNT: usize = 10_000;
 const ROW_HEIGHT: f64 = 34.0;
+const SCROLLBAR_IDLE_WIDTH: f64 = 4.0;
+const SCROLLBAR_ACTIVE_WIDTH: f64 = 10.0;
+const SCROLLBAR_HIT_WIDTH: f64 = 18.0;
+#[cfg(target_arch = "wasm32")]
+const DRAG_ITEM_MIME: &str = "application/x-wasm-ui-lab-item";
+const DRAG_ITEM_PAYLOAD_PREFIX: &str = "wasm-ui-lab:item:v1";
+const DRAG_ITEMS: [DragItemDefinition; 4] = [
+    DragItemDefinition {
+        word: "Rust",
+        color: "#78a9ff",
+    },
+    DragItemDefinition {
+        word: "Wasm",
+        color: "#b69cff",
+    },
+    DragItemDefinition {
+        word: "Canvas",
+        color: "#58c991",
+    },
+    DragItemDefinition {
+        word: "Browser",
+        color: "#ffad66",
+    },
+];
 #[cfg(target_arch = "wasm32")]
 const DEFAULT_TEXT: &str = "Rust owns this text buffer.\nSelect, copy, paste, and undo normally.\nUnicode: café · 日本語 · العربية · 🦀";
 
@@ -40,6 +64,38 @@ fn visible_range_for(
     start.min(item_count)..(start + visible_count).min(item_count)
 }
 
+fn scrollbar_thumb(viewport: Rect, row_count: usize, scroll: f64, width: f64) -> Option<Rect> {
+    let content_height = row_count as f64 * ROW_HEIGHT;
+    if content_height <= viewport.height {
+        return None;
+    }
+    let max_scroll = content_height - viewport.height;
+    let height = (viewport.height * viewport.height / content_height).clamp(48.0, viewport.height);
+    Some(Rect {
+        x: viewport.x + viewport.width - 5.0 - width,
+        y: viewport.y + (viewport.height - height) * scroll / max_scroll,
+        width,
+        height,
+    })
+}
+
+fn scroll_from_thumb_drag(
+    viewport: Rect,
+    row_count: usize,
+    thumb: Rect,
+    pointer_y: f64,
+    pointer_offset: f64,
+) -> f64 {
+    let travel = viewport.height - thumb.height;
+    let thumb_y = (pointer_y - pointer_offset).clamp(viewport.y, viewport.y + travel);
+    let max_scroll = (row_count as f64 * ROW_HEIGHT - viewport.height).max(0.0);
+    if travel == 0.0 {
+        0.0
+    } else {
+        (thumb_y - viewport.y) / travel * max_scroll
+    }
+}
+
 fn row_status(row: usize) -> &'static str {
     match row % 3 {
         0 => "Ready",
@@ -61,6 +117,133 @@ enum WorkbenchMode {
     DocumentData,
     Diff,
     Transcript,
+    DragDrop,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+struct DragItemDefinition {
+    word: &'static str,
+    color: &'static str,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+struct DragItemData {
+    word: String,
+    color: String,
+}
+
+impl From<DragItemDefinition> for DragItemData {
+    fn from(item: DragItemDefinition) -> Self {
+        Self {
+            word: item.word.into(),
+            color: item.color.into(),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct DragDropLayout {
+    stage: Rect,
+    item_start: Rect,
+    drop_zone: Rect,
+}
+
+fn drag_drop_layout(width: f64, height: f64) -> DragDropLayout {
+    let stage_width = (width - 48.0).max(280.0);
+    let compact = stage_width < 700.0;
+    let stage = Rect {
+        x: 24.0,
+        y: 96.0,
+        width: stage_width,
+        height: (height - 120.0).max(if compact { 520.0 } else { 320.0 }),
+    };
+    let item_stack_height =
+        DRAG_ITEMS.len() as f64 * 52.0 + DRAG_ITEMS.len().saturating_sub(1) as f64 * 12.0;
+    let item_start = Rect {
+        x: if compact {
+            stage.x + (stage.width - 168.0) / 2.0
+        } else {
+            stage.x + 80.0
+        },
+        y: if compact {
+            stage.y + 72.0
+        } else {
+            stage.y + (stage.height - item_stack_height) / 2.0
+        },
+        width: 168.0,
+        height: 52.0,
+    };
+    let drop_width = if compact {
+        (stage.width - 48.0).min(300.0)
+    } else {
+        260.0
+    };
+    let drop_height = if compact { 128.0 } else { 220.0 };
+    let drop_zone = Rect {
+        x: if compact {
+            stage.x + (stage.width - drop_width) / 2.0
+        } else {
+            stage.x + stage.width - drop_width - 64.0
+        },
+        y: if compact {
+            item_start.y + item_stack_height + 32.0
+        } else {
+            stage.y + (stage.height - drop_height) / 2.0
+        },
+        width: drop_width,
+        height: drop_height,
+    };
+    DragDropLayout {
+        stage,
+        item_start,
+        drop_zone,
+    }
+}
+
+fn drag_source_rect(layout: DragDropLayout, index: usize) -> Rect {
+    Rect {
+        y: layout.item_start.y + index as f64 * (layout.item_start.height + 12.0),
+        ..layout.item_start
+    }
+}
+
+fn dropped_item_rect(layout: DragDropLayout) -> Rect {
+    Rect {
+        x: layout.drop_zone.x + (layout.drop_zone.width - layout.item_start.width) / 2.0,
+        y: layout.drop_zone.y + (layout.drop_zone.height - layout.item_start.height) / 2.0,
+        ..layout.item_start
+    }
+}
+
+fn accepts_drop(drop_zone: Rect, x: f64, y: f64, cancelled: bool) -> bool {
+    !cancelled && drop_zone.contains(x, y)
+}
+
+fn drag_item_payload(item: DragItemDefinition) -> String {
+    format!("{DRAG_ITEM_PAYLOAD_PREFIX}|{}|{}", item.word, item.color)
+}
+
+fn parse_drag_item_payload(payload: &str) -> Option<DragItemData> {
+    // PROTOTYPE: this delimiter format supports single words and hex colors; use JSON if fields expand.
+    let mut fields = payload.split('|');
+    let version = fields.next()?;
+    let word = fields.next()?;
+    let color = fields.next()?;
+    let valid_word = !word.is_empty()
+        && word.len() <= 24
+        && word
+            .chars()
+            .all(|character| character.is_ascii_alphabetic());
+    let valid_color = color.len() == 7
+        && color.starts_with('#')
+        && color[1..]
+            .chars()
+            .all(|character| character.is_ascii_hexdigit());
+    (version == DRAG_ITEM_PAYLOAD_PREFIX && fields.next().is_none() && valid_word && valid_color)
+        .then(|| DragItemData {
+            word: word.into(),
+            color: color.into(),
+        })
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -408,8 +591,8 @@ mod browser {
     use std::{cell::RefCell, collections::BTreeSet, rc::Rc};
     use wasm_bindgen::{JsCast, closure::Closure, prelude::*};
     use web_sys::{
-        AddEventListenerOptions, CanvasRenderingContext2d, Event, HtmlCanvasElement, HtmlElement,
-        HtmlTextAreaElement, InputEvent, KeyboardEvent, PointerEvent, WheelEvent,
+        AddEventListenerOptions, CanvasRenderingContext2d, DragEvent, Event, HtmlCanvasElement,
+        HtmlElement, HtmlTextAreaElement, InputEvent, KeyboardEvent, PointerEvent, WheelEvent,
     };
 
     const EDITOR_FONT: &str = "15px ui-monospace, SFMono-Regular, Consolas, monospace";
@@ -431,8 +614,8 @@ mod browser {
         ("Ctrl/Cmd+F", "Search document or filter focused data"),
         ("Ctrl/Cmd+P", "Open command palette"),
         (
-            "Ctrl/Cmd+1 / 3 / 4",
-            "Open Document+Data / Diff / Transcript",
+            "Ctrl/Cmd+1 / 3 / 4 / 5",
+            "Open Document+Data / Diff / Transcript / Drag+Drop",
         ),
         ("?", "Show keyboard shortcuts"),
         ("Escape", "Close the active overlay"),
@@ -488,20 +671,38 @@ mod browser {
         DataFilterMode,
         DataSort,
         DataBatch,
+        DataScrollbar,
         Row(usize),
         ModeDocumentData,
         ModeDiff,
         ModeTranscript,
+        ModeDragDrop,
+        DragItem(usize),
         DiffFile(usize),
         DiffRow(usize),
         DiffPrevious,
         DiffNext,
         DiffCollapse,
+        DiffScrollbar,
         TranscriptSpeaker(usize),
         TranscriptSegment(usize),
         TranscriptSearch,
         TranscriptPlay,
         TranscriptFollow,
+        TranscriptScrollbar,
+    }
+
+    #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+    enum ScrollbarKind {
+        Data,
+        Diff,
+        Transcript,
+    }
+
+    #[derive(Clone, Copy)]
+    struct ScrollbarDrag {
+        kind: ScrollbarKind,
+        pointer_offset: f64,
     }
 
     #[derive(Clone, Copy)]
@@ -540,6 +741,15 @@ mod browser {
             x: 244.0,
             y: 64.0,
             width: 104.0,
+            height: 24.0,
+        }
+    }
+
+    fn mode_drag_drop_rect() -> Rect {
+        Rect {
+            x: 356.0,
+            y: 64.0,
+            width: 112.0,
             height: 24.0,
         }
     }
@@ -631,10 +841,12 @@ mod browser {
 
     struct Lab {
         canvas: HtmlCanvasElement,
+        drag_image: HtmlElement,
         input: HtmlTextAreaElement,
         a11y_mode_document: HtmlElement,
         a11y_mode_diff: HtmlElement,
         a11y_mode_transcript: HtmlElement,
+        a11y_mode_drag_drop: HtmlElement,
         a11y_transcript_search: HtmlElement,
         a11y_transcript_play: HtmlElement,
         a11y_transcript_follow: HtmlElement,
@@ -653,7 +865,18 @@ mod browser {
         dpr: f64,
         pointer_x: f64,
         pointer_y: f64,
+        drag_item_x: f64,
+        drag_item_y: f64,
+        drag_offset_x: f64,
+        drag_offset_y: f64,
+        dragging_item: bool,
+        active_drag_item: usize,
+        native_drag_armed: bool,
+        native_dragging: bool,
+        native_drag_over: bool,
+        dropped_item: Option<DragItemData>,
         scroll: f64,
+        scrollbar_drag: Option<ScrollbarDrag>,
         selected: usize,
         selected_items: BTreeSet<usize>,
         list_anchor: usize,
@@ -914,6 +1137,63 @@ mod browser {
                 .collect()
         }
 
+        fn active_drag_item_rect(&self) -> Rect {
+            let layout = drag_drop_layout(self.width, self.height);
+            if self.dragging_item {
+                Rect {
+                    x: self.drag_item_x,
+                    y: self.drag_item_y,
+                    width: layout.item_start.width,
+                    height: layout.item_start.height,
+                }
+            } else {
+                drag_source_rect(layout, self.active_drag_item)
+            }
+        }
+
+        fn scrollbar_state(&self, kind: ScrollbarKind) -> (Rect, usize, f64) {
+            match kind {
+                ScrollbarKind::Data => {
+                    let viewport = self.layout().list_content;
+                    (viewport, self.data_rows.len(), self.scroll)
+                }
+                ScrollbarKind::Diff => {
+                    let viewport = diff_rows_rect(self.diff_layout());
+                    let count = diff_display_rows(&self.diff_lines, self.diff_collapsed).len();
+                    (viewport, count, self.diff_scroll)
+                }
+                ScrollbarKind::Transcript => {
+                    let viewport = transcript_rows_rect(self.transcript_layout());
+                    (
+                        viewport,
+                        self.transcript_rows().len(),
+                        self.transcript_scroll,
+                    )
+                }
+            }
+        }
+
+        fn begin_scrollbar_drag(&mut self, kind: ScrollbarKind, pointer_y: f64) -> bool {
+            let (viewport, row_count, scroll) = self.scrollbar_state(kind);
+            let Some(thumb) = scrollbar_thumb(viewport, row_count, scroll, SCROLLBAR_ACTIVE_WIDTH)
+            else {
+                return false;
+            };
+            self.scrollbar_drag = Some(ScrollbarDrag {
+                kind,
+                pointer_offset: pointer_y - thumb.y,
+            });
+            true
+        }
+
+        fn set_scrollbar_scroll(&mut self, kind: ScrollbarKind, scroll: f64) {
+            match kind {
+                ScrollbarKind::Data => self.scroll = scroll,
+                ScrollbarKind::Diff => self.diff_scroll = scroll,
+                ScrollbarKind::Transcript => self.transcript_scroll = scroll,
+            }
+        }
+
         fn hover_at(&self, x: f64, y: f64) -> Option<Hover> {
             if mode_document_data_rect().contains(x, y) {
                 return Some(Hover::ModeDocumentData);
@@ -923,6 +1203,17 @@ mod browser {
             }
             if mode_transcript_rect().contains(x, y) {
                 return Some(Hover::ModeTranscript);
+            }
+            if mode_drag_drop_rect().contains(x, y) {
+                return Some(Hover::ModeDragDrop);
+            }
+            if self.mode == WorkbenchMode::DragDrop {
+                let layout = drag_drop_layout(self.width, self.height);
+                return DRAG_ITEMS.iter().enumerate().find_map(|(index, _)| {
+                    drag_source_rect(layout, index)
+                        .contains(x, y)
+                        .then_some(Hover::DragItem(index))
+                });
             }
             if self.mode == WorkbenchMode::Transcript {
                 let layout = self.transcript_layout();
@@ -940,11 +1231,21 @@ mod browser {
                     return (speaker <= SPEAKERS.len())
                         .then_some(Hover::TranscriptSpeaker(speaker));
                 }
+                let rows = self.transcript_rows();
                 let rows_rect = transcript_rows_rect(layout);
+                if scrollbar_thumb(
+                    rows_rect,
+                    rows.len(),
+                    self.transcript_scroll,
+                    SCROLLBAR_HIT_WIDTH,
+                )
+                .is_some_and(|thumb| thumb.contains(x, y))
+                {
+                    return Some(Hover::TranscriptScrollbar);
+                }
                 if rows_rect.contains(x, y) {
                     let position =
                         ((y - rows_rect.y + self.transcript_scroll) / ROW_HEIGHT) as usize;
-                    let rows = self.transcript_rows();
                     return rows.get(position).copied().map(Hover::TranscriptSegment);
                 }
                 return None;
@@ -965,9 +1266,14 @@ mod browser {
                     return (file < DIFF_FILES.len()).then_some(Hover::DiffFile(file));
                 }
                 let rows_rect = diff_rows_rect(layout);
+                let count = diff_display_rows(&self.diff_lines, self.diff_collapsed).len();
+                if scrollbar_thumb(rows_rect, count, self.diff_scroll, SCROLLBAR_HIT_WIDTH)
+                    .is_some_and(|thumb| thumb.contains(x, y))
+                {
+                    return Some(Hover::DiffScrollbar);
+                }
                 if rows_rect.contains(x, y) {
                     let row = ((y - rows_rect.y + self.diff_scroll) / ROW_HEIGHT) as usize;
-                    let count = diff_display_rows(&self.diff_lines, self.diff_collapsed).len();
                     return (row < count).then_some(Hover::DiffRow(row));
                 }
                 return None;
@@ -989,6 +1295,15 @@ mod browser {
                 Some(Hover::DataSort)
             } else if layout.data_batch.contains(x, y) {
                 Some(Hover::DataBatch)
+            } else if scrollbar_thumb(
+                layout.list_content,
+                self.data_rows.len(),
+                self.scroll,
+                SCROLLBAR_HIT_WIDTH,
+            )
+            .is_some_and(|thumb| thumb.contains(x, y))
+            {
+                Some(Hover::DataScrollbar)
             } else if layout.list_content.contains(x, y) {
                 let position = ((y - layout.list_content.y + self.scroll) / ROW_HEIGHT) as usize;
                 self.data_rows.get(position).copied().map(Hover::Row)
@@ -1198,7 +1513,15 @@ mod browser {
             }
             self.transcript_playback =
                 (self.transcript_playback + 1) % self.transcript_segments.len();
-            if self.transcript_follow {
+            if self.transcript_follow
+                && !matches!(
+                    self.scrollbar_drag,
+                    Some(ScrollbarDrag {
+                        kind: ScrollbarKind::Transcript,
+                        ..
+                    })
+                )
+            {
                 self.transcript_speaker_filter = None;
                 self.select_transcript_segment(self.transcript_playback, false, false);
                 self.transcript_pane = TranscriptPane::Segments;
@@ -1225,6 +1548,14 @@ mod browser {
             let _ = self.a11y_mode_transcript.set_attribute(
                 "aria-pressed",
                 if self.mode == WorkbenchMode::Transcript {
+                    "true"
+                } else {
+                    "false"
+                },
+            );
+            let _ = self.a11y_mode_drag_drop.set_attribute(
+                "aria-pressed",
+                if self.mode == WorkbenchMode::DragDrop {
                     "true"
                 } else {
                     "false"
@@ -1296,6 +1627,36 @@ mod browser {
                 } else {
                     "Collapse unchanged diff lines"
                 }));
+
+            if self.mode == WorkbenchMode::DragDrop {
+                let _ = self.a11y_action.remove_attribute("hidden");
+                let _ = self.a11y_toggle.set_attribute("hidden", "");
+                let _ = self.input.set_attribute("hidden", "");
+                let _ = self.a11y_list.set_attribute("hidden", "");
+                let action = if self.dropped_item.is_some() {
+                    "Clear the dropped item"
+                } else {
+                    "Move the Rust item to the drop zone"
+                };
+                self.a11y_action.set_text_content(Some(action));
+                let _ = self.a11y_action.set_attribute("aria-label", action);
+                let status = if self.native_drag_over {
+                    "Drop zone ready".into()
+                } else if self.native_dragging {
+                    format!(
+                        "Dragging {}, color {}",
+                        DRAG_ITEMS[self.active_drag_item].word,
+                        DRAG_ITEMS[self.active_drag_item].color
+                    )
+                } else if let Some(item) = &self.dropped_item {
+                    format!("Dropped: word {}, color {}", item.word, item.color)
+                } else {
+                    "No item dropped".into()
+                };
+                self.a11y_status.set_text_content(Some(&status));
+                return;
+            }
+            let _ = self.a11y_list.remove_attribute("hidden");
 
             if self.mode == WorkbenchMode::Transcript {
                 let _ = self.a11y_action.set_attribute("hidden", "");
@@ -1505,6 +1866,7 @@ mod browser {
             let _ = self.a11y_action.remove_attribute("hidden");
             let _ = self.a11y_toggle.remove_attribute("hidden");
             let _ = self.input.remove_attribute("hidden");
+            self.a11y_action.set_text_content(Some("Record action"));
             let _ = self.a11y_action.set_attribute(
                 "aria-label",
                 &format!("Record action, {} recorded", self.action_count),
@@ -1992,6 +2354,22 @@ mod browser {
         style.set_property("touch-action", "none")?;
         body.append_child(&canvas)?;
 
+        let drag_image: HtmlElement = document.create_element("div")?.dyn_into()?;
+        drag_image.set_text_content(Some("Drag me"));
+        drag_image.set_attribute("aria-hidden", "true")?;
+        let style = drag_image.style();
+        style.set_property("position", "fixed")?;
+        style.set_property("left", "-10000px")?;
+        style.set_property("top", "0")?;
+        style.set_property("width", "168px")?;
+        style.set_property("height", "52px")?;
+        style.set_property("padding", "15px 14px")?;
+        style.set_property("background", "#78a9ff")?;
+        style.set_property("color", "#07101f")?;
+        style.set_property("font", "600 14px system-ui")?;
+        style.set_property("pointer-events", "none")?;
+        body.append_child(&drag_image)?;
+
         let a11y_mirror: HtmlElement = document.create_element("div")?.dyn_into()?;
         a11y_mirror.set_class_name("a11y-mirror");
 
@@ -2006,6 +2384,10 @@ mod browser {
         let a11y_mode_transcript: HtmlElement = document.create_element("button")?.dyn_into()?;
         a11y_mode_transcript.set_text_content(Some("Open Transcript workflow"));
         a11y_mirror.append_child(&a11y_mode_transcript)?;
+
+        let a11y_mode_drag_drop: HtmlElement = document.create_element("button")?.dyn_into()?;
+        a11y_mode_drag_drop.set_text_content(Some("Open Drag and Drop workflow"));
+        a11y_mirror.append_child(&a11y_mode_drag_drop)?;
 
         let a11y_transcript_search: HtmlElement = document.create_element("button")?.dyn_into()?;
         a11y_transcript_search.set_attribute("hidden", "")?;
@@ -2091,10 +2473,12 @@ mod browser {
 
         let app = Rc::new(RefCell::new(Lab {
             canvas,
+            drag_image,
             input,
             a11y_mode_document,
             a11y_mode_diff,
             a11y_mode_transcript,
+            a11y_mode_drag_drop,
             a11y_transcript_search,
             a11y_transcript_play,
             a11y_transcript_follow,
@@ -2113,7 +2497,18 @@ mod browser {
             dpr: 1.0,
             pointer_x: 0.0,
             pointer_y: 0.0,
+            drag_item_x: 0.0,
+            drag_item_y: 0.0,
+            drag_offset_x: 0.0,
+            drag_offset_y: 0.0,
+            dragging_item: false,
+            active_drag_item: 0,
+            native_drag_armed: false,
+            native_dragging: false,
+            native_drag_over: false,
+            dropped_item: None,
             scroll: 0.0,
+            scrollbar_drag: None,
             selected: 0,
             selected_items: BTreeSet::from([0]),
             list_anchor: 0,
@@ -2188,6 +2583,12 @@ mod browser {
             lab.overlay = Overlay::None;
             lab.hover = None;
             lab.transcript_edit_target = None;
+            lab.dragging_item = false;
+            lab.scrollbar_drag = None;
+            lab.native_drag_armed = false;
+            lab.native_dragging = false;
+            lab.native_drag_over = false;
+            lab.canvas.set_draggable(mode == WorkbenchMode::DragDrop);
             lab.focus = match mode {
                 WorkbenchMode::Diff => {
                     lab.diff_pane = DiffPane::Files;
@@ -2197,7 +2598,7 @@ mod browser {
                     lab.transcript_pane = TranscriptPane::Speakers;
                     Focus::List
                 }
-                WorkbenchMode::DocumentData => Focus::Action,
+                WorkbenchMode::DocumentData | WorkbenchMode::DragDrop => Focus::Action,
             };
             (lab.input.clone(), lab.text.clone(), lab.a11y_list.clone())
         };
@@ -2251,6 +2652,15 @@ mod browser {
             let app = Rc::clone(app);
             let closure = Closure::<dyn FnMut(Event)>::new(move |_: Event| {
                 set_workbench_mode(&app, WorkbenchMode::Transcript);
+            });
+            control.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+        {
+            let control = app.borrow().a11y_mode_drag_drop.clone();
+            let app = Rc::clone(app);
+            let closure = Closure::<dyn FnMut(Event)>::new(move |_: Event| {
+                set_workbench_mode(&app, WorkbenchMode::DragDrop);
             });
             control.add_event_listener_with_callback("click", closure.as_ref().unchecked_ref())?;
             closure.forget();
@@ -2336,7 +2746,13 @@ mod browser {
             let closure = Closure::<dyn FnMut(Event)>::new(move |_: Event| {
                 let mut lab = app.borrow_mut();
                 lab.focus = Focus::Action;
-                lab.action_count += 1;
+                if lab.mode == WorkbenchMode::DragDrop {
+                    if lab.dropped_item.take().is_none() {
+                        lab.dropped_item = Some(DRAG_ITEMS[0].into());
+                    }
+                } else {
+                    lab.action_count += 1;
+                }
                 drop(lab);
                 invalidate(&app);
             });
@@ -2422,8 +2838,29 @@ mod browser {
                 let mut lab = app.borrow_mut();
                 lab.pointer_x = x;
                 lab.pointer_y = y;
+                let was_dragging = lab.dragging_item;
+                if was_dragging {
+                    lab.drag_item_x = x - lab.drag_offset_x;
+                    lab.drag_item_y = y - lab.drag_offset_y;
+                }
+                let was_scrolling = lab.scrollbar_drag.is_some();
+                if let Some(drag) = lab.scrollbar_drag {
+                    let (viewport, row_count, scroll) = lab.scrollbar_state(drag.kind);
+                    if let Some(thumb) =
+                        scrollbar_thumb(viewport, row_count, scroll, SCROLLBAR_ACTIVE_WIDTH)
+                    {
+                        let scroll = scroll_from_thumb_drag(
+                            viewport,
+                            row_count,
+                            thumb,
+                            y,
+                            drag.pointer_offset,
+                        );
+                        lab.set_scrollbar_scroll(drag.kind, scroll);
+                    }
+                }
                 let next = lab.hover_at(x, y);
-                let mut changed = next != lab.hover;
+                let mut changed = next != lab.hover || was_dragging || was_scrolling;
                 lab.hover = next;
                 if let Some(anchor) = lab.drag_anchor {
                     let position = text_position_at(
@@ -2450,10 +2887,20 @@ mod browser {
                     lab.ensure_caret_visible();
                     changed = true;
                 }
-                let cursor = match next {
-                    Some(Hover::Text) => "text",
-                    Some(_) => "pointer",
-                    None => "default",
+                let cursor = if lab.dragging_item || lab.scrollbar_drag.is_some() {
+                    "grabbing"
+                } else {
+                    match next {
+                        Some(Hover::Text) => "text",
+                        Some(
+                            Hover::DragItem(_)
+                            | Hover::DataScrollbar
+                            | Hover::DiffScrollbar
+                            | Hover::TranscriptScrollbar,
+                        ) => "grab",
+                        Some(_) => "pointer",
+                        None => "default",
+                    }
                 };
                 let _ = lab.canvas.style().set_property("cursor", cursor);
                 drop(lab);
@@ -2473,11 +2920,17 @@ mod browser {
         {
             let app = Rc::clone(app);
             let closure = Closure::<dyn FnMut(PointerEvent)>::new(move |event: PointerEvent| {
-                event.prevent_default();
                 let rect = app.borrow().canvas.get_bounding_client_rect();
                 let x = event.client_x() as f64 - rect.left();
                 let y = event.client_y() as f64 - rect.top();
                 let overlay = app.borrow().overlay;
+                let hit = app.borrow().hover_at(x, y);
+                let native_drag = overlay == Overlay::None
+                    && event.pointer_type() == "mouse"
+                    && matches!(hit, Some(Hover::DragItem(_)));
+                if !native_drag {
+                    event.prevent_default();
+                }
                 if overlay != Overlay::None {
                     let inline_filter =
                         overlay == Overlay::DataFilter && !app.borrow().data_filter_modal;
@@ -2498,7 +2951,6 @@ mod browser {
                     }
                     return;
                 }
-                let hit = app.borrow().hover_at(x, y);
                 let transcript_interaction = matches!(
                     hit,
                     Some(
@@ -2506,6 +2958,7 @@ mod browser {
                             | Hover::TranscriptSegment(_)
                             | Hover::TranscriptPlay
                             | Hover::TranscriptFollow
+                            | Hover::TranscriptScrollbar
                     )
                 );
                 let mut focus_text = false;
@@ -2516,6 +2969,9 @@ mod browser {
                 {
                     let mut lab = app.borrow_mut();
                     lab.drag_anchor = None;
+                    lab.pointer_x = x;
+                    lab.pointer_y = y;
+                    lab.native_drag_armed = native_drag;
                     if transcript_interaction {
                         lab.transcript_edit_target = None;
                     }
@@ -2528,6 +2984,22 @@ mod browser {
                         }
                         Some(Hover::ModeTranscript) => {
                             switch_mode = Some(WorkbenchMode::Transcript);
+                        }
+                        Some(Hover::ModeDragDrop) => {
+                            switch_mode = Some(WorkbenchMode::DragDrop);
+                        }
+                        Some(Hover::DragItem(index)) if !native_drag => {
+                            lab.active_drag_item = index;
+                            let item = lab.active_drag_item_rect();
+                            lab.drag_item_x = item.x;
+                            lab.drag_item_y = item.y;
+                            lab.drag_offset_x = x - item.x;
+                            lab.drag_offset_y = y - item.y;
+                            lab.dragging_item = true;
+                            let _ = lab.canvas.set_pointer_capture(event.pointer_id());
+                        }
+                        Some(Hover::DragItem(index)) => {
+                            lab.active_drag_item = index;
                         }
                         Some(Hover::TranscriptSpeaker(position)) => {
                             lab.transcript_pane = TranscriptPane::Speakers;
@@ -2553,6 +3025,18 @@ mod browser {
                         }
                         Some(Hover::TranscriptFollow) => {
                             lab.transcript_follow = !lab.transcript_follow;
+                        }
+                        Some(Hover::TranscriptScrollbar) => {
+                            if lab.begin_scrollbar_drag(ScrollbarKind::Transcript, y) {
+                                lab.transcript_pane = TranscriptPane::Segments;
+                                let _ = lab.canvas.set_pointer_capture(event.pointer_id());
+                            }
+                        }
+                        Some(Hover::DiffScrollbar) => {
+                            if lab.begin_scrollbar_drag(ScrollbarKind::Diff, y) {
+                                lab.diff_pane = DiffPane::Content;
+                                let _ = lab.canvas.set_pointer_capture(event.pointer_id());
+                            }
                         }
                         Some(Hover::DiffFile(file)) => {
                             lab.diff_pane = DiffPane::Files;
@@ -2633,6 +3117,12 @@ mod browser {
                             let selected = lab.selected_items.clone();
                             lab.reviewed_items.extend(selected);
                         }
+                        Some(Hover::DataScrollbar) => {
+                            if lab.begin_scrollbar_drag(ScrollbarKind::Data, y) {
+                                lab.focus = Focus::List;
+                                let _ = lab.canvas.set_pointer_capture(event.pointer_id());
+                            }
+                        }
                         Some(Hover::Row(row)) => {
                             lab.focus = Focus::List;
                             lab.drag_anchor = None;
@@ -2677,12 +3167,181 @@ mod browser {
         {
             let app = Rc::clone(app);
             let closure = Closure::<dyn FnMut(PointerEvent)>::new(move |event: PointerEvent| {
+                let rect = app.borrow().canvas.get_bounding_client_rect();
+                let x = event.client_x() as f64 - rect.left();
+                let y = event.client_y() as f64 - rect.top();
                 let mut lab = app.borrow_mut();
+                let changed = lab.drag_anchor.is_some()
+                    || lab.dragging_item
+                    || lab.native_drag_armed
+                    || lab.scrollbar_drag.is_some();
                 lab.drag_anchor = None;
+                lab.native_drag_armed = false;
+                lab.scrollbar_drag = None;
+                if lab.dragging_item {
+                    if accepts_drop(
+                        drag_drop_layout(lab.width, lab.height).drop_zone,
+                        x,
+                        y,
+                        event.type_() == "pointercancel",
+                    ) {
+                        lab.dropped_item = Some(DRAG_ITEMS[lab.active_drag_item].into());
+                    }
+                    lab.dragging_item = false;
+                }
+                if changed {
+                    lab.pointer_x = x;
+                    lab.pointer_y = y;
+                    lab.hover = lab.hover_at(x, y);
+                    let cursor = match lab.hover {
+                        Some(Hover::Text) => "text",
+                        Some(
+                            Hover::DragItem(_)
+                            | Hover::DataScrollbar
+                            | Hover::DiffScrollbar
+                            | Hover::TranscriptScrollbar,
+                        ) => "grab",
+                        Some(_) => "pointer",
+                        None => "default",
+                    };
+                    let _ = lab.canvas.style().set_property("cursor", cursor);
+                }
                 let _ = lab.canvas.release_pointer_capture(event.pointer_id());
+                drop(lab);
+                if changed {
+                    invalidate(&app);
+                }
             });
             canvas
                 .add_event_listener_with_callback("pointerup", closure.as_ref().unchecked_ref())?;
+            canvas.add_event_listener_with_callback(
+                "pointercancel",
+                closure.as_ref().unchecked_ref(),
+            )?;
+            closure.forget();
+        }
+
+        {
+            let app = Rc::clone(app);
+            let closure = Closure::<dyn FnMut(DragEvent)>::new(move |event: DragEvent| {
+                let mut lab = app.borrow_mut();
+                if !lab.native_drag_armed {
+                    event.prevent_default();
+                    return;
+                }
+                let Some(transfer) = event.data_transfer() else {
+                    event.prevent_default();
+                    return;
+                };
+                let item = DRAG_ITEMS[lab.active_drag_item];
+                let payload = drag_item_payload(item);
+                let custom_stored = transfer.set_data(DRAG_ITEM_MIME, &payload).is_ok();
+                let plain_stored = transfer.set_data("text/plain", &payload).is_ok();
+                if !custom_stored && !plain_stored {
+                    event.prevent_default();
+                    return;
+                }
+                transfer.set_effect_allowed("copy");
+                lab.drag_image.set_text_content(Some(item.word));
+                let _ = lab
+                    .drag_image
+                    .style()
+                    .set_property("background", item.color);
+                transfer.set_drag_image(&lab.drag_image, 84, 26);
+                lab.native_drag_armed = false;
+                lab.native_dragging = true;
+                drop(lab);
+                invalidate(&app);
+            });
+            canvas
+                .add_event_listener_with_callback("dragstart", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+
+        {
+            let app = Rc::clone(app);
+            let closure = Closure::<dyn FnMut(DragEvent)>::new(move |event: DragEvent| {
+                let rect = app.borrow().canvas.get_bounding_client_rect();
+                let x = event.client_x() as f64 - rect.left();
+                let y = event.client_y() as f64 - rect.top();
+                let mut lab = app.borrow_mut();
+                let over = lab.mode == WorkbenchMode::DragDrop
+                    && drag_drop_layout(lab.width, lab.height)
+                        .drop_zone
+                        .contains(x, y);
+                if over {
+                    event.prevent_default();
+                    if let Some(transfer) = event.data_transfer() {
+                        transfer.set_drop_effect("copy");
+                    }
+                }
+                let changed = over != lab.native_drag_over;
+                lab.native_drag_over = over;
+                drop(lab);
+                if changed {
+                    invalidate(&app);
+                }
+            });
+            canvas
+                .add_event_listener_with_callback("dragover", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+
+        {
+            let app = Rc::clone(app);
+            let closure = Closure::<dyn FnMut(DragEvent)>::new(move |event: DragEvent| {
+                let rect = app.borrow().canvas.get_bounding_client_rect();
+                let x = event.client_x() as f64 - rect.left();
+                let y = event.client_y() as f64 - rect.top();
+                let mut lab = app.borrow_mut();
+                let over = lab.mode == WorkbenchMode::DragDrop
+                    && drag_drop_layout(lab.width, lab.height)
+                        .drop_zone
+                        .contains(x, y);
+                if over {
+                    event.prevent_default();
+                }
+                let dropped_item = event.data_transfer().and_then(|transfer| {
+                    transfer
+                        .get_data(DRAG_ITEM_MIME)
+                        .ok()
+                        .and_then(|payload| parse_drag_item_payload(&payload))
+                        .or_else(|| {
+                            transfer
+                                .get_data("text/plain")
+                                .ok()
+                                .and_then(|payload| parse_drag_item_payload(&payload))
+                        })
+                });
+                if over && let Some(item) = dropped_item {
+                    lab.dropped_item = Some(item);
+                }
+                lab.native_drag_over = false;
+                drop(lab);
+                invalidate(&app);
+            });
+            canvas.add_event_listener_with_callback("drop", closure.as_ref().unchecked_ref())?;
+            closure.forget();
+        }
+
+        {
+            let app = Rc::clone(app);
+            let closure = Closure::<dyn FnMut(DragEvent)>::new(move |event: DragEvent| {
+                let mut lab = app.borrow_mut();
+                let changed = lab.native_drag_over || lab.native_dragging;
+                lab.native_drag_over = false;
+                if event.type_() == "dragend" {
+                    lab.native_drag_armed = false;
+                    lab.native_dragging = false;
+                }
+                drop(lab);
+                if changed {
+                    invalidate(&app);
+                }
+            });
+            canvas
+                .add_event_listener_with_callback("dragleave", closure.as_ref().unchecked_ref())?;
+            canvas.add_event_listener_with_callback("dragend", closure.as_ref().unchecked_ref())?;
             closure.forget();
         }
 
@@ -2732,6 +3391,9 @@ mod browser {
                     lab.diff_scroll = clamp_scroll_for(count, lab.diff_scroll + delta, viewport);
                     drop(lab);
                     invalidate(&app);
+                    return;
+                }
+                if lab.mode == WorkbenchMode::DragDrop {
                     return;
                 }
                 let layout = lab.layout();
@@ -3137,6 +3799,11 @@ mod browser {
                             set_workbench_mode(&app, WorkbenchMode::Transcript);
                             return;
                         }
+                        "5" => {
+                            event.prevent_default();
+                            set_workbench_mode(&app, WorkbenchMode::DragDrop);
+                            return;
+                        }
                         _ => {}
                     }
                 }
@@ -3172,7 +3839,7 @@ mod browser {
                                 let _ = list.focus();
                                 invalidate(&app);
                             }
-                        } else {
+                        } else if app.borrow().mode == WorkbenchMode::DocumentData {
                             let current = app.borrow().focus;
                             let next = directional_focus(current, &key);
                             if next != current {
@@ -3726,7 +4393,7 @@ mod browser {
             "#8b93a7",
             24.0,
             58.0,
-            "Ctrl/Cmd+1 Document+Data · Ctrl/Cmd+3 Diff · ? shortcuts",
+            "Ctrl/Cmd+1/3/4/5 switch workflows · ? shortcuts",
         );
         text(
             &ctx,
@@ -3735,7 +4402,7 @@ mod browser {
             (lab.width - 330.0).max(24.0),
             34.0,
             &format!(
-                "A11y mirror: 9 controls  ·  DPR: {:.1}  ·  render: {:.2}ms",
+                "A11y mirror: active  ·  DPR: {:.1}  ·  render: {:.2}ms",
                 lab.dpr, lab.last_render_ms
             ),
         );
@@ -3752,6 +4419,11 @@ mod browser {
                 lab.mode == WorkbenchMode::Transcript,
                 "4  Transcript",
             ),
+            (
+                mode_drag_drop_rect(),
+                lab.mode == WorkbenchMode::DragDrop,
+                "5  Drag + Drop",
+            ),
         ] {
             fill(&ctx, if selected { "#183b70" } else { "#11141b" });
             ctx.fill_rect(rect.x, rect.y, rect.width, rect.height);
@@ -3765,6 +4437,11 @@ mod browser {
             );
         }
 
+        if lab.mode == WorkbenchMode::DragDrop {
+            render_drag_drop(&ctx, &lab, accent);
+            lab.last_render_ms = performance.now() - started;
+            return;
+        }
         if lab.mode == WorkbenchMode::Diff {
             render_diff(&ctx, &lab, accent);
             render_overlay(&ctx, &lab, accent);
@@ -4102,22 +4779,21 @@ mod browser {
         }
         ctx.restore();
 
-        if !rows.is_empty() {
-            let content_height = rows.len() as f64 * ROW_HEIGHT;
-            let max_scroll = (content_height - layout.list_content.height).max(1.0);
-            let thumb_height = (layout.list_content.height * layout.list_content.height
-                / content_height)
-                .clamp(24.0, layout.list_content.height);
-            let thumb_y = layout.list_content.y
-                + (layout.list_content.height - thumb_height) * lab.scroll / max_scroll;
-            fill(&ctx, "#3c4556");
-            ctx.fill_rect(
-                layout.list.x + layout.list.width - 5.0,
-                thumb_y,
-                3.0,
-                thumb_height,
-            );
-        }
+        render_scrollbar(
+            &ctx,
+            layout.list_content,
+            rows.len(),
+            lab.scroll,
+            lab.hover == Some(Hover::DataScrollbar),
+            matches!(
+                lab.scrollbar_drag,
+                Some(ScrollbarDrag {
+                    kind: ScrollbarKind::Data,
+                    ..
+                })
+            ),
+            accent,
+        );
         if lab.focus == Focus::List {
             stroke(&ctx, accent, 2.0);
             ctx.stroke_rect(
@@ -4130,6 +4806,125 @@ mod browser {
 
         render_overlay(&ctx, &lab, accent);
         lab.last_render_ms = performance.now() - started;
+    }
+
+    fn render_drag_drop(ctx: &CanvasRenderingContext2d, lab: &Lab, accent: &str) {
+        let layout = drag_drop_layout(lab.width, lab.height);
+        let over_target = lab.native_drag_over
+            || (lab.dragging_item && layout.drop_zone.contains(lab.pointer_x, lab.pointer_y));
+
+        panel(ctx, layout.stage);
+        text(
+            ctx,
+            "600 14px system-ui",
+            "#cdd3df",
+            layout.stage.x + 20.0,
+            layout.stage.y + 28.0,
+            "DRAG DATA BETWEEN WINDOWS",
+        );
+        text(
+            ctx,
+            "13px system-ui",
+            "#8b93a7",
+            layout.stage.x + 20.0,
+            layout.stage.y + 50.0,
+            "Each item carries its word and color in the drag payload.",
+        );
+
+        fill(
+            ctx,
+            if over_target || lab.dropped_item.is_some() {
+                "#183b70"
+            } else {
+                "#151a24"
+            },
+        );
+        ctx.fill_rect(
+            layout.drop_zone.x,
+            layout.drop_zone.y,
+            layout.drop_zone.width,
+            layout.drop_zone.height,
+        );
+        stroke(
+            ctx,
+            if over_target || lab.dropped_item.is_some() {
+                accent
+            } else {
+                "#566174"
+            },
+            2.0,
+        );
+        ctx.stroke_rect(
+            layout.drop_zone.x,
+            layout.drop_zone.y,
+            layout.drop_zone.width,
+            layout.drop_zone.height,
+        );
+        text(
+            ctx,
+            "700 12px system-ui",
+            "#aeb6c6",
+            layout.drop_zone.x + 14.0,
+            layout.drop_zone.y + 24.0,
+            if over_target {
+                "RELEASE HERE"
+            } else {
+                "DROP ZONE"
+            },
+        );
+
+        for (index, item) in DRAG_ITEMS.iter().enumerate() {
+            button(
+                ctx,
+                drag_source_rect(layout, index),
+                false,
+                lab.hover == Some(Hover::DragItem(index)),
+                item.color,
+                item.word,
+            );
+        }
+        if lab.dragging_item {
+            let item = DRAG_ITEMS[lab.active_drag_item];
+            button(
+                ctx,
+                lab.active_drag_item_rect(),
+                false,
+                true,
+                item.color,
+                item.word,
+            );
+        }
+        if let Some(item) = &lab.dropped_item {
+            button(
+                ctx,
+                dropped_item_rect(layout),
+                false,
+                false,
+                &item.color,
+                &item.word,
+            );
+        }
+
+        let status = if let Some(item) = &lab.dropped_item {
+            format!("Dropped: word=\"{}\", color=\"{}\"", item.word, item.color)
+        } else if lab.dragging_item || lab.native_dragging {
+            let item = DRAG_ITEMS[lab.active_drag_item];
+            format!("Dragging: word=\"{}\", color=\"{}\"", item.word, item.color)
+        } else {
+            "Drop an item to inspect its data".into()
+        };
+        text(
+            ctx,
+            "600 13px system-ui",
+            if lab.dropped_item.is_some() {
+                "#78a9ff"
+            } else {
+                "#8b93a7"
+            },
+            layout.stage.x + 20.0,
+            layout.stage.y + layout.stage.height - 18.0,
+            &status,
+        );
     }
 
     fn render_transcript(ctx: &CanvasRenderingContext2d, lab: &Lab, accent: &str) {
@@ -4332,21 +5127,21 @@ mod browser {
                 layout.content.height - 2.0,
             );
         }
-        if !rows.is_empty() {
-            let max_scroll = (rows.len() as f64 * ROW_HEIGHT - viewport.height).max(1.0);
-            let thumb_height = (viewport.height * viewport.height
-                / (rows.len() as f64 * ROW_HEIGHT))
-                .clamp(24.0, viewport.height);
-            let thumb_y =
-                viewport.y + (viewport.height - thumb_height) * lab.transcript_scroll / max_scroll;
-            fill(ctx, "#3c4556");
-            ctx.fill_rect(
-                layout.content.x + layout.content.width - 5.0,
-                thumb_y,
-                3.0,
-                thumb_height,
-            );
-        }
+        render_scrollbar(
+            ctx,
+            viewport,
+            rows.len(),
+            lab.transcript_scroll,
+            lab.hover == Some(Hover::TranscriptScrollbar),
+            matches!(
+                lab.scrollbar_drag,
+                Some(ScrollbarDrag {
+                    kind: ScrollbarKind::Transcript,
+                    ..
+                })
+            ),
+            accent,
+        );
     }
 
     fn render_diff(ctx: &CanvasRenderingContext2d, lab: &Lab, accent: &str) {
@@ -4568,21 +5363,21 @@ mod browser {
         );
         ctx.stroke();
 
-        if !rows.is_empty() {
-            let max_scroll = (rows.len() as f64 * ROW_HEIGHT - viewport.height).max(1.0);
-            let thumb_height = (viewport.height * viewport.height
-                / (rows.len() as f64 * ROW_HEIGHT))
-                .clamp(24.0, viewport.height);
-            let thumb_y =
-                viewport.y + (viewport.height - thumb_height) * lab.diff_scroll / max_scroll;
-            fill(ctx, "#3c4556");
-            ctx.fill_rect(
-                layout.content.x + layout.content.width - 5.0,
-                thumb_y,
-                3.0,
-                thumb_height,
-            );
-        }
+        render_scrollbar(
+            ctx,
+            viewport,
+            rows.len(),
+            lab.diff_scroll,
+            lab.hover == Some(Hover::DiffScrollbar),
+            matches!(
+                lab.scrollbar_drag,
+                Some(ScrollbarDrag {
+                    kind: ScrollbarKind::Diff,
+                    ..
+                })
+            ),
+            accent,
+        );
         if lab.diff_pane == DiffPane::Content {
             stroke(ctx, accent, 2.0);
             ctx.stroke_rect(
@@ -4970,6 +5765,64 @@ mod browser {
         let _ = ctx.fill_text(value, x, y);
     }
 
+    fn fill_rounded_rect(ctx: &CanvasRenderingContext2d, rect: Rect) {
+        let radius = (rect.width / 2.0).min(rect.height / 2.0);
+        ctx.begin_path();
+        ctx.move_to(rect.x + radius, rect.y);
+        ctx.line_to(rect.x + rect.width - radius, rect.y);
+        ctx.quadratic_curve_to(
+            rect.x + rect.width,
+            rect.y,
+            rect.x + rect.width,
+            rect.y + radius,
+        );
+        ctx.line_to(rect.x + rect.width, rect.y + rect.height - radius);
+        ctx.quadratic_curve_to(
+            rect.x + rect.width,
+            rect.y + rect.height,
+            rect.x + rect.width - radius,
+            rect.y + rect.height,
+        );
+        ctx.line_to(rect.x + radius, rect.y + rect.height);
+        ctx.quadratic_curve_to(
+            rect.x,
+            rect.y + rect.height,
+            rect.x,
+            rect.y + rect.height - radius,
+        );
+        ctx.line_to(rect.x, rect.y + radius);
+        ctx.quadratic_curve_to(rect.x, rect.y, rect.x + radius, rect.y);
+        ctx.close_path();
+        ctx.fill();
+    }
+
+    fn render_scrollbar(
+        ctx: &CanvasRenderingContext2d,
+        viewport: Rect,
+        row_count: usize,
+        scroll: f64,
+        hovered: bool,
+        active: bool,
+        accent: &str,
+    ) {
+        let interaction = hovered || active;
+        if interaction
+            && let Some(track) = scrollbar_thumb(viewport, row_count, scroll, SCROLLBAR_HIT_WIDTH)
+        {
+            fill(ctx, "rgba(120, 169, 255, 0.06)");
+            ctx.fill_rect(track.x, viewport.y, track.width, viewport.height);
+        }
+        let width = if interaction {
+            SCROLLBAR_ACTIVE_WIDTH
+        } else {
+            SCROLLBAR_IDLE_WIDTH
+        };
+        if let Some(thumb) = scrollbar_thumb(viewport, row_count, scroll, width) {
+            fill(ctx, if interaction { accent } else { "#3c4556" });
+            fill_rounded_rect(ctx, thumb);
+        }
+    }
+
     fn panel(ctx: &CanvasRenderingContext2d, rect: Rect) {
         fill(ctx, "#11141b");
         ctx.fill_rect(rect.x, rect.y, rect.width, rect.height);
@@ -5067,6 +5920,7 @@ mod tests {
                 .any(|row| matches!(row, DiffDisplayRow::Fold { .. }))
         );
         assert_ne!(WorkbenchMode::DocumentData, WorkbenchMode::Diff);
+        assert_ne!(WorkbenchMode::DragDrop, WorkbenchMode::Transcript);
         assert_ne!(DiffPane::Files, DiffPane::Content);
     }
 
@@ -5166,6 +6020,37 @@ mod tests {
     }
 
     #[test]
+    fn scrollbar_variant_five_maps_drag_and_keeps_its_right_edge() {
+        let viewport = Rect {
+            x: 20.0,
+            y: 40.0,
+            width: 600.0,
+            height: 340.0,
+        };
+        let row_count = 2_000;
+        let thumb = scrollbar_thumb(viewport, row_count, 0.0, SCROLLBAR_ACTIVE_WIDTH).unwrap();
+        let idle = scrollbar_thumb(viewport, row_count, 0.0, SCROLLBAR_IDLE_WIDTH).unwrap();
+        let offset = thumb.height / 2.0;
+        assert_eq!(
+            scroll_from_thumb_drag(viewport, row_count, thumb, viewport.y + offset, offset),
+            0.0
+        );
+        let bottom = scroll_from_thumb_drag(
+            viewport,
+            row_count,
+            thumb,
+            viewport.y + viewport.height - thumb.height + offset,
+            offset,
+        );
+        assert_eq!(bottom, row_count as f64 * ROW_HEIGHT - viewport.height);
+        assert_eq!(thumb.width, SCROLLBAR_ACTIVE_WIDTH);
+        assert_eq!(idle.width, SCROLLBAR_IDLE_WIDTH);
+        assert_eq!(SCROLLBAR_HIT_WIDTH, 18.0);
+        assert_eq!(thumb.x + thumb.width, idle.x + idle.width);
+        assert!(thumb.height >= 48.0);
+    }
+
+    #[test]
     fn utf16_offsets_map_to_rust_string_boundaries() {
         let text = "a🦀é\n日";
         assert_eq!(utf16_len(text), 6);
@@ -5212,5 +6097,35 @@ mod tests {
     fn search_matches_use_browser_utf16_offsets() {
         assert_eq!(find_utf16_matches("🦀 one 🦀", "🦀"), vec![(0, 2), (7, 9)]);
         assert!(find_utf16_matches("text", "").is_empty());
+    }
+
+    #[test]
+    fn drag_drop_accepts_only_completed_drops_with_valid_data() {
+        let desktop = drag_drop_layout(1_200.0, 800.0);
+        let target_x = desktop.drop_zone.x + desktop.drop_zone.width / 2.0;
+        let target_y = desktop.drop_zone.y + desktop.drop_zone.height / 2.0;
+        assert!(accepts_drop(desktop.drop_zone, target_x, target_y, false));
+        assert!(!accepts_drop(desktop.drop_zone, target_x, target_y, true));
+        assert!(!accepts_drop(
+            desktop.drop_zone,
+            desktop.item_start.x,
+            desktop.item_start.y,
+            false
+        ));
+        assert!(drag_source_rect(desktop, 1).y > drag_source_rect(desktop, 0).y);
+        let dropped = dropped_item_rect(desktop);
+        assert!(desktop.drop_zone.contains(dropped.x, dropped.y));
+
+        let compact = drag_drop_layout(390.0, 700.0);
+        assert!(compact.drop_zone.height >= compact.item_start.height);
+
+        let item = DRAG_ITEMS[1];
+        assert_eq!(
+            parse_drag_item_payload(&drag_item_payload(item)),
+            Some(item.into())
+        );
+        assert!(parse_drag_item_payload("wasm-ui-lab:item:v2|Wasm|#b69cff").is_none());
+        assert!(parse_drag_item_payload("wasm-ui-lab:item:v1|Wasm|purple").is_none());
+        assert!(parse_drag_item_payload("wasm-ui-lab:item:v1|Two words|#b69cff").is_none());
     }
 }
