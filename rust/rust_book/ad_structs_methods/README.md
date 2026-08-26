@@ -1,0 +1,1 @@
+similar to functions, but defined within the context of a struct

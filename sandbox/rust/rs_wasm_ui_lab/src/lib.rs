@@ -6,7 +6,7 @@
 use regex::RegexBuilder;
 use unicode_segmentation::UnicodeSegmentation;
 
-const ITEM_COUNT: usize = 10_000;
+const ITEM_COUNT: usize = 500_000;
 const ROW_HEIGHT: f64 = 34.0;
 const SCROLLBAR_IDLE_WIDTH: f64 = 4.0;
 const SCROLLBAR_ACTIVE_WIDTH: f64 = 10.0;
@@ -291,7 +291,7 @@ fn transcript_matches(segments: &[TranscriptSegment], query: &str) -> Vec<usize>
     segments
         .iter()
         .enumerate()
-        .filter_map(|(index, segment)| fuzzy_score(&segment.text, query).map(|_| index))
+        .filter_map(|(index, segment)| fuzzy_matches(&segment.text, query).then_some(index))
         .collect()
 }
 
@@ -446,68 +446,83 @@ impl FilterMode {
 
 fn data_search_index() -> Vec<String> {
     (0..ITEM_COUNT)
-        .map(|row| format!("{:04} canvas row {} {}", row, row + 1, row_status(row)))
+        .map(|row| {
+            format!("{:04} canvas row {} {}", row, row + 1, row_status(row)).to_ascii_lowercase()
+        })
         .collect()
 }
 
-fn fuzzy_score(candidate: &str, query: &str) -> Option<i64> {
-    if query.is_empty() {
-        return Some(0);
+fn fuzzy_matches(candidate: &str, query: &str) -> bool {
+    let mut candidate = candidate.chars();
+    query.chars().all(|wanted| {
+        candidate
+            .by_ref()
+            .any(|actual| actual.eq_ignore_ascii_case(&wanted))
+    })
+}
+
+fn matching_data_rows(
+    index: &[String],
+    candidates: Option<&[usize]>,
+    mut matches: impl FnMut(&str) -> bool,
+) -> Vec<usize> {
+    if let Some(candidates) = candidates {
+        candidates
+            .iter()
+            .copied()
+            .filter(|row| index.get(*row).is_some_and(|value| matches(value)))
+            .collect()
+    } else {
+        index
+            .iter()
+            .enumerate()
+            .filter_map(|(row, value)| matches(value).then_some(row))
+            .collect()
     }
-    let mut score = 0;
-    let mut cursor = 0;
-    let mut previous = None;
-    let candidate = candidate.to_ascii_lowercase();
-    for wanted in query.to_ascii_lowercase().chars() {
-        let found = candidate[cursor..].find(wanted)? + cursor;
-        score += if previous == Some(found.saturating_sub(1)) {
-            12
-        } else {
-            4
-        };
-        score -= found as i64;
-        cursor = found + wanted.len_utf8();
-        previous = Some(found);
-    }
-    Some(score)
+}
+
+fn normalized_data_filter(filter: &str) -> String {
+    filter.trim().to_ascii_lowercase()
+}
+
+fn can_refine_data_filter(
+    applied: &str,
+    next: &str,
+    applied_mode: FilterMode,
+    next_mode: FilterMode,
+) -> bool {
+    applied_mode == next_mode
+        && matches!(next_mode, FilterMode::Literal | FilterMode::Fuzzy)
+        && next.starts_with(applied)
 }
 
 fn filtered_data_rows(
     index: &[String],
+    candidates: Option<&[usize]>,
     filter: &str,
     mode: FilterMode,
     descending: bool,
 ) -> Result<Vec<usize>, String> {
     let query = filter.trim();
-    let mut rows: Vec<usize> = match mode {
+    let mut rows = match mode {
         FilterMode::Literal => {
             let query = query.to_ascii_lowercase();
-            index
-                .iter()
-                .enumerate()
-                .filter_map(|(row, value)| {
-                    (query.is_empty() || value.to_ascii_lowercase().contains(&query)).then_some(row)
-                })
-                .collect()
+            matching_data_rows(index, candidates, |value| {
+                query.is_empty() || value.contains(&query)
+            })
         }
         FilterMode::Regex => {
             let regex = RegexBuilder::new(query)
                 .case_insensitive(true)
                 .build()
                 .map_err(|error| error.to_string())?;
-            index
-                .iter()
-                .enumerate()
-                .filter_map(|(row, value)| regex.is_match(value).then_some(row))
-                .collect()
+            matching_data_rows(index, candidates, |value| regex.is_match(value))
         }
-        FilterMode::Fuzzy => index
-            .iter()
-            .enumerate()
-            .filter_map(|(row, value)| fuzzy_score(value, query).map(|_| row))
-            .collect(),
+        FilterMode::Fuzzy => {
+            matching_data_rows(index, candidates, |value| fuzzy_matches(value, query))
+        }
     };
-    if descending {
+    if descending && candidates.is_none() {
         rows.reverse();
     }
     Ok(rows)
@@ -899,6 +914,8 @@ mod browser {
         command_selected: usize,
         data_filter: String,
         data_filter_mode: FilterMode,
+        data_filter_applied: String,
+        data_filter_applied_mode: FilterMode,
         data_filter_error: Option<String>,
         data_filter_ms: f64,
         data_filter_generation: u32,
@@ -1998,17 +2015,33 @@ mod browser {
         fn refresh_data_rows(&mut self) {
             self.data_filter_generation = self.data_filter_generation.wrapping_add(1);
             self.data_filter_pending = false;
+            let normalized = normalized_data_filter(&self.data_filter);
+            if self.data_filter_mode == self.data_filter_applied_mode
+                && normalized == self.data_filter_applied
+            {
+                return;
+            }
+            let refine = can_refine_data_filter(
+                &self.data_filter_applied,
+                &normalized,
+                self.data_filter_applied_mode,
+                self.data_filter_mode,
+            );
             let started = web_sys::window()
                 .and_then(|window| window.performance())
                 .map(|performance| performance.now());
-            match filtered_data_rows(
+            let result = filtered_data_rows(
                 &self.data_index,
+                refine.then_some(self.data_rows.as_slice()),
                 &self.data_filter,
                 self.data_filter_mode,
                 self.data_descending,
-            ) {
+            );
+            match result {
                 Ok(rows) => {
                     self.data_rows = rows;
+                    self.data_filter_applied = normalized;
+                    self.data_filter_applied_mode = self.data_filter_mode;
                     self.data_filter_error = None;
                     self.normalize_filtered_selection();
                 }
@@ -2302,17 +2335,12 @@ mod browser {
     }
 
     fn schedule_data_filter(app: &Rc<RefCell<Lab>>) {
-        let generation = {
+        let (generation, regex) = {
             let mut lab = app.borrow_mut();
-            if lab.data_filter_mode != FilterMode::Regex {
-                lab.refresh_data_rows();
-                drop(lab);
-                invalidate(app);
-                return;
-            }
             lab.data_filter_generation = lab.data_filter_generation.wrapping_add(1);
-            lab.data_filter_pending = true;
-            lab.data_filter_generation
+            let regex = lab.data_filter_mode == FilterMode::Regex;
+            lab.data_filter_pending = regex;
+            (lab.data_filter_generation, regex)
         };
         invalidate(app);
 
@@ -2327,10 +2355,14 @@ mod browser {
             invalidate(&app);
         });
         if let Some(window) = web_sys::window() {
-            let _ = window.set_timeout_with_callback_and_timeout_and_arguments_0(
-                callback.unchecked_ref(),
-                120,
-            );
+            if regex {
+                let _ = window.set_timeout_with_callback_and_timeout_and_arguments_0(
+                    callback.unchecked_ref(),
+                    120,
+                );
+            } else {
+                let _ = window.request_animation_frame(callback.unchecked_ref());
+            }
         }
     }
 
@@ -2531,6 +2563,8 @@ mod browser {
             command_selected: 0,
             data_filter: String::new(),
             data_filter_mode: FilterMode::Fuzzy,
+            data_filter_applied: String::new(),
+            data_filter_applied_mode: FilterMode::Fuzzy,
             data_filter_error: None,
             data_filter_ms: 0.0,
             data_filter_generation: 0,
@@ -5957,15 +5991,63 @@ mod tests {
     }
 
     #[test]
+    fn incremental_filters_refine_candidates_and_preserve_their_order() {
+        let index = vec!["alpha beta".into(), "alpha bravo".into(), "beta".into()];
+        let initial = filtered_data_rows(&index, None, "alpha", FilterMode::Fuzzy, false).unwrap();
+        assert_eq!(initial, vec![0, 1]);
+        let refined =
+            filtered_data_rows(&index, Some(&initial), "alphabv", FilterMode::Fuzzy, false)
+                .unwrap();
+        assert_eq!(refined, vec![1]);
+
+        let descending = vec![1, 0];
+        let preserved =
+            filtered_data_rows(&index, Some(&descending), "alpha", FilterMode::Fuzzy, true)
+                .unwrap();
+        assert_eq!(preserved, descending);
+
+        assert_eq!(normalized_data_filter(" Alpha "), "alpha");
+        assert!(can_refine_data_filter(
+            "alpha",
+            "alphabet",
+            FilterMode::Fuzzy,
+            FilterMode::Fuzzy,
+        ));
+        assert!(!can_refine_data_filter(
+            "alphabet",
+            "alpha",
+            FilterMode::Fuzzy,
+            FilterMode::Fuzzy,
+        ));
+        assert!(!can_refine_data_filter(
+            "alpha",
+            "alphabet",
+            FilterMode::Fuzzy,
+            FilterMode::Regex,
+        ));
+    }
+
+    #[test]
+    fn fuzzy_matching_is_case_insensitive_and_ordered() {
+        assert!(fuzzy_matches("Canvas Row 234 Blocked", "CAN234blo"));
+        assert!(fuzzy_matches("café 日本語", "cé日"));
+        assert!(fuzzy_matches("anything", ""));
+        assert!(!fuzzy_matches("canvas", "svc"));
+    }
+
+    #[test]
     fn data_filter_and_sort_preserve_row_ids() {
         let index = data_search_index();
-        let rows = filtered_data_rows(&index, "blocked", FilterMode::Literal, false).unwrap();
+        let rows = filtered_data_rows(&index, None, "blocked", FilterMode::Literal, false).unwrap();
         assert_eq!(rows[..3], [2, 5, 8]);
-        let rows = filtered_data_rows(&index, "row 42", FilterMode::Literal, false).unwrap();
+        let rows = filtered_data_rows(&index, None, "row 42", FilterMode::Literal, false).unwrap();
         assert_eq!(rows.first(), Some(&41));
         assert!(rows.contains(&419));
-        let rows = filtered_data_rows(&index, "blocked", FilterMode::Literal, true).unwrap();
-        assert_eq!(rows.first(), Some(&9998));
+        let rows = filtered_data_rows(&index, None, "blocked", FilterMode::Literal, true).unwrap();
+        let expected = (0..ITEM_COUNT)
+            .rev()
+            .find(|row| row_status(*row) == "Blocked");
+        assert_eq!(rows.first().copied(), expected);
     }
 
     #[test]
@@ -5973,13 +6055,14 @@ mod tests {
         let index = data_search_index();
         let rows = filtered_data_rows(
             &index,
+            None,
             r"canvas row (3|6) (ready|review|blocked)$",
             FilterMode::Regex,
             false,
         )
         .unwrap();
         assert_eq!(rows, vec![2, 5]);
-        assert!(filtered_data_rows(&index, "[", FilterMode::Regex, false).is_err());
+        assert!(filtered_data_rows(&index, None, "[", FilterMode::Regex, false).is_err());
     }
 
     #[test]
@@ -5990,11 +6073,11 @@ mod tests {
             "ready".into(),
         ];
         assert_eq!(
-            filtered_data_rows(&index, "canva234blo", FilterMode::Fuzzy, false).unwrap(),
+            filtered_data_rows(&index, None, "canva234blo", FilterMode::Fuzzy, false).unwrap(),
             vec![0, 1]
         );
         assert_eq!(
-            filtered_data_rows(&index, "canva234blo", FilterMode::Fuzzy, true).unwrap(),
+            filtered_data_rows(&index, None, "canva234blo", FilterMode::Fuzzy, true).unwrap(),
             vec![1, 0]
         );
     }
