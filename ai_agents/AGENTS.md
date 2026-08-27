@@ -100,3 +100,7 @@ Not lazy about: input validation at trust boundaries, error handling that preven
 ## No Emojis
 
 Do not generate emojis unless I explicitly request them. Use plain text for all responses, documentation, comments, summaries, and suggested copy by default.
+
+## No Slogans as titles
+
+Never use slogans as title when generating documentation. Make the titles something meaninful of the subject being discussed.
