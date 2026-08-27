@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How Git actually tracks your files</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Darker+Grotesque:wght@600;800&family=IBM+Plex+Mono:wght@400;500;600&family=Newsreader:opsz,wght@6..72,400;6..72,500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --table:#e3e7e1;      /* light-table surface */
+  --paper:#f4f5f1;      /* card stock */
+  --film:#1e1c1a;       /* film base */
+  --film-2:#2b2724;     /* frame plate */
+  --ink:#15181b;
+  --muted:#6b706b;
+  --cyan:#0e7f92;       /* light-box glow: new content */
+  --amber:#b8770f;      /* safelight: reused content */
+  --moss:#3d7548;
+  --brick:#a3452e;
+  --rule:#c6cac2;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;
+  background:var(--table);
+  color:var(--ink);
+  font-family:"Newsreader",Georgia,serif;
+  font-size:1.08rem;
+  line-height:1.62;
+  font-optical-sizing:auto;
+}
+.wrap{max-width:830px;margin:0 auto;padding:0 22px}
+h1,h2,h3{font-family:"Darker Grotesque",Impact,sans-serif;font-weight:800;margin:0;letter-spacing:-.01em}
+h1{font-size:clamp(3.1rem,11vw,5.6rem);line-height:.85}
+h2{font-size:clamp(2.1rem,6.5vw,3.1rem);line-height:.92;margin:0 0 14px}
+h3{font-size:clamp(1.4rem,4vw,1.7rem);line-height:1;margin:34px 0 8px;font-weight:600}
+p{margin:0 0 18px;max-width:64ch}
+strong{font-weight:500;background:linear-gradient(transparent 62%, rgba(14,127,146,.22) 62%)}
+code{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86em;background:rgba(30,28,26,.07);padding:.12em .34em;border-radius:3px;word-break:break-word}
+a{color:var(--cyan)}
+:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+
+/* ---- masthead ---- */
+header.top{padding:78px 0 8px}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin:0 0 20px}
+.deck{font-size:1.22rem;max-width:56ch;margin-top:24px;color:#2c3134}
+
+/* ---- the recurring command chip ---- */
+.cmd{
+  display:inline-block;background:var(--film);color:#e8e6e2;
+  font-family:"IBM Plex Mono",monospace;font-size:.78rem;letter-spacing:.02em;
+  padding:7px 13px;border-radius:4px;margin:0 0 14px;max-width:100%;
+}
+.cmd .p{color:var(--cyan);margin-right:8px}
+.cmd .c{color:#b9b4ad}
+
+/* ---- sections ---- */
+section{padding:52px 0;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+.lede{font-size:1.16rem}
+
+/* ---- figures ---- */
+figure{margin:34px 0 10px}
+.scroll{overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;padding-bottom:4px}
+.scroll svg{display:block;width:100%;height:auto}
+figcaption{font-family:"IBM Plex Mono",monospace;font-size:.72rem;line-height:1.65;color:var(--muted);margin-top:12px;max-width:62ch}
+.swipe{display:none;font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 8px}
+@media (max-width:660px){.swipe{display:block}}
+
+/* ---- hero light table ---- */
+.strip{position:relative;margin:44px 0 0}
+.strip::before{
+  content:"";position:absolute;inset:-14% -4%;z-index:0;
+  background:radial-gradient(58% 62% at 50% 50%, rgba(14,127,146,.30), rgba(14,127,146,0) 72%);
+  filter:blur(16px);
+}
+.strip .scroll{position:relative;z-index:1}
+.strip .scroll svg{min-width:640px}
+figure .scroll svg{min-width:620px}
+.readout{
+  position:relative;z-index:1;font-family:"IBM Plex Mono",monospace;font-size:.76rem;
+  line-height:1.7;color:#2c3134;background:var(--paper);border-left:3px solid var(--cyan);
+  padding:12px 15px;margin:16px 0 0;max-width:60ch;
+}
+.frame{cursor:pointer}
+.frame .plate{transition:stroke .18s ease, fill .18s ease}
+.frame.sel .plate{stroke:var(--cyan);stroke-width:2;fill:#35302c}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+
+/* scroll reveal */
+.rv{opacity:0;transform:translateY(14px);transition:opacity .5s ease,transform .5s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none}}
+
+/* ---- callout ---- */
+.note{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:18px 20px;margin:28px 0}
+.note p{margin:0;font-size:1rem}
+.note .tag{font-family:"IBM Plex Mono",monospace;font-size:.66rem;letter-spacing:.18em;text-transform:uppercase;color:var(--brick);display:block;margin-bottom:7px}
+
+/* ---- ops list ---- */
+.ops{display:grid;gap:1px;background:var(--rule);border:1px solid var(--rule);border-radius:6px;overflow:hidden;margin:30px 0}
+.op{background:var(--paper);padding:15px 18px}
+.op b{display:block;font-family:"IBM Plex Mono",monospace;font-size:.8rem;font-weight:600;color:var(--ink);margin-bottom:5px}
+.op span{font-size:.98rem;color:#33383a}
+@media (min-width:700px){.ops{grid-template-columns:1fr 1fr}}
+
+footer{padding:56px 0 90px;border-top:1px solid var(--rule);color:var(--muted);font-size:.95rem}
+footer p{max-width:60ch}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="top">
+  <p class="kicker">A mental model for the object database</p>
+  <h1>Git never<br>saved your<br>changes.</h1>
+  <p class="deck">It photographs the whole project, every time, and files each photo under the fingerprint of its own contents. Every diff you have ever read was calculated the moment you asked for it.</p>
+
+  <div class="strip">
+    <p class="swipe">Drag the strip sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 720 268" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A film strip of three commits. Each frame is a full snapshot; unchanged files reuse the same stored object.">
+        <rect x="8" y="8" width="704" height="252" rx="6" fill="#1e1c1a"/>
+        <g fill="#4a443f">
+          <rect x="26" y="22" width="20" height="13" rx="2.5"/><rect x="60" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="94" y="22" width="20" height="13" rx="2.5"/><rect x="128" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="162" y="22" width="20" height="13" rx="2.5"/><rect x="196" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="230" y="22" width="20" height="13" rx="2.5"/><rect x="264" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="298" y="22" width="20" height="13" rx="2.5"/><rect x="332" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="366" y="22" width="20" height="13" rx="2.5"/><rect x="400" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="434" y="22" width="20" height="13" rx="2.5"/><rect x="468" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="502" y="22" width="20" height="13" rx="2.5"/><rect x="536" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="570" y="22" width="20" height="13" rx="2.5"/><rect x="604" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="638" y="22" width="20" height="13" rx="2.5"/><rect x="672" y="22" width="20" height="13" rx="2.5"/>
+          <rect x="26" y="233" width="20" height="13" rx="2.5"/><rect x="60" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="94" y="233" width="20" height="13" rx="2.5"/><rect x="128" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="162" y="233" width="20" height="13" rx="2.5"/><rect x="196" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="230" y="233" width="20" height="13" rx="2.5"/><rect x="264" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="298" y="233" width="20" height="13" rx="2.5"/><rect x="332" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="366" y="233" width="20" height="13" rx="2.5"/><rect x="400" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="434" y="233" width="20" height="13" rx="2.5"/><rect x="468" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="502" y="233" width="20" height="13" rx="2.5"/><rect x="536" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="570" y="233" width="20" height="13" rx="2.5"/><rect x="604" y="233" width="20" height="13" rx="2.5"/>
+          <rect x="638" y="233" width="20" height="13" rx="2.5"/><rect x="672" y="233" width="20" height="13" rx="2.5"/>
+        </g>
+
+        <!-- frame 1 -->
+        <g class="frame sel" data-frame="1" tabindex="0" role="button" aria-label="Commit a9f3d21: three new objects">
+          <rect class="plate" x="32" y="52" width="212" height="164" rx="4" fill="#2b2724" stroke="#443e39" stroke-width="1.5"/>
+          <text x="46" y="76" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#0e9fb6">a9f3d21</text>
+          <text x="230" y="76" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="#7d766f">frame 1</text>
+          <rect x="46" y="88" width="184" height="34" rx="3" fill="#37322e" stroke="#0e7f92" stroke-width="1.2"/>
+          <text x="56" y="103" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#e8e6e2">README.md</text>
+          <text x="56" y="116" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0e9fb6">8ab686e · new blob</text>
+          <rect x="46" y="128" width="184" height="34" rx="3" fill="#37322e" stroke="#0e7f92" stroke-width="1.2"/>
+          <text x="56" y="143" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#e8e6e2">app.js</text>
+          <text x="56" y="156" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0e9fb6">5d41402 · new blob</text>
+          <rect x="46" y="168" width="184" height="34" rx="3" fill="#37322e" stroke="#0e7f92" stroke-width="1.2"/>
+          <text x="56" y="183" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#e8e6e2">style.css</text>
+          <text x="56" y="196" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0e9fb6">3f2a91c · new blob</text>
+        </g>
+
+        <!-- frame 2 -->
+        <g class="frame" data-frame="2" tabindex="0" role="button" aria-label="Commit 4c1b7ec: one new object, two reused">
+          <rect class="plate" x="254" y="52" width="212" height="164" rx="4" fill="#2b2724" stroke="#443e39" stroke-width="1.5"/>
+          <text x="268" y="76" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#0e9fb6">4c1b7ec</text>
+          <text x="452" y="76" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="#7d766f">frame 2</text>
+          <rect x="268" y="88" width="184" height="34" rx="3" fill="#312d2a" stroke="#5a5049" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <text x="278" y="103" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#a9a29b">README.md</text>
+          <text x="278" y="116" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b8860f">8ab686e · reused</text>
+          <rect x="268" y="128" width="184" height="34" rx="3" fill="#37322e" stroke="#0e7f92" stroke-width="1.2"/>
+          <text x="278" y="143" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#e8e6e2">app.js</text>
+          <text x="278" y="156" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0e9fb6">b6d767d · new blob</text>
+          <rect x="268" y="168" width="184" height="34" rx="3" fill="#312d2a" stroke="#5a5049" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <text x="278" y="183" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#a9a29b">style.css</text>
+          <text x="278" y="196" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b8860f">3f2a91c · reused</text>
+        </g>
+
+        <!-- frame 3 -->
+        <g class="frame" data-frame="3" tabindex="0" role="button" aria-label="Commit e07a559: one new object, two reused">
+          <rect class="plate" x="476" y="52" width="212" height="164" rx="4" fill="#2b2724" stroke="#443e39" stroke-width="1.5"/>
+          <text x="490" y="76" font-family="IBM Plex Mono, monospace" font-size="12.5" fill="#0e9fb6">e07a559</text>
+          <text x="674" y="76" text-anchor="end" font-family="IBM Plex Mono, monospace" font-size="11" fill="#7d766f">frame 3</text>
+          <rect x="490" y="88" width="184" height="34" rx="3" fill="#312d2a" stroke="#5a5049" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <text x="500" y="103" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#a9a29b">README.md</text>
+          <text x="500" y="116" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b8860f">8ab686e · reused</text>
+          <rect x="490" y="128" width="184" height="34" rx="3" fill="#312d2a" stroke="#5a5049" stroke-width="1.2" stroke-dasharray="3 3"/>
+          <text x="500" y="143" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#a9a29b">app.js</text>
+          <text x="500" y="156" font-family="IBM Plex Mono, monospace" font-size="10" fill="#b8860f">b6d767d · reused</text>
+          <rect x="490" y="168" width="184" height="34" rx="3" fill="#37322e" stroke="#0e7f92" stroke-width="1.2"/>
+          <text x="500" y="183" font-family="IBM Plex Mono, monospace" font-size="11.5" fill="#e8e6e2">style.css</text>
+          <text x="500" y="196" font-family="IBM Plex Mono, monospace" font-size="10" fill="#0e9fb6">f4c9d02 · new blob</text>
+        </g>
+      </svg>
+    </div>
+    <p class="readout" id="readout">Frame 1 · a9f3d21 — the first commit. Three files, three new objects written to .git/objects.</p>
+  </div>
+</header>
+
+<section id="hash" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git hash-object -w app.js</span></p>
+  <h2>The name of a thing is the hash of a thing</h2>
+  <p class="lede">Git's storage is one flat key–value store. The key is always a SHA of the value, so nothing is ever stored under a name you chose.</p>
+  <p>To store a file, Git takes its raw bytes, prepends a tiny header (<code>blob 128\0</code> — the type and the byte count), and hashes the whole thing. That produces 40 hex characters. It compresses the bytes and writes them to a path built from the hash itself: the first two characters become a directory, the rest become the filename.</p>
+  <p>Two consequences fall straight out of this, and almost everything else in Git is downstream of them. <strong>Identical content is always stored once</strong>, no matter how many files, folders or commits contain it. And <strong>changing one byte produces a completely unrelated hash</strong> — so Git can decide whether two things are the same by comparing 40 characters, without ever opening them.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two files with identical contents hash to the same object path; changing one byte gives a different address.">
+        <style>
+          .lbl{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:#6b706b}
+          .mono{font-family:"IBM Plex Mono",monospace;font-size:12px;fill:#15181b}
+          .monos{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:#6b706b}
+          .card{fill:#f4f5f1;stroke:#c6cac2}
+        </style>
+        <rect x="0" y="0" width="700" height="300" fill="none"/>
+
+        <!-- file A -->
+        <rect class="card" x="10" y="26" width="180" height="76" rx="5"/>
+        <text class="mono" x="24" y="48">app.js</text>
+        <text class="monos" x="24" y="68">export const n = 1;</text>
+        <text class="monos" x="24" y="84">console.log(n);</text>
+
+        <!-- file B -->
+        <rect class="card" x="10" y="118" width="180" height="76" rx="5"/>
+        <text class="mono" x="24" y="140">vendor/copy.js</text>
+        <text class="monos" x="24" y="160">export const n = 1;</text>
+        <text class="monos" x="24" y="176">console.log(n);</text>
+
+        <!-- file C -->
+        <rect class="card" x="10" y="210" width="180" height="76" rx="5"/>
+        <text class="mono" x="24" y="232">app.js <tspan fill="#a3452e">(edited)</tspan></text>
+        <text class="monos" x="24" y="252">export const n = <tspan fill="#a3452e">2</tspan>;</text>
+        <text class="monos" x="24" y="268">console.log(n);</text>
+
+        <!-- arrows into hasher -->
+        <path d="M190 64 L246 64 L246 128 L262 128" fill="none" stroke="#6b706b" stroke-width="1.4"/>
+        <path d="M190 156 L262 156" fill="none" stroke="#6b706b" stroke-width="1.4"/>
+        <path d="M190 248 L246 248 L246 184 L262 184" fill="none" stroke="#6b706b" stroke-width="1.4"/>
+
+        <!-- hasher -->
+        <rect x="262" y="106" width="132" height="88" rx="5" fill="#1e1c1a"/>
+        <text x="328" y="140" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="12" fill="#e8e6e2">SHA-1</text>
+        <text x="328" y="158" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#0e9fb6">"blob &lt;size&gt;\0" + bytes</text>
+        <text x="328" y="176" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="9.5" fill="#7d766f">deterministic, no filename</text>
+
+        <path d="M394 128 L436 128" fill="none" stroke="#6b706b" stroke-width="1.4" marker-end="url(#ar1)"/>
+        <path d="M394 172 L436 172" fill="none" stroke="#6b706b" stroke-width="1.4" marker-end="url(#ar1)"/>
+        <defs>
+          <marker id="ar1" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#6b706b"/>
+          </marker>
+        </defs>
+
+        <!-- object A -->
+        <rect x="436" y="98" width="252" height="62" rx="5" fill="#f4f5f1" stroke="#0e7f92" stroke-width="1.6"/>
+        <text class="monos" x="450" y="118" fill="#0e7f92">one object, two files</text>
+        <text class="mono" x="450" y="138">5d41402abc4b2a76b9719d911017c592</text>
+        <text class="monos" x="450" y="152">.git/objects/5d/41402abc4b…</text>
+
+        <!-- object B -->
+        <rect x="436" y="172" width="252" height="62" rx="5" fill="#f4f5f1" stroke="#a3452e" stroke-width="1.6"/>
+        <text class="monos" x="450" y="192" fill="#a3452e">one byte later: new object</text>
+        <text class="mono" x="450" y="212">b6d767d2f8ed5d21a44b0e5886680cb9</text>
+        <text class="monos" x="450" y="226">.git/objects/b6/d767d2f8ed…</text>
+      </svg>
+    </div>
+    <figcaption>The address is derived from the content, so the store can never hold two copies of the same bytes — and can never mistake changed bytes for unchanged ones.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="tag">Worth knowing</span>
+    <p>A blob holds contents and nothing else: no filename, no path, no timestamp, no permissions. That information lives one level up, in trees.</p>
+  </div>
+</section>
+
+<section id="objects" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git cat-file -p HEAD^{tree}</span></p>
+  <h2>Three kinds of object, and that is the whole database</h2>
+  <p class="lede">Everything Git stores is a blob, a tree, or a commit. They are all addressed by hash, and they only ever point downwards.</p>
+  <p><strong>A blob</strong> is the contents of one file. <strong>A tree</strong> is a directory listing: a list of rows, each holding a mode, a type, a hash and a name. A tree can name blobs (files) and other trees (subdirectories). <strong>A commit</strong> names exactly one tree — the root of your project at that instant — plus its parent commit(s), the author, the date and your message.</p>
+  <p>So a commit does not contain a change. It contains a complete, addressable picture of every file you were tracking, reachable by following hashes down from the root tree.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A commit points to a root tree, which points to blobs and a subtree.">
+        <style>
+          .n{fill:#f4f5f1;stroke:#c6cac2;stroke-width:1.4}
+          .t{font-family:"IBM Plex Mono",monospace;font-size:11.5px;fill:#15181b}
+          .h{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:#6b706b}
+          .badge{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em}
+          .edge{fill:none;stroke:#9aa09a;stroke-width:1.4}
+          .elbl{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+        </style>
+        <defs>
+          <marker id="ar2" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#9aa09a"/>
+          </marker>
+        </defs>
+
+        <!-- commit -->
+        <rect class="n" x="14" y="112" width="176" height="96" rx="5" stroke="#0e7f92"/>
+        <rect x="14" y="112" width="176" height="20" rx="5" fill="#0e7f92"/>
+        <text class="badge" x="26" y="126" fill="#f4f5f1">COMMIT</text>
+        <text class="t" x="26" y="152">e07a559</text>
+        <text class="h" x="26" y="168">tree c5e8f10</text>
+        <text class="h" x="26" y="182">parent 4c1b7ec</text>
+        <text class="h" x="26" y="196">"restyle the header"</text>
+
+        <path class="edge" d="M190 152 L246 152" marker-end="url(#ar2)"/>
+        <text class="elbl" x="196" y="145">tree</text>
+
+        <!-- root tree -->
+        <rect class="n" x="246" y="98" width="180" height="124" rx="5" stroke="#b8770f"/>
+        <rect x="246" y="98" width="180" height="20" rx="5" fill="#b8770f"/>
+        <text class="badge" x="258" y="112" fill="#f4f5f1">TREE — root</text>
+        <text class="t" x="258" y="138">c5e8f10</text>
+        <line x1="258" y1="148" x2="414" y2="148" stroke="#dcdfd8"/>
+        <text class="h" x="258" y="166">100644 blob 8ab686e  README.md</text>
+        <text class="h" x="258" y="186">100644 blob b6d767d  app.js</text>
+        <text class="h" x="258" y="206">040000 tree 92e1b34  css/</text>
+
+        <path class="edge" d="M426 162 L486 66 " marker-end="url(#ar2)"/>
+        <path class="edge" d="M426 182 L486 148" marker-end="url(#ar2)"/>
+        <path class="edge" d="M426 204 L486 246" marker-end="url(#ar2)"/>
+
+        <!-- blobs -->
+        <rect class="n" x="486" y="34" width="196" height="56" rx="5"/>
+        <text class="badge" x="498" y="52" fill="#6b706b">BLOB  8ab686e</text>
+        <text class="h" x="498" y="72" fill="#15181b"># Project — getting started…</text>
+
+        <rect class="n" x="486" y="118" width="196" height="56" rx="5"/>
+        <text class="badge" x="498" y="136" fill="#6b706b">BLOB  b6d767d</text>
+        <text class="h" x="498" y="156" fill="#15181b">export const n = 2; …</text>
+
+        <!-- subtree -->
+        <rect class="n" x="486" y="216" width="196" height="82" rx="5" stroke="#b8770f"/>
+        <rect x="486" y="216" width="196" height="18" rx="5" fill="#b8770f"/>
+        <text class="badge" x="498" y="229" fill="#f4f5f1">TREE — css/</text>
+        <text class="t" x="498" y="252">92e1b34</text>
+        <text class="h" x="498" y="272">100644 blob f4c9d02  style.css</text>
+        <text class="h" x="498" y="288">100644 blob 3d0a112  reset.css</text>
+      </svg>
+    </div>
+    <figcaption>Filenames live in tree rows, not in blobs. Rename a file and Git writes a new tree row pointing at the very same blob — which is exactly why a rename costs nothing.</figcaption>
+  </figure>
+</section>
+
+<section id="reuse" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git cat-file -p 4c1b7ec^{tree}</span></p>
+  <h2>A full snapshot that costs one file</h2>
+  <p class="lede">This is the part that sounds wasteful and isn't. Each commit records everything, yet only genuinely new content is ever written.</p>
+  <p>When you edit one file and commit, Git writes a new blob for that file, a new tree for each directory on the path up to the root, and one new commit. Every other entry in those trees still holds the <em>old</em> hash — the same object, shared between both snapshots.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two commits point to two trees, which share two of three blobs.">
+        <style>
+          .n2{fill:#f4f5f1;stroke:#c6cac2;stroke-width:1.4}
+          .t2{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:#15181b}
+          .h2x{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+          .b2{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em}
+        </style>
+        <defs>
+          <marker id="ar3" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#b8770f"/>
+          </marker>
+          <marker id="ar4" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#9aa09a"/>
+          </marker>
+        </defs>
+
+        <text class="b2" x="14" y="24" fill="#6b706b">COMMITS</text>
+        <text class="b2" x="212" y="24" fill="#6b706b">TREES</text>
+        <text class="b2" x="452" y="24" fill="#6b706b">BLOBS — the actual bytes</text>
+
+        <rect class="n2" x="14" y="60" width="150" height="44" rx="5" stroke="#0e7f92"/>
+        <text class="t2" x="26" y="80">commit a9f3d21</text>
+        <text class="h2x" x="26" y="95">"first version"</text>
+
+        <rect class="n2" x="14" y="196" width="150" height="44" rx="5" stroke="#0e7f92"/>
+        <text class="t2" x="26" y="216">commit 4c1b7ec</text>
+        <text class="h2x" x="26" y="231">"tweak the counter"</text>
+
+        <path d="M90 196 L90 104" fill="none" stroke="#0e7f92" stroke-width="1.4" stroke-dasharray="4 3" marker-end="url(#ar4)"/>
+        <text class="h2x" x="98" y="154" fill="#0e7f92">parent</text>
+
+        <path d="M164 82 L212 82" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#ar4)"/>
+        <path d="M164 218 L212 218" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#ar4)"/>
+
+        <rect class="n2" x="212" y="46" width="188" height="76" rx="5" stroke="#b8770f"/>
+        <text class="t2" x="224" y="66">tree 7f2c0aa</text>
+        <text class="h2x" x="224" y="84">README.md → 8ab686e</text>
+        <text class="h2x" x="224" y="99">app.js    → 5d41402</text>
+        <text class="h2x" x="224" y="114">style.css → 3f2a91c</text>
+
+        <rect class="n2" x="212" y="182" width="188" height="76" rx="5" stroke="#b8770f"/>
+        <text class="t2" x="224" y="202">tree 92e1b34</text>
+        <text class="h2x" x="224" y="220">README.md → 8ab686e</text>
+        <text class="h2x" x="224" y="235">app.js    → <tspan fill="#0e7f92">b6d767d</tspan></text>
+        <text class="h2x" x="224" y="250">style.css → 3f2a91c</text>
+
+        <!-- blobs -->
+        <rect class="n2" x="500" y="44" width="186" height="38" rx="5"/>
+        <text class="t2" x="512" y="68">blob 8ab686e  README.md</text>
+
+        <rect class="n2" x="500" y="100" width="186" height="38" rx="5"/>
+        <text class="t2" x="512" y="124">blob 3f2a91c  style.css</text>
+
+        <rect class="n2" x="500" y="156" width="186" height="38" rx="5"/>
+        <text class="t2" x="512" y="180">blob 5d41402  app.js v1</text>
+
+        <rect class="n2" x="500" y="212" width="186" height="38" rx="5" stroke="#0e7f92" stroke-width="1.8"/>
+        <text class="t2" x="512" y="236">blob b6d767d  app.js v2</text>
+
+        <!-- shared edges (amber) -->
+        <path d="M400 84 C450 84 452 63 500 63" fill="none" stroke="#b8770f" stroke-width="1.5" marker-end="url(#ar3)"/>
+        <path d="M400 114 C450 114 452 119 500 119" fill="none" stroke="#b8770f" stroke-width="1.5" marker-end="url(#ar3)"/>
+        <path d="M400 220 C450 220 452 63 500 63" fill="none" stroke="#b8770f" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ar3)"/>
+        <path d="M400 250 C452 250 452 119 500 119" fill="none" stroke="#b8770f" stroke-width="1.5" stroke-dasharray="5 3" marker-end="url(#ar3)"/>
+        <!-- distinct edges -->
+        <path d="M400 99 C450 99 452 175 500 175" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#ar4)"/>
+        <path d="M400 235 C450 235 452 231 500 231" fill="none" stroke="#0e7f92" stroke-width="1.8" marker-end="url(#ar4)"/>
+
+        <rect x="212" y="286" width="474" height="30" rx="4" fill="#f4f5f1" stroke="#c6cac2"/>
+        <text class="h2x" x="226" y="305"><tspan fill="#b8770f">amber</tspan> = the same object referenced twice · both commits are complete · one new blob was written</text>
+      </svg>
+    </div>
+    <figcaption>Two whole snapshots of the project. Storage cost of the second one: one blob, one tree, one commit.</figcaption>
+  </figure>
+</section>
+
+<section id="areas" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git status</span></p>
+  <h2>Your file exists in three places at once</h2>
+  <p class="lede">Most confusing Git messages are just Git reporting a mismatch between two of these three.</p>
+  <p>The <strong>working tree</strong> is the ordinary files on your disk — Git is not watching them. The <strong>index</strong> (also called the staging area) is a single binary file, <code>.git/index</code>, holding a flat list of every tracked path with the blob hash it should have and some stat data for speed. The <strong>object database</strong> is <code>.git/objects</code>, the permanent store from the sections above.</p>
+  <p><code>git add</code> hashes the file on disk, writes the blob, and updates that path's row in the index. <code>git commit</code> turns the index into trees, writes a commit pointing at the root tree, and moves your branch. Nothing is scanned for changes at commit time — the index already knows.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 330" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Working tree, index and object database, with the commands that move content between them.">
+        <style>
+          .col{fill:#f4f5f1;stroke:#c6cac2;stroke-width:1.4}
+          .ct{font-family:"Darker Grotesque",sans-serif;font-size:23px;font-weight:800;fill:#15181b}
+          .cs{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+          .cm{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:#15181b}
+          .flow{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:#0e7f92}
+        </style>
+        <defs>
+          <marker id="ar5" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#0e7f92"/>
+          </marker>
+          <marker id="ar6" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#a3452e"/>
+          </marker>
+        </defs>
+
+        <rect class="col" x="10" y="60" width="200" height="150" rx="6"/>
+        <text class="ct" x="26" y="90">Working tree</text>
+        <text class="cs" x="26" y="106">the files you edit</text>
+        <text class="cm" x="26" y="134">app.js        edited</text>
+        <text class="cm" x="26" y="154">style.css     saved</text>
+        <text class="cm" x="26" y="174">notes.txt     untracked</text>
+        <text class="cs" x="26" y="196">Git only looks when you ask it to</text>
+
+        <rect class="col" x="250" y="60" width="200" height="150" rx="6"/>
+        <text class="ct" x="266" y="90">Index</text>
+        <text class="cs" x="266" y="106">.git/index — one flat list</text>
+        <text class="cm" x="266" y="134">app.js    → b6d767d</text>
+        <text class="cm" x="266" y="154">style.css → 3f2a91c</text>
+        <text class="cm" x="266" y="174">README.md → 8ab686e</text>
+        <text class="cs" x="266" y="196">the next commit, pre-assembled</text>
+
+        <rect class="col" x="490" y="60" width="200" height="150" rx="6"/>
+        <text class="ct" x="506" y="90">Object database</text>
+        <text class="cs" x="506" y="106">.git/objects — write once</text>
+        <text class="cm" x="506" y="134">commits · trees · blobs</text>
+        <text class="cm" x="506" y="154">immutable, deduplicated</text>
+        <text class="cm" x="506" y="174">addressed by hash</text>
+        <text class="cs" x="506" y="196">nothing here is ever edited</text>
+
+        <path d="M210 240 L446 240" fill="none" stroke="#0e7f92" stroke-width="1.5" marker-end="url(#ar5)"/>
+        <text class="flow" x="250" y="234">git add — hash it, store the blob, update the row</text>
+
+        <path d="M450 268 L686 268" fill="none" stroke="#0e7f92" stroke-width="1.5" marker-end="url(#ar5)"/>
+        <text class="flow" x="470" y="262">git commit — build trees, write the commit</text>
+
+        <path d="M686 300 L14 300" fill="none" stroke="#a3452e" stroke-width="1.5" marker-end="url(#ar6)"/>
+        <text class="flow" x="300" y="294" fill="#a3452e">git checkout / switch / restore — write a stored tree back out</text>
+
+        <path d="M110 60 L110 40 L350 40 L350 60" fill="none" stroke="#9aa09a" stroke-width="1.2"/>
+        <text class="cs" x="120" y="33">git status compares these two → "not staged"</text>
+        <path d="M350 26 L350 14 L590 14 L590 60" fill="none" stroke="#9aa09a" stroke-width="1.2"/>
+        <text class="cs" x="360" y="9">…and these two → "to be committed"</text>
+      </svg>
+    </div>
+    <figcaption>"Changes not staged for commit" means working tree ≠ index. "Changes to be committed" means index ≠ the commit HEAD points at.</figcaption>
+  </figure>
+</section>
+
+<section id="lines" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git cat-file -p HEAD:notes.txt</span></p>
+  <h2>Two walkthroughs: one line added, one line removed</h2>
+  <p class="lede">Both look like one-line events in a diff. Neither is stored as a line operation anywhere — and the hashes below are the real ones, reproducible in any repository.</p>
+  <p>Start from one committed file, <code>notes.txt</code>: three lines, 17 bytes.</p>
+  <p class="cmd"><span class="c">alpha ¶ beta ¶ gamma ¶ &nbsp;→&nbsp; blob 85c3040 &nbsp;·&nbsp; root tree e60c60d &nbsp;·&nbsp; commit 1</span></p>
+
+  <h3>Case 1 — a line is added</h3>
+  <p>You append <code>delta</code> and commit. <code>git add</code> hashes the file <em>as it now stands</em> — all four lines, 23 bytes, plus the <code>blob 23\0</code> header — and gets <code>7a28df3…</code>, an address the store has never seen. So Git writes a new object holding <strong>the complete new contents of the file</strong>, compressed whole. The old blob <code>85c3040…</code> is not consulted, not modified and not deleted; it still holds the three-line version, and commit 1 still reaches it.</p>
+  <p>Then the tree. A tree row is <code>(mode, type, hash, name)</code>, and here only the hash changed — so Git writes a <strong>new root tree</strong>, <code>2bec8c1…</code>, identical to the old one except that the <code>notes.txt</code> row points somewhere else. Had <code>notes.txt</code> lived in <code>docs/</code>, every tree from <code>docs/</code> up to the root would be rewritten too, each one purely because a hash inside it moved.</p>
+  <p>Then one commit object naming tree <code>2bec8c1…</code> and parent commit 1. <strong>Three objects for one added line</strong> — and not one of them contains the idea of an addition.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Adding a line: the whole file is rehashed into a brand-new blob, the root tree is rewritten to point at it, and a new commit is written.">
+        <style>
+          .an{fill:#f4f5f1;stroke:#c6cac2;stroke-width:1.4}
+          .at{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:#15181b}
+          .ah{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+          .ak{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;fill:#6b706b}
+          .ac{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#15181b}
+        </style>
+        <defs>
+          <marker id="arA" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#9aa09a"/>
+          </marker>
+        </defs>
+
+        <text class="ak" x="14" y="20">WORKING TREE</text>
+        <text class="ak" x="232" y="20">OBJECT DATABASE</text>
+        <text class="ak" x="470" y="20">TREE &amp; COMMIT</text>
+
+        <!-- before -->
+        <rect class="an" x="14" y="34" width="180" height="86" rx="5"/>
+        <text class="at" x="28" y="54">notes.txt</text>
+        <text class="ac" x="28" y="72">alpha</text>
+        <text class="ac" x="28" y="88">beta</text>
+        <text class="ac" x="28" y="104">gamma</text>
+
+        <path d="M194 78 L228 78" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arA)"/>
+
+        <rect class="an" x="232" y="34" width="204" height="86" rx="5"/>
+        <text class="at" x="246" y="54">blob 85c3040</text>
+        <text class="ah" x="246" y="72">the whole file · 17 bytes</text>
+        <text class="ah" x="246" y="88">alpha ¶ beta ¶ gamma ¶</text>
+        <text class="ah" x="246" y="104">written at commit 1</text>
+
+        <path d="M436 78 L466 78" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arA)"/>
+
+        <rect class="an" x="470" y="34" width="216" height="86" rx="5" stroke="#b8770f"/>
+        <text class="at" x="484" y="54">tree e60c60d</text>
+        <text class="ah" x="484" y="74">100644 blob 85c3040 notes.txt</text>
+        <text class="ah" x="484" y="98">↑ commit 1 points here</text>
+
+        <!-- the edit -->
+        <path d="M104 120 L104 176" fill="none" stroke="#3d7548" stroke-width="1.4" marker-end="url(#arA)"/>
+        <text class="ah" x="114" y="146" fill="#3d7548">one line appended</text>
+        <text class="ah" x="114" y="162" fill="#3d7548">git add notes.txt</text>
+
+        <!-- after -->
+        <rect class="an" x="14" y="180" width="180" height="102" rx="5" stroke="#3d7548"/>
+        <text class="at" x="28" y="200">notes.txt</text>
+        <text class="ac" x="28" y="220">alpha</text>
+        <text class="ac" x="28" y="236">beta</text>
+        <text class="ac" x="28" y="252">gamma</text>
+        <text class="ac" x="28" y="270" fill="#3d7548">delta</text>
+
+        <path d="M194 232 L228 232" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arA)"/>
+
+        <rect class="an" x="232" y="180" width="204" height="102" rx="5" stroke="#0e7f92" stroke-width="1.8"/>
+        <text class="at" x="246" y="200">blob 7a28df3 <tspan fill="#0e7f92">· new</tspan></text>
+        <text class="ah" x="246" y="220">the whole file again · 23 bytes</text>
+        <text class="ah" x="246" y="236">alpha ¶ beta ¶ gamma ¶ delta ¶</text>
+        <text class="ah" x="246" y="254">no link back to 85c3040</text>
+        <text class="ah" x="246" y="272">nothing says "+ delta"</text>
+
+        <path d="M436 232 L466 232" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arA)"/>
+
+        <rect class="an" x="470" y="180" width="216" height="102" rx="5" stroke="#b8770f"/>
+        <text class="at" x="484" y="200">tree 2bec8c1 <tspan fill="#b8770f">· new</tspan></text>
+        <text class="ah" x="484" y="220">100644 blob <tspan fill="#0e7f92">7a28df3</tspan> notes.txt</text>
+        <text class="ah" x="484" y="238">same row, one field changed</text>
+        <text class="ah" x="484" y="260">commit 2 → tree 2bec8c1</text>
+        <text class="ah" x="484" y="276">parent commit 1</text>
+
+        <path d="M604 180 L604 124" fill="none" stroke="#9aa09a" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arA)"/>
+
+        <rect x="14" y="304" width="672" height="36" rx="4" fill="#f4f5f1" stroke="#c6cac2"/>
+        <text class="ah" x="28" y="320">3 objects written: one blob, one tree, one commit. Nothing was appended to anything.</text>
+        <text class="ah" x="28" y="334">85c3040 is untouched and still complete — commit 1 checks out exactly as before.</text>
+      </svg>
+    </div>
+    <figcaption>An "added line" is the name we give to the difference between two whole files. In the store there are simply two unrelated blobs, and a tree row that changed which one it names.</figcaption>
+  </figure>
+
+  <h3>Case 2 — a line is removed</h3>
+  <p>Same starting file. You delete <code>beta</code> and commit. The mechanics do not change at all: Git hashes the two remaining lines — 12 bytes — and gets <code>7819bf7…</code>, again unseen, again written as a <strong>complete object holding the file's full new contents</strong>. A smaller file, but still a whole new object, not a shortened one.</p>
+  <p>There is <strong>no tombstone</strong>. No object anywhere says a line went away. The root tree becomes <code>cb2188c…</code>, its <code>notes.txt</code> row now naming <code>7819bf7…</code>, and a new commit names that tree. Deleting the <em>file</em> instead would differ by exactly one step: the new tree would be written with that row missing and no blob would be written at all — but <code>85c3040…</code> would still sit in the store, reachable from every commit that named it.</p>
+  <p>Which is why removing a line, or a file, never frees space in history. The bytes are still addressed by a commit you can still check out.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 350" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Removing a line: the shortened file is hashed into another complete blob, the tree is rewritten, and the old blob remains in the store.">
+        <style>
+          .bn{fill:#f4f5f1;stroke:#c6cac2;stroke-width:1.4}
+          .bt{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:#15181b}
+          .bh{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+          .bk{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;fill:#6b706b}
+          .bc{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#15181b}
+        </style>
+        <defs>
+          <marker id="arB" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#9aa09a"/>
+          </marker>
+        </defs>
+
+        <text class="bk" x="14" y="20">WORKING TREE</text>
+        <text class="bk" x="232" y="20">OBJECT DATABASE</text>
+        <text class="bk" x="470" y="20">TREE &amp; COMMIT</text>
+
+        <!-- before -->
+        <rect class="bn" x="14" y="34" width="180" height="86" rx="5"/>
+        <text class="bt" x="28" y="54">notes.txt</text>
+        <text class="bc" x="28" y="72">alpha</text>
+        <text class="bc" x="28" y="88" fill="#a3452e">beta</text>
+        <line x1="26" y1="85" x2="66" y2="85" stroke="#a3452e" stroke-width="1.2"/>
+        <text class="bc" x="28" y="104">gamma</text>
+
+        <path d="M194 78 L228 78" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arB)"/>
+
+        <rect class="bn" x="232" y="34" width="204" height="86" rx="5"/>
+        <text class="bt" x="246" y="54">blob 85c3040</text>
+        <text class="bh" x="246" y="72">the whole file · 17 bytes</text>
+        <text class="bh" x="246" y="88">alpha ¶ beta ¶ gamma ¶</text>
+        <text class="bh" x="246" y="104">written at commit 1</text>
+
+        <path d="M436 78 L466 78" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arB)"/>
+
+        <rect class="bn" x="470" y="34" width="216" height="86" rx="5" stroke="#b8770f"/>
+        <text class="bt" x="484" y="54">tree e60c60d</text>
+        <text class="bh" x="484" y="74">100644 blob 85c3040 notes.txt</text>
+        <text class="bh" x="484" y="98">↑ commit 1 points here</text>
+
+        <!-- the edit -->
+        <path d="M104 120 L104 176" fill="none" stroke="#a3452e" stroke-width="1.4" marker-end="url(#arB)"/>
+        <text class="bh" x="114" y="146" fill="#a3452e">"beta" deleted</text>
+        <text class="bh" x="114" y="162" fill="#a3452e">git add notes.txt</text>
+
+        <!-- after -->
+        <rect class="bn" x="14" y="180" width="180" height="102" rx="5" stroke="#a3452e"/>
+        <text class="bt" x="28" y="200">notes.txt</text>
+        <text class="bc" x="28" y="222">alpha</text>
+        <text class="bc" x="28" y="240">gamma</text>
+        <text class="bh" x="28" y="266">two lines · 12 bytes</text>
+
+        <path d="M194 232 L228 232" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arB)"/>
+
+        <rect class="bn" x="232" y="180" width="204" height="102" rx="5" stroke="#0e7f92" stroke-width="1.8"/>
+        <text class="bt" x="246" y="200">blob 7819bf7 <tspan fill="#0e7f92">· new</tspan></text>
+        <text class="bh" x="246" y="220">the whole file again · 12 bytes</text>
+        <text class="bh" x="246" y="236">alpha ¶ gamma ¶</text>
+        <text class="bh" x="246" y="254">smaller, but not a subtraction</text>
+        <text class="bh" x="246" y="272">nothing says "− beta"</text>
+
+        <path d="M436 232 L466 232" fill="none" stroke="#9aa09a" stroke-width="1.4" marker-end="url(#arB)"/>
+
+        <rect class="bn" x="470" y="180" width="216" height="102" rx="5" stroke="#b8770f"/>
+        <text class="bt" x="484" y="200">tree cb2188c <tspan fill="#b8770f">· new</tspan></text>
+        <text class="bh" x="484" y="220">100644 blob <tspan fill="#0e7f92">7819bf7</tspan> notes.txt</text>
+        <text class="bh" x="484" y="238">the row itself still exists</text>
+        <text class="bh" x="484" y="260">commit 2′ → tree cb2188c</text>
+        <text class="bh" x="484" y="276">parent commit 1</text>
+
+        <path d="M604 180 L604 124" fill="none" stroke="#9aa09a" stroke-width="1.2" stroke-dasharray="4 3" marker-end="url(#arB)"/>
+
+        <rect x="14" y="304" width="672" height="36" rx="4" fill="#f4f5f1" stroke="#c6cac2"/>
+        <text class="bh" x="28" y="320">Again 3 objects. Deleting the whole file would write only the tree and the commit.</text>
+        <text class="bh" x="28" y="334">Either way 85c3040 stays — removing content never removes it from history.</text>
+      </svg>
+    </div>
+    <figcaption>Addition and removal are the same operation down here: hash the file that exists now, store it whole if the address is new, repoint one tree row. The <code>+</code> and <code>−</code> appear later, in <code>git diff</code>.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="tag">The symmetry that gives it away</span>
+    <p>Put <code>beta</code> back, exactly as it was, and commit again. Git hashes the file, gets <code>85c3040…</code> — already in the store — and writes <strong>no blob at all</strong>. The new tree simply names the original object again. An undo costs less than the change did, because content that has ever existed never needs storing twice.</p>
+  </div>
+
+  <div class="note">
+    <span class="tag">And the obvious objection</span>
+    <p>Yes: one changed line in a 10 MB file writes a fresh 10 MB blob. That is true while the object is loose, and it is what the model costs to stay this simple. Packing — further down — is where the near-duplicate finally gets stored as a delta, as compression underneath, without anything above it changing.</p>
+  </div>
+</section>
+
+<section id="diff" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git diff 4c1b7ec e07a559</span></p>
+  <h2>The diff is a calculation, not a record</h2>
+  <p class="lede">Nowhere in <code>.git</code> is there a file containing <code>@@ -14,7 +14,9 @@</code>. That text is produced on demand, from two snapshots, and thrown away.</p>
+  <p>When you ask for a diff, Git picks two sides — two commits, or the index and the working tree, or HEAD and the index — and walks their trees in parallel, name by name:</p>
+  <p><strong>Same hash on both sides? Skip.</strong> And if the matching entry is a directory, skip the whole subtree at once, without reading a single byte of it. This is why <code>git diff</code> stays instant in a repository with a hundred thousand files: almost every comparison is 40 characters against 40 characters.</p>
+  <p><strong>Different hash? Then, and only then</strong>, Git loads both blobs, splits them into lines, and runs a diff algorithm (Myers by default; <code>--histogram</code> and <code>--patience</code> are alternatives that pick different, sometimes tidier, ways to line the two files up). The hunks, the <code>+</code> and <code>-</code> prefixes and the three lines of context around each change are formatting applied to that result.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Two trees compared row by row; equal hashes are skipped, differing hashes are expanded into a line diff.">
+        <style>
+          .dn{fill:#f4f5f1;stroke:#c6cac2;stroke-width:1.4}
+          .dt{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:#15181b}
+          .dm{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+          .dh{font-family:"Darker Grotesque",sans-serif;font-size:20px;font-weight:800;fill:#15181b}
+        </style>
+        <text class="dh" x="14" y="30">tree of 4c1b7ec</text>
+        <text class="dh" x="486" y="30">tree of e07a559</text>
+        <text class="dm" x="276" y="30">compare by name</text>
+
+        <!-- left rows -->
+        <rect class="dn" x="14" y="46" width="200" height="34" rx="4"/>
+        <text class="dt" x="26" y="60">README.md</text><text class="dm" x="26" y="74">8ab686e</text>
+        <rect class="dn" x="14" y="94" width="200" height="34" rx="4"/>
+        <text class="dt" x="26" y="108">app.js</text><text class="dm" x="26" y="122">b6d767d</text>
+        <rect class="dn" x="14" y="142" width="200" height="34" rx="4"/>
+        <text class="dt" x="26" y="156">css/</text><text class="dm" x="26" y="170">tree 44a91f0</text>
+
+        <!-- right rows -->
+        <rect class="dn" x="486" y="46" width="200" height="34" rx="4"/>
+        <text class="dt" x="498" y="60">README.md</text><text class="dm" x="498" y="74">8ab686e</text>
+        <rect class="dn" x="486" y="94" width="200" height="34" rx="4"/>
+        <text class="dt" x="498" y="108">app.js</text><text class="dm" x="498" y="122">b6d767d</text>
+        <rect class="dn" x="486" y="142" width="200" height="34" rx="4" stroke="#a3452e" stroke-width="1.8"/>
+        <text class="dt" x="498" y="156">css/</text><text class="dm" x="498" y="170" fill="#a3452e">tree 92e1b34</text>
+
+        <!-- verdicts -->
+        <line x1="214" y1="63" x2="486" y2="63" stroke="#9aa09a" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <rect x="288" y="52" width="124" height="22" rx="11" fill="#e8eae4" stroke="#9aa09a"/>
+        <text class="dm" x="350" y="67" text-anchor="middle">equal → skipped</text>
+
+        <line x1="214" y1="111" x2="486" y2="111" stroke="#9aa09a" stroke-width="1.2" stroke-dasharray="4 4"/>
+        <rect x="288" y="100" width="124" height="22" rx="11" fill="#e8eae4" stroke="#9aa09a"/>
+        <text class="dm" x="350" y="115" text-anchor="middle">equal → skipped</text>
+
+        <line x1="214" y1="159" x2="486" y2="159" stroke="#a3452e" stroke-width="1.6"/>
+        <rect x="280" y="148" width="140" height="22" rx="11" fill="#f7e9e5" stroke="#a3452e"/>
+        <text class="dm" x="350" y="163" text-anchor="middle" fill="#a3452e">differs → descend</text>
+
+        <!-- descend into subtree -->
+        <path d="M350 176 L350 196" fill="none" stroke="#a3452e" stroke-width="1.4"/>
+        <rect x="130" y="196" width="440" height="42" rx="4" fill="#f4f5f1" stroke="#c6cac2"/>
+        <text class="dt" x="146" y="214">css/style.css   3f2a91c   ≠   f4c9d02</text>
+        <text class="dm" x="146" y="230">only now are the two blobs decompressed and read</text>
+
+        <path d="M350 238 L350 258" fill="none" stroke="#a3452e" stroke-width="1.4"/>
+
+        <!-- patch -->
+        <rect x="70" y="258" width="560" height="128" rx="5" fill="#1e1c1a"/>
+        <text x="86" y="280" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#7d766f">diff --git a/css/style.css b/css/style.css</text>
+        <text x="86" y="298" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#0e9fb6">@@ -12,7 +12,8 @@ .site-header {</text>
+        <text x="86" y="316" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#b9b4ad">   display: flex;</text>
+        <text x="86" y="332" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#e07a63">-  padding: 8px;</text>
+        <text x="86" y="348" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#7fc08c">+  padding: 12px 20px;</text>
+        <text x="86" y="364" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#7fc08c">+  gap: 16px;</text>
+        <text x="86" y="380" font-family="IBM Plex Mono, monospace" font-size="10.5" fill="#b9b4ad">   align-items: center;</text>
+      </svg>
+    </div>
+    <figcaption>Generated fresh, every time you run the command. Close the terminal and it is gone; the two snapshots remain.</figcaption>
+  </figure>
+
+  <div class="note">
+    <span class="tag">The tell-tale case</span>
+    <p>Git never records that you renamed a file. When <code>git diff</code> shows <code>renamed: old.js → new.js</code>, it noticed a blob that vanished from one tree and an identical or very similar blob appearing elsewhere, and guessed — at display time, with a similarity threshold you can tune via <code>-M</code>. Change the threshold and the same two commits produce a different-looking history.</p>
+  </div>
+</section>
+
+<section id="refs" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">cat .git/refs/heads/main</span></p>
+  <h2>A branch is a file with a hash in it</h2>
+  <p class="lede">41 bytes: forty hex characters and a newline. That is the entire implementation of a branch.</p>
+  <p>Commits point backwards to their parents, and nothing points forwards. So to know where "the end" of a line of work is, Git keeps <strong>refs</strong>: small files under <code>.git/refs/</code> naming one commit each. <code>HEAD</code> is a file too, usually containing <code>ref: refs/heads/main</code> — a pointer to a pointer.</p>
+  <p>Committing means: write the objects, then overwrite that 41-byte file with the new commit's hash. Branching means writing a new 41-byte file. Nothing is copied, and no history is duplicated — which is why creating a branch in a huge repository is instant.</p>
+
+  <figure>
+    <p class="swipe">Drag sideways →</p>
+    <div class="scroll">
+      <svg viewBox="0 0 700 250" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="A commit graph with parent arrows pointing backwards and branch refs attached to the tips.">
+        <style>
+          .cdot{fill:#f4f5f1;stroke:#1e1c1a;stroke-width:1.8}
+          .cid{font-family:"IBM Plex Mono",monospace;font-size:10px;fill:#15181b}
+          .rf{font-family:"IBM Plex Mono",monospace;font-size:10.5px;fill:#f4f5f1}
+          .nt{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+        </style>
+        <defs>
+          <marker id="ar7" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto">
+            <path d="M0 0 L8 4 L0 8 z" fill="#1e1c1a"/>
+          </marker>
+        </defs>
+
+        <path d="M154 130 L106 130" stroke="#1e1c1a" stroke-width="1.5" marker-end="url(#ar7)"/>
+        <path d="M262 130 L214 130" stroke="#1e1c1a" stroke-width="1.5" marker-end="url(#ar7)"/>
+        <path d="M370 130 L322 130" stroke="#1e1c1a" stroke-width="1.5" marker-end="url(#ar7)"/>
+        <path d="M478 130 L430 130" stroke="#1e1c1a" stroke-width="1.5" marker-end="url(#ar7)"/>
+        <path d="M478 130 C440 130 420 66 392 66" stroke="#1e1c1a" stroke-width="1.5" marker-end="url(#ar7)"/>
+        <path d="M390 66 C340 66 336 130 322 130" stroke="#1e1c1a" stroke-width="1.5" marker-end="url(#ar7)"/>
+
+        <circle class="cdot" cx="82" cy="130" r="16"/><text class="cid" x="82" y="134" text-anchor="middle">a9f3d</text>
+        <circle class="cdot" cx="190" cy="130" r="16"/><text class="cid" x="190" y="134" text-anchor="middle">4c1b7</text>
+        <circle class="cdot" cx="298" cy="130" r="16"/><text class="cid" x="298" y="134" text-anchor="middle">e07a5</text>
+        <circle class="cdot" cx="406" cy="130" r="16"/><text class="cid" x="406" y="134" text-anchor="middle">1f9c2</text>
+        <circle class="cdot" cx="502" cy="130" r="18" stroke="#0e7f92"/><text class="cid" x="502" y="134" text-anchor="middle">7b3e8</text>
+        <circle class="cdot" cx="406" cy="66" r="16" stroke="#b8770f"/><text class="cid" x="406" y="70" text-anchor="middle">c44a1</text>
+
+        <text class="nt" x="82" y="166" text-anchor="middle">arrows point at parents</text>
+        <text class="nt" x="502" y="100" text-anchor="middle" fill="#0e7f92">merge commit: two parents</text>
+
+        <rect x="452" y="180" width="102" height="24" rx="4" fill="#0e7f92"/>
+        <text class="rf" x="503" y="196" text-anchor="middle">main</text>
+        <path d="M503 180 L503 148" stroke="#0e7f92" stroke-width="1.5"/>
+        <rect x="360" y="14" width="102" height="24" rx="4" fill="#b8770f"/>
+        <text class="rf" x="411" y="30" text-anchor="middle">feature</text>
+        <path d="M411 38 L411 50" stroke="#b8770f" stroke-width="1.5"/>
+
+        <rect x="452" y="214" width="102" height="24" rx="4" fill="#1e1c1a"/>
+        <text class="rf" x="503" y="230" text-anchor="middle">HEAD</text>
+        <path d="M503 214 L503 204" stroke="#1e1c1a" stroke-width="1.5"/>
+        <text class="nt" x="566" y="230">→ ref: refs/heads/main</text>
+
+        <text class="nt" x="14" y="232">Move a ref and history "changes" — but every commit object keeps the identity its hash gave it.</text>
+      </svg>
+    </div>
+    <figcaption><code>git reset</code>, <code>git branch -f</code> and a fast-forward merge all do the same underlying thing: rewrite a small file containing a hash.</figcaption>
+  </figure>
+</section>
+
+<section id="merge" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git merge-base main feature</span></p>
+  <h2>Merging compares three snapshots, not two</h2>
+  <p class="lede">Because parents are recorded, Git can find where two branches last agreed — and that third point is what makes automatic merging possible.</p>
+  <p>Git walks backwards from both tips until it finds their best common ancestor, the <strong>merge base</strong>. Then, for each file, it looks at three versions: base, yours, theirs. If only one side's hash moved away from the base, that side wins, silently. If both moved, Git tries to combine them line-region by line-region — and if the two sides changed overlapping regions, it stops and writes the conflict markers into your working tree for you to resolve.</p>
+  <p>A conflict is therefore not "Git got confused". It is a precise statement: <em>both sides edited the same region relative to their last agreement, and choosing between them is a judgement call.</em></p>
+
+  <figure>
+    <div class="scroll">
+      <svg viewBox="0 0 700 210" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Three-way merge: base version compared against ours and theirs.">
+        <style>
+          .m{fill:#f4f5f1;stroke:#c6cac2;stroke-width:1.4}
+          .mt{font-family:"IBM Plex Mono",monospace;font-size:11px;fill:#15181b}
+          .ms{font-family:"IBM Plex Mono",monospace;font-size:9.5px;fill:#6b706b}
+        </style>
+        <rect class="m" x="20" y="80" width="160" height="56" rx="5"/>
+        <text class="mt" x="34" y="102">base  1f9c2</text>
+        <text class="ms" x="34" y="120">last common ancestor</text>
+
+        <rect class="m" x="270" y="14" width="160" height="56" rx="5" stroke="#0e7f92"/>
+        <text class="mt" x="284" y="36">ours  7b3e8</text>
+        <text class="ms" x="284" y="54">style.css changed</text>
+
+        <rect class="m" x="270" y="146" width="160" height="56" rx="5" stroke="#b8770f"/>
+        <text class="mt" x="284" y="168">theirs  c44a1</text>
+        <text class="ms" x="284" y="186">app.js changed</text>
+
+        <path d="M180 100 C230 100 230 42 270 42" fill="none" stroke="#0e7f92" stroke-width="1.5"/>
+        <path d="M180 116 C230 116 230 174 270 174" fill="none" stroke="#b8770f" stroke-width="1.5"/>
+
+        <rect class="m" x="500" y="80" width="180" height="56" rx="5" stroke="#1e1c1a" stroke-width="1.8"/>
+        <text class="mt" x="514" y="102">merge result</text>
+        <text class="ms" x="514" y="120">both files taken, no conflict</text>
+        <path d="M430 42 C470 42 470 100 500 100" fill="none" stroke="#0e7f92" stroke-width="1.5"/>
+        <path d="M430 174 C470 174 470 116 500 116" fill="none" stroke="#b8770f" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <figcaption>Same file changed on both sides in different places: Git combines them. Same region on both sides: it asks you.</figcaption>
+  </figure>
+</section>
+
+<section id="packs" class="rv">
+  <p class="cmd"><span class="p">$</span><span class="c">git gc</span></p>
+  <h2>The one place deltas are real</h2>
+  <p class="lede">Deltas do exist in Git — just not where people assume, and not as part of the model.</p>
+  <p>Objects are written individually at first ("loose"). Periodically, Git packs thousands of them into a single <code>.pack</code> file, and in there it <em>does</em> store some objects as deltas against a similar object, on top of zlib compression. But those deltas are chosen by heuristics — similar size, type and path name — not by your history. A blob may be stored as a delta against a version from a different branch entirely, or against a newer one rather than an older one.</p>
+  <p>It is a compression detail underneath a stable interface. Ask for any object by hash and you get back the complete content, reassembled if needed. Nothing above that layer knows or cares.</p>
+
+  <div class="note">
+    <span class="tag">The long version</span>
+    <p>Those three paragraphs are the whole of packing, compressed. For the mechanism — when the delta is actually created, why it is never at commit time, what it costs, and why a small repository ends up with none at all — <a href="how-git-stores-a-change.html">Two lines in, two lines out</a> takes a single ten-line file, inserts two lines and removes them again, and follows every byte the object store writes. Live labs, real hashes, measured sizes.</p>
+  </div>
+
+  <h3>What your everyday commands actually do</h3>
+  <div class="ops">
+    <div class="op"><b>git add file</b><span>Hash the file, write a blob if that content is new, update one row of the index.</span></div>
+    <div class="op"><b>git commit</b><span>Turn the index into trees, write a commit pointing at the root tree and the current HEAD, move the branch ref.</span></div>
+    <div class="op"><b>git status</b><span>Compare working tree ↔ index ↔ HEAD's tree, using stat data and hashes.</span></div>
+    <div class="op"><b>git diff</b><span>Walk two trees, skip matching hashes, run a line diff on the blobs that differ.</span></div>
+    <div class="op"><b>git log -p</b><span>Walk the parent chain and recompute a diff for each step, on the fly.</span></div>
+    <div class="op"><b>git checkout branch</b><span>Read that branch's tree into the index and the working tree, point HEAD at it.</span></div>
+    <div class="op"><b>git reset --hard</b><span>Move the ref, then overwrite index and working tree from the target commit's tree.</span></div>
+    <div class="op"><b>git cherry-pick</b><span>Compute a patch from a commit, apply it here, write a brand-new commit — new content, new hash.</span></div>
+  </div>
+
+  <div class="note">
+    <span class="tag">The model in one sentence</span>
+    <p>Git stores immutable snapshots addressed by the hash of their contents, shares every unchanged object between them, and computes differences between snapshots whenever you ask.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Try it on a real repository: <code>git cat-file -p HEAD</code> prints a commit, <code>git cat-file -p HEAD^{tree}</code> prints its root tree, and <code>git cat-file -p &lt;hash&gt;</code> prints any object you find inside. Two or three of those and the model stops being abstract.</p>
+</footer>
+
+</div>
+
+<script>
+(function(){
+  var readouts = {
+    "1": "Frame 1 \u00b7 a9f3d21 \u2014 the first commit. Three files, three new objects written to .git/objects.",
+    "2": "Frame 2 \u00b7 4c1b7ec \u2014 app.js was edited. One new blob (b6d767d). README.md and style.css point at the exact same objects as frame 1. Still a complete snapshot.",
+    "3": "Frame 3 \u00b7 e07a559 \u2014 style.css was edited. One new blob (f4c9d02). app.js now reuses the blob that frame 2 introduced."
+  };
+  var out = document.getElementById("readout");
+  var frames = Array.prototype.slice.call(document.querySelectorAll(".frame"));
+  function select(el){
+    frames.forEach(function(f){ f.classList.remove("sel"); });
+    el.classList.add("sel");
+    if(out) out.textContent = readouts[el.getAttribute("data-frame")];
+  }
+  frames.forEach(function(f){
+    f.addEventListener("click", function(){ select(f); });
+    f.addEventListener("keydown", function(e){
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); select(f); }
+    });
+  });
+
+  if("IntersectionObserver" in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){
+        if(en.isIntersecting){ en.target.classList.add("in"); io.unobserve(en.target); }
+      });
+    }, {rootMargin: "0px 0px -8% 0px"});
+    document.querySelectorAll(".rv").forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll(".rv").forEach(function(el){ el.classList.add("in"); });
+  }
+})();
+</script>
+
+</body>
+</html>
