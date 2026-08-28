@@ -20,3 +20,11 @@ Reach shared understanding of the problem, relevant evidence, assumptions, const
 Read and maintain the project's canonical engineering artifacts according to [artifacts.md](artifacts.md).
 
 Create artifact files lazily, only when there is resolved canonical information to record. Never create empty scaffolding. Once an artifact exists, keep it current.
+
+# IDs
+Assign every question a stable identifier: `Q1`, `Q2`, `Q3`, ...
+Assign every resolved decision a stable identifier: `D1`, `D2`, `D3`, ...
+Assign every implementation/fix item a stable identifier when useful: `I1`, `I2`, `I3`, ...
+Never reuse an identifier.
+Keep identifiers stable even if the wording later changes.
+When referring to an item to fix, include the identifier first.

@@ -30,6 +30,8 @@ Use focused questions to expose assumptions, clarify reasoning, test conclusions
 
 Prefer one primary question at a time. For every question, include the recommended answer and why it is recommended. Avoid turning the discussion into an interrogation.
 
+After each answer, briefly summarize the decision or current understanding before asking the next question. If no decision was reached, state the remaining uncertainty.
+
 Prioritize the question most likely to change the shared model or recommendation.
 
 ## 5. Resolve differences
