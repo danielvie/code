@@ -1,21 +1,19 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int main() {
     
-    int16_t e = 10;
-    int16_t s = 857;
+    char var[] = "ik ben hier";
+    int32_t a = 15;
     
-    int32_t b = 15;
+    int32_t *v = &a;
     
-    int32_t *v = &b;
+    printf("value b: %d\n", *v);
     
+    v += 2;
     
-    uint8_t num = -1;
+    printf("value b: %s\n", (char*)v);
     
-    v = v + 1;
-    
-    printf("value: %d\n", (int16_t)*v);
-    printf("uint: %d\n", num);
     return 0;
 }
