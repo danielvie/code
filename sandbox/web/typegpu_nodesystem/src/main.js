@@ -763,6 +763,39 @@ function prepareCustomRoute(edge) {
   return points.map((point) => ({ ...point }));
 }
 
+function reanchorCustomRoute(edge) {
+  if (!Array.isArray(edge.routePoints) || edge.routePoints.length === 0) return;
+  const source = findNode(edge.source);
+  const target = findNode(edge.target);
+  if (!source || !target) return;
+  const start = getPortPosition(source, edge.sourcePort, 'output');
+  const end = getPortPosition(target, edge.targetPort, 'input');
+  const points = simplifyRoute([start, ...edge.routePoints, end]);
+  if (points.length < 3) return;
+
+  const first = points[1];
+  const previousFirstX = first.x;
+  first.y = start.y;
+  if (first.x < start.x + PORT_STUB) {
+    first.x = start.x + PORT_STUB;
+    for (let index = 2; index < points.length - 1 && points[index].x === previousFirstX; index += 1) points[index].x = first.x;
+  }
+
+  const lastIndex = points.length - 2;
+  const last = points[lastIndex];
+  const previousLastX = last.x;
+  last.y = end.y;
+  if (last.x > end.x - PORT_STUB) {
+    last.x = end.x - PORT_STUB;
+    for (let index = lastIndex - 1; index > 0 && points[index].x === previousLastX; index -= 1) points[index].x = last.x;
+  }
+  edge.routePoints = simplifyRoute(points).slice(1, -1).map((point) => ({ ...point }));
+}
+
+function reanchorConnectedRoutes(nodeId) {
+  state.edges.filter((edge) => edge.source === nodeId || edge.target === nodeId).forEach(reanchorCustomRoute);
+}
+
 function shiftLongestRouteSegment(edge, axis, value) {
   const points = prepareCustomRoute(edge);
   if (!points) return;
@@ -934,6 +967,7 @@ function handlePointerMove(event) {
     dragState.node.y = Math.max(70, Math.round(dragState.originY + (event.clientY - dragState.startY) / state.zoom));
     dragState.element.style.left = `${dragState.node.x}px`;
     dragState.element.style.top = `${dragState.node.y}px`;
+    reanchorConnectedRoutes(dragState.node.id);
     renderConnections();
     markChanged();
   } else if (dragState.type === 'segment') {
