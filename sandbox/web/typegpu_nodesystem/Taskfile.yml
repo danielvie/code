@@ -1,0 +1,32 @@
+version: "3"
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  install:
+    desc: Install project dependencies
+    cmds:
+      - npm install
+
+  run:
+    desc: Run the Vite development server
+    cmds:
+      - npm run dev
+
+  test:
+    desc: Build the project to verify it compiles
+    cmds:
+      - npm run build
+
+  preview:
+    desc: Preview the production build
+    cmds:
+      - npm run preview
+
+  clear:
+    desc: Remove installed dependencies and build output
+    cmds:
+      - rm -rf node_modules dist
