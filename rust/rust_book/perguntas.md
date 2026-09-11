@@ -1,0 +1,4 @@
+- posso ter um modulo fora da pasta `src`?
+- como fazer DLL's no rust
+- em a_vector, posso forcar ver um endereco mesmo que ele mude no caminho?
+- criar caso com vec! que tenha None no exemplo

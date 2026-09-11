@@ -1,0 +1,8 @@
+[package]
+name = "calc_app"
+version = "0.1.0"
+edition = "2024"
+publish = ["artifactory-remote"]
+
+[dependencies]
+calc_lib = { path = "../calc_lib" }

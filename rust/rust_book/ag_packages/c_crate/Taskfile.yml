@@ -1,0 +1,23 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  run:
+    aliases: [r]
+    desc: "Run the calculator application"
+    cmds:
+      - cargo run -p calc_app
+
+  test:
+    aliases: [t]
+    desc: "Test all workspace crates"
+    cmds:
+      - cargo test --workspace
+
+  clear:
+    desc: "Delete Cargo build artifacts"
+    cmds:
+      - cargo clean

@@ -1,3 +1,5 @@
+// option<T>
+// 
 fn main()  {
     fn plus_one(x: Option<i32>) -> Option<i32> {
         match x {
@@ -20,7 +22,7 @@ fn main()  {
     let config_max = Some(3u8);
     match config_max {
         Some(max) => println!("max is configured to be: {max}"),
-        _ => (),
+        None => (),
     }
 
     if let Some(max) = config_max {
