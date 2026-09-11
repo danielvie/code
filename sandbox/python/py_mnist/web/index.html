@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f3ec">
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+  <title>MNIST · Draw a digit</title>
+  <!-- Pin JS and WASM to the same release. Only runtime assets come from this CDN. -->
+  <script defer src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
+  <script type="module" src="app.mjs"></script>
+</head>
+<body>
+  <main>
+    <header>
+      <p class="eyebrow">Python → ONNX → WebAssembly</p>
+      <h1>A little handwriting experiment.</h1>
+      <p class="intro">Draw one digit. See what your Python-trained neural network makes of it.</p>
+      <p id="runtime-status" class="runtime" role="status">Loading the WebAssembly runtime and model…</p>
+    </header>
+
+    <div class="workspace">
+      <section class="card" aria-labelledby="draw-heading">
+        <div class="section-heading"><span class="step">01</span><h2 id="draw-heading">Your handwriting</h2></div>
+        <p class="hint" id="draw-help">Write a single 0–9 with your mouse, finger, or pen. Use most of the pad.</p>
+        <canvas id="drawing" width="280" height="280" aria-label="Draw one handwritten digit" aria-describedby="draw-help"></canvas>
+        <div class="actions">
+          <button id="clear" type="button" class="secondary">Clear pad</button>
+          <button id="predict" type="button" disabled>Predict digit <span aria-hidden="true">↗</span></button>
+        </div>
+        <p class="footnote">Predicts automatically when you lift your pen.</p>
+      </section>
+
+      <section class="card" aria-labelledby="result-heading">
+        <div class="section-heading"><span class="step">02</span><h2 id="result-heading">The model's guess</h2></div>
+        <div class="result-summary">
+          <div><div id="prediction" class="digit">?</div><p id="prediction-detail">Waiting for a digit</p></div>
+          <figure>
+            <canvas id="preview" width="28" height="28" aria-label="The normalized 28 by 28 input sent to the model"></canvas>
+            <figcaption>Actual input · 28 × 28</figcaption>
+          </figure>
+        </div>
+        <div id="scores" class="scores" aria-label="Model scores for digits zero through nine"></div>
+        <p id="prediction-status" class="footnote" role="status">Draw on the pad to begin.</p>
+      </section>
+    </div>
+
+    <section class="explanation" aria-labelledby="how-heading">
+      <h2 id="how-heading">What happens between drawing and guessing?</h2>
+      <ol>
+        <li><strong>Prepare the pixels.</strong> Crop the ink, fit it inside 20 × 20 pixels, and center it by its pixel mass on a black 28 × 28 image.</li>
+        <li><strong>Run the network.</strong> Send 784 values between 0 and 1 through the same 784 → 128 → 10 model trained in Python.</li>
+        <li><strong>Read the scores.</strong> Apply softmax to the ten output logits. The largest score is the predicted digit.</li>
+      </ol>
+      <p>Scores are not a guarantee. A confident model can still be wrong, especially when your drawing looks different from MNIST. The network always chooses among digits, even for a doodle.</p>
+      <p class="privacy">Prediction runs on your device using WebAssembly. Your drawings are not uploaded. The runtime downloads from jsDelivr; the model loads from this site.</p>
+    </section>
+    <noscript>This experiment needs JavaScript and a browser with WebAssembly support.</noscript>
+  </main>
+</body>
+</html>

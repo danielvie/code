@@ -1,0 +1,23 @@
+[project]
+name = "py-mnist"
+version = "0.1.0"
+description = "A step-by-step PyTorch introduction to handwritten digit recognition"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "matplotlib>=3.10,<4",
+    "onnx>=1.17,<2",
+    "onnxscript>=0.5,<1",
+    "torch>=2.6,<3",
+    "torchvision>=0.21,<1",
+]
+
+# CPU wheels keep this lesson usable without a GPU or CUDA installation.
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }

@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="mado-format-version" content="2" />
+<title>Hello</title>
+<!-- Mado-owned populated template. Format-2 identity markers are unchanged.
+     The authoring model edits Session/Component fragments, never this structure.
+     Design decision and archived comparison: docs/adr/0008-editorial-template-and-search.md. -->
+<style>
+:root {
+  color-scheme: light;
+  --mado-bg: #ffffff; --mado-bg-2: #e5f3fb; --mado-panel: #ffffff;
+  --mado-ink: #183746; --mado-ink-2: #3b5866; --mado-ink-3: #526d7a;
+  --mado-line: #c4dce6; --mado-line-2: #66838f;
+  --mado-accent: #09688f; --mado-accent-soft: #daeff8; --mado-accent-on: #ffffff;
+  --mado-positive: #266746; --mado-positive-soft: #e3efe5; --mado-positive-on: #ffffff;
+  --mado-danger: #a13229; --mado-danger-soft: #fbe5df;
+  --mado-code: #f9fdff; --mado-code-ink: #263c49;
+  --mado-band: #eaf5fc; --mado-hero-bg: #14394d;
+  --mado-find-bg: #ffe08a; --mado-find-ink: #14394d;
+  --mado-find-current-bg: #09688f; --mado-find-current-ink: #ffffff;
+  --mado-serif: Georgia, "Times New Roman", serif;
+  --mado-sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --mado-mono: Consolas, "SF Mono", ui-monospace, monospace;
+  --mado-measure: 69ch; --mado-scroll-offset: 80px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: var(--mado-scroll-offset); }
+body { margin: 0; background: var(--mado-bg); color: var(--mado-ink); font: 16px/1.75 var(--mado-sans); }
+button, input, select, textarea { font: inherit; }
+button, select, summary { cursor: pointer; }
+a { color: var(--mado-accent); text-underline-offset: .22em; }
+:focus-visible { outline: 2px solid var(--mado-accent); outline-offset: 4px; }
+::selection { background: var(--mado-accent); color: var(--mado-accent-on); }
+[hidden] { display: none !important; }
+h1, h2, h3, h4, p, figure, pre { margin: 0; }
+h1, h2, h3, h4 { line-height: 1.2; }
+p + p { margin-top: 1em; }
+strong { font-weight: 650; color: var(--mado-ink); }
+code, kbd { font-family: var(--mado-mono); font-size: .88em; }
+:not(pre) > code { color: var(--mado-accent); overflow-wrap: anywhere; }
+pre { padding: 22px; background: var(--mado-code); border: 1px solid var(--mado-line); overflow: auto; border-radius: 2px; line-height: 1.7; }
+pre code { font-size: 13px; color: var(--mado-code-ink); }
+pre .comment, pre .ts-comment { color: var(--mado-ink-3); }
+pre .keyword, pre .ts-keyword { color: var(--mado-accent); }
+pre .string, pre .ts-string { color: var(--mado-positive); }
+table { width: 100%; border-collapse: collapse; font-size: .88rem; line-height: 1.55; }
+th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--mado-line); vertical-align: top; overflow-wrap: anywhere; }
+th { color: var(--mado-ink-2); font-weight: 600; background: var(--mado-bg-2); }
+td { color: var(--mado-ink-2); }
+svg { max-width: 100%; height: auto; }
+figure svg { display: block; width: 100%; }
+figcaption { color: var(--mado-ink-3); font-size: .82rem; margin-top: 12px; }
+.mado-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.mado-skip-link { position: fixed; top: -80px; left: 16px; z-index: 200; padding: 8px 14px; background: var(--mado-accent); color: var(--mado-accent-on); }
+.mado-skip-link:focus { top: 16px; }
+.mado-noscript { padding: 10px 23px; background: var(--mado-bg-2); color: var(--mado-ink-2); font-size: .85rem; }
+.mado-document { padding-bottom: 100px; }
+.mado-hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px 45px; padding: 46px max(32px, calc((100% - 1150px)/2)) 35px; background: var(--mado-hero-bg); --mado-ink: #ffffff; --mado-ink-2: #e6f5fc; --mado-ink-3: #c6e5f4; --mado-accent: #8edafc; --mado-accent-on: #14394d; color: var(--mado-ink); }
+.mado-signature { display: flex; grid-column: 1/-1; gap: 12px; align-items: center; margin-bottom: 12px; font: 11px/1.5 var(--mado-mono); letter-spacing: .1em; color: var(--mado-ink-3); }
+.mado-signature::before { content: ""; width: 18px; height: 18px; border: 1px solid var(--mado-accent); box-shadow: inset 0 0 0 5px var(--mado-hero-bg); background: var(--mado-accent); flex: none; }
+.mado-title { grid-row: span 2; font: 400 clamp(2.6rem, 3.8vw, 3.8rem)/1.14 var(--mado-serif); letter-spacing: -.04em; max-width: 16ch; overflow-wrap: anywhere; }
+.mado-meta { align-self: center; max-width: 62ch; color: var(--mado-ink-2); }
+.mado-index { position: sticky; top: 0; z-index: 20; padding: 12px max(32px, calc((100% - 1150px)/2)); background: var(--mado-bg-2); border-bottom: 1px solid var(--mado-line); }
+.mado-index.mado-index-long { position: static; }
+.mado-index-cards { display: flex; flex-wrap: wrap; gap: 5px 24px; }
+.mado-index-card { display: inline-flex; gap: 8px; align-items: baseline; padding: 5px 0; text-decoration: none; line-height: 1.5; min-width: 0; }
+.mado-index-number { font: 11px var(--mado-mono); color: var(--mado-accent); }
+.mado-index-title { font-size: .8rem; color: var(--mado-ink-2); overflow-wrap: anywhere; }
+.mado-index-card:hover .mado-index-title, .mado-index-card[aria-current] .mado-index-title { color: var(--mado-accent); text-decoration: underline; text-underline-offset: 5px; }
+.mado-session { display: grid; grid-template-columns: minmax(0, .6fr) minmax(0, 2.4fr); gap: 30px; margin: 0; padding: 34px max(32px, calc((100% - 1150px)/2)) 40px; border-top: 1px solid var(--mado-line); min-width: 0; }
+.mado-session:nth-child(odd) { background: var(--mado-band); }
+.mado-session > h2 { font: 400 1.5rem/1.22 var(--mado-serif); overflow-wrap: anywhere; }
+.mado-session-number { display: block; margin-bottom: 15px; color: var(--mado-accent); font: 12px/1.5 var(--mado-mono); }
+.mado-session-content { min-width: 0; color: var(--mado-ink-2); overflow-wrap: anywhere; }
+.mado-session-content > * + * { margin-top: 1.25rem; }
+.mado-session-content > :is(p, ul, ol, h3, h4, blockquote) { max-width: var(--mado-measure); }
+.mado-session-content > [data-mado-component-id], .mado-session-content > .mado-laboratory { max-width: none; width: 100%; }
+.mado-session-content h3 { color: var(--mado-ink); font-size: 1.06rem; margin-top: 25px; }
+.mado-session-content h4 { color: var(--mado-ink); font-size: 1rem; }
+.mado-session-content ul, .mado-session-content ol { padding-left: 20px; }
+.mado-session-content li + li { margin-top: 7px; }
+.mado-session-content blockquote, .callout { border-left: 3px solid var(--mado-accent); background: var(--mado-accent-soft); margin-left: 0; margin-right: 0; padding: 17px 21px; font-size: .9rem; }
+.component-frame, .card, .chart { border: 1px solid var(--mado-line); border-radius: 2px; background: var(--mado-panel); }
+.component-frame { overflow: hidden; }
+.component-heading { display: flex; justify-content: space-between; gap: 15px; padding: 12px 18px; border-bottom: 1px solid var(--mado-line); font: 11px/1.5 var(--mado-mono); color: var(--mado-ink-3); }
+.component-frame pre { border: 0; border-radius: 0; }
+.card, .chart { padding: 18px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 15px; }
+.twocol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.visual { background: var(--mado-panel); border: 1px solid var(--mado-line); padding: 22px; overflow-x: auto; }
+.reference-note { border-top: 1px solid var(--mado-line); padding-top: 18px; font-size: .9rem; }
+.reference-note > h3 { margin-top: 0; margin-bottom: 14px; }
+details { border: 1px solid var(--mado-line); padding: 14px 18px; background: var(--mado-panel); }
+summary { color: var(--mado-ink); }
+details[open] > :not(summary) { margin-top: 16px; }
+.mado-laboratory { border: 1px solid var(--mado-line-2); border-radius: 2px; background: var(--mado-panel); color: var(--mado-ink); padding: 22px; }
+.mado-laboratory label { color: var(--mado-ink-2); }
+.mado-laboratory input, .mado-laboratory select, .mado-laboratory textarea { max-width: 100%; accent-color: var(--mado-positive); }
+.mado-laboratory button { padding: 7px 13px; border: 1px solid var(--mado-positive); border-radius: 2px; color: var(--mado-positive-on); background: var(--mado-positive); }
+.mado-laboratory > :first-child { margin-top: 0; }
+.mado-laboratory > :last-child { margin-bottom: 0; }
+.mado-footer { max-width: 1150px; margin: 45px auto 0; padding: 0 30px; display: flex; justify-content: space-between; gap: 20px; color: var(--mado-ink-3); font: 11px/1.5 var(--mado-mono); }
+/* Search chrome is assembled below with the same theme tokens. */
+/* Template-owned find. Native browser find remains available across every Session. */
+.mado-search-tools { position: fixed; top: 18px; right: 23px; z-index: 30; display: grid; justify-items: end; gap: 6px; max-width: calc(100vw - 30px); }
+.mado-search-trigger { border: 1px solid var(--mado-line-2); background: var(--mado-panel); color: var(--mado-ink-2); padding: 6px 10px; border-radius: 2px; font-size: .75rem; }
+.mado-search-state { display: flex; align-items: center; gap: 10px; padding: 5px 9px; background: var(--mado-panel); border: 1px solid var(--mado-line-2); font: 11px/1.5 var(--mado-mono); color: var(--mado-ink-2); }
+.mado-search-state button { border: 0; border-bottom: 1px solid currentColor; padding: 0; background: transparent; color: var(--mado-accent); font: inherit; }
+.mado-search-state .mado-search-step { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--mado-line-2); font-size: 16px; line-height: 1; }
+.mado-search-state .mado-search-step:disabled { opacity: .45; cursor: default; }
+#mado-search-match-count { white-space: nowrap; }
+::highlight(mado-find) { background-color: var(--mado-find-bg); color: var(--mado-find-ink); }
+::highlight(mado-find-current) { background-color: var(--mado-find-current-bg); color: var(--mado-find-current-ink); }
+@media print { ::highlight(mado-find), ::highlight(mado-find-current) { background-color: transparent; color: inherit; } }
+.mado-search-trigger kbd { margin-left: 17px; color: var(--mado-accent); }
+.mado-search-overlay { position: fixed; inset: 0; z-index: 90; padding: min(15vh, 120px) 20px 20px; background: #172a3b66; }
+.mado-search-dialog { max-width: 650px; margin: auto; background: var(--mado-panel); border: 1px solid var(--mado-line-2); border-radius: 9px; box-shadow: 0 20px 80px #172a3b33; }
+.mado-search-top { display: flex; gap: 15px; align-items: center; padding: 19px; border-bottom: 1px solid var(--mado-line); }
+.mado-search-top input { width: 100%; min-width: 0; padding: 4px; background: transparent; color: var(--mado-ink); border: 0; outline-offset: 4px; }
+.mado-search-top input::placeholder { color: var(--mado-ink-3); opacity: 1; }
+.mado-search-top button { color: var(--mado-ink-3); background: transparent; border: 1px solid var(--mado-line-2); border-radius: 4px; font: 11px var(--mado-mono); padding: 5px 8px; }
+.mado-search-top #mado-search-regex { border-radius: 2px; white-space: nowrap; }
+.mado-search-top #mado-search-regex[aria-pressed="true"] { background: var(--mado-accent); border-color: var(--mado-accent); color: var(--mado-accent-on); }
+.mado-search-help, .mado-search-feedback { padding: 8px 19px 0; color: var(--mado-ink-3); font-size: .76rem; line-height: 1.6; }
+.mado-search-feedback:empty { display: none; }
+.mado-search-feedback.mado-search-error { color: var(--mado-danger); }
+.mado-search-top input[aria-invalid="true"] { outline: 1px solid var(--mado-danger); }
+.mado-search-results { max-height: 48vh; overflow-y: auto; padding: 8px; }
+.mado-search-results a { display: flex; gap: 14px; justify-content: space-between; align-items: baseline; color: var(--mado-ink-2); padding: 12px; text-decoration: none; font-size: .85rem; border-radius: 4px; }
+.mado-search-results a:hover, .mado-search-results a:focus { background: var(--mado-accent-soft); color: var(--mado-accent); }
+.mado-search-results small { flex-shrink: 0; font: 10px var(--mado-mono); color: var(--mado-ink-3); }
+.mado-search-results p { padding: 12px; color: var(--mado-ink-3); font-size: .85rem; }
+
+
+.mado-search-tools { top: auto; bottom: 25px; right: 25px; }
+@media (max-width: 1100px) {
+  .mado-index { position: static; }
+  .mado-search-tools { bottom: auto; top: 12px; right: 14px; }
+}
+@media (max-width: 850px) {
+  .mado-session { display: block; }
+  .mado-session > h2 { display: flex; gap: 18px; align-items: baseline; margin-bottom: 23px; font-size: 1.8rem; }
+  .mado-session-number { margin: 0; }
+}
+@media (max-width: 700px) {
+  body { font-size: 15px; }
+  .mado-hero { display: block; padding: 60px 23px 28px; }
+  .mado-signature { margin-bottom: 24px; }
+  .mado-meta { margin-top: 20px; }
+  .mado-title { font-size: clamp(2.5rem, 8.5vw, 3.4rem); }
+  .mado-signature { font-size: 10px; }
+  .mado-index { padding: 15px 23px 20px; }
+  .mado-index-cards { display: block; }
+  .mado-index-card { display: flex; padding: 7px 0; border-top: 1px solid var(--mado-line); }
+  .mado-index-card:first-child { border-top: 0; }
+  .mado-session { padding: 32px 23px 38px; }
+  .twocol { grid-template-columns: 1fr; }
+  .visual { padding: 15px 5px; }
+  .visual svg { min-width: 580px; }
+  th, td { padding: 11px 8px; font-size: .77rem; }
+  .component-heading { font-size: 10px; padding: 11px; }
+  .component-heading > span { display: none; }
+  .mado-laboratory { padding: 16px; }
+  .mado-footer { flex-direction: column; gap: 10px; }
+  .mado-search-tools { display: flex; align-items: center; flex-wrap: wrap; }
+  .mado-search-state { font-size: 10px; padding: 4px 6px; gap: 7px; }
+  .mado-search-state .mado-search-step { width: 26px; height: 26px; }
+  .mado-search-tools.has-matches { flex-wrap: nowrap; }
+  .mado-search-tools.has-matches .mado-search-trigger span, .mado-search-tools.has-matches .mado-search-trigger kbd { display: none; }
+  .mado-search-tools.has-matches .mado-search-trigger::before { content: "Find"; }
+  .mado-search-trigger { padding: 4px 8px; }
+  .mado-search-trigger kbd { margin-left: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  html { color-scheme: light; }
+  .mado-search-tools, .mado-search-overlay { display: none !important; }
+  .mado-document { padding-bottom: 0; }
+  .mado-index { position: static; }
+  .mado-hero { background: white; --mado-ink: #183746; --mado-ink-2: #3b5866; --mado-ink-3: #526d7a; --mado-accent: #09688f; }
+  .mado-session { display: block; padding: 24px; }
+  .mado-session > h2 { margin-bottom: 20px; break-after: avoid; }
+  .visual { overflow: visible; }
+  .visual svg { min-width: 0; }
+}
+</style>
+</head>
+<body>
+<a class="mado-skip-link" href="#mado-content">Skip to Sessions</a>
+<noscript><p class="mado-noscript">JavaScript enables search and Laboratories. All Sessions remain readable.</p></noscript>
+<div class="mado-search-tools">
+  <button class="mado-search-trigger" id="mado-search-open" type="button" aria-label="Find in document" aria-haspopup="dialog" hidden><span>Find in document</span> <kbd>/</kbd></button>
+  <div class="mado-search-state" id="mado-search-state" hidden>
+    <button type="button" class="mado-search-step" id="mado-search-prev" aria-label="Previous match" title="Previous match" disabled>&lt;</button>
+    <span id="mado-search-match-count" aria-live="polite"></span>
+    <button type="button" class="mado-search-step" id="mado-search-next" aria-label="Next match" title="Next match" disabled>&gt;</button>
+    <button type="button" id="mado-search-clear" aria-label="Clear search highlights">Clear</button>
+  </div>
+</div>
+<main class="mado-document" id="mado-top" data-mado-document="tutorial">
+<header class="mado-hero">
+  <div class="mado-signature">MADO HTML / TUTORIAL DOCUMENT</div>
+  <h1 class="mado-title">Hello</h1>
+  
+</header>
+<nav class="mado-index" aria-label="Session index">
+<div class="mado-index-cards">
+          <a class="mado-index-card" href="#session-hello">
+            <span class="mado-index-number" aria-hidden="true">01</span>
+            <span class="mado-index-title">Hello</span>
+          </a></div>
+</nav>
+<span id="mado-content" class="mado-sr-only" tabindex="-1">Sessions</span>
+<div class="mado-sessions">
+      <section class="mado-session chapter" id="session-hello" data-mado-session-id="hello">
+        <h2><span class="mado-session-number" aria-hidden="true">1. </span><span class="mado-session-title">Hello</span></h2>
+        <div class="mado-session-content content"><p>Hello!</p></div>
+      </section></div>
+<footer class="mado-footer"><span>Mado HTML / End of Tutorial Document</span><a href="#mado-top">Back to beginning ↑</a></footer>
+</main>
+<div class="mado-search-overlay" id="mado-search-overlay" hidden>
+  <div class="mado-search-dialog" role="dialog" aria-modal="true" aria-labelledby="mado-search-label">
+    <div class="mado-search-top"><label class="mado-sr-only" id="mado-search-label" for="mado-search-input">Find Sessions and Components</label><input type="search" id="mado-search-input" placeholder="Find Sessions and Components…" aria-describedby="mado-search-help mado-search-feedback" maxlength="4096" autocomplete="off" spellcheck="false" autocapitalize="off"><button type="button" id="mado-search-regex" aria-label="Use regular expressions" aria-pressed="false" title="Use regular expressions">Regex</button><button type="button" id="mado-search-close" aria-label="Close search">esc</button></div>
+    <p class="mado-search-help" id="mado-search-help">Literal search · ignores case. Enable Regex for pattern matching.</p>
+    <p class="mado-search-feedback" id="mado-search-feedback" role="status" aria-live="polite"></p>
+    <div class="mado-search-results" id="mado-search-results" aria-busy="false"></div>
+  </div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const documentRoot = $('main.mado-document');
+  const contentRoot = $('.mado-sessions', documentRoot);
+  const index = $('.mado-index', documentRoot);
+  const sessions = $$('.mado-session[data-mado-session-id]', contentRoot);
+  const links = $$('.mado-index-card', index);
+  const renderedLaboratories = new WeakMap();
+  const targetEntries = new WeakMap();
+  const destinations = new Map();
+  const entries = [];
+  const MATCH_LIMIT = 2000;
+
+  function decodeLaboratorySource(source) {
+    const hex = source.getAttribute('data-mado-laboratory-source');
+    if (!hex || hex.length % 2 || !/^[0-9a-f]+$/i.test(hex)) throw new Error('Missing or invalid validated Laboratory source');
+    const bytes = Uint8Array.from(hex.match(/../g), pair => parseInt(pair, 16));
+    return new TextDecoder('utf-8', {fatal:true}).decode(bytes);
+  }
+  function initLaboratories() {
+    $$('template[data-mado-component-kind="laboratory"]', contentRoot).forEach(source => {
+      const laboratory = document.createElement('section');
+      const title = source.getAttribute('data-mado-title') || 'Interactive Laboratory';
+      laboratory.className = "mado-laboratory";
+      laboratory.setAttribute('role', 'region');
+      laboratory.setAttribute('aria-label', title);
+      source.after(laboratory);
+      renderedLaboratories.set(source, laboratory);
+      try {
+        const parsed = document.createElement('template');
+        parsed.innerHTML = decodeLaboratorySource(source);
+        const scripts = $$('script', parsed.content).map(script => { const text = script.textContent; script.remove(); return text; });
+        laboratory.append(parsed.content);
+        // Trusted source, not a security boundary. One failure must not disable search.
+        scripts.forEach(script => {
+          try { Function("root", script)(laboratory); }
+          catch (error) { console.error('Laboratory failed:', title, error); }
+        });
+      } catch (error) {
+        laboratory.textContent = 'This Laboratory could not be initialized.';
+        console.error('Laboratory failed:', title, error);
+      }
+    });
+  }
+  initLaboratories();
+
+  const normalize = text => (text || '').replace(/\s+/g, ' ').trim();
+  function register(entry) {
+    entries.push(entry);
+    targetEntries.set(entry.target, entry);
+    destinations.set(entry.key, entry.target);
+  }
+  sessions.forEach(session => {
+    const sid = session.getAttribute('data-mado-session-id');
+    register({id:sid, key:session.id, label:normalize($('.mado-session-title', session).textContent), kind:'Session', target:session});
+    $$('[data-mado-component-id]', $('.mado-session-content', session)).forEach(component => {
+      // Runtime Laboratory internals are not addressable parent-document Components.
+      if (component.closest('.mado-laboratory')) return;
+      const cid = component.getAttribute('data-mado-component-id');
+      const laboratory = renderedLaboratories.get(component);
+      const label = component.getAttribute('data-mado-title') || component.getAttribute('aria-label') || $('figcaption, summary, h3, h4', component)?.textContent || cid;
+      // IDs are Session-local. The URL key is namespaced without overwriting authored IDs.
+      register({id:cid, key:'mado-component:' + sid + ':' + cid, label:normalize(label), kind:laboratory ? 'Laboratory' : 'Component', target:laboratory || component});
+    });
+  });
+  index.hidden = sessions.length === 0;
+  index.classList.toggle('mado-index-long', sessions.length > 8);
+
+  function setActive(position) {
+    links.forEach((link, i) => i === position ? link.setAttribute('aria-current', 'location') : link.removeAttribute('aria-current'));
+  }
+  function owningEntry(target) {
+    for (let el = target; el && el !== documentRoot; el = el.parentElement) {
+      if (targetEntries.has(el)) return targetEntries.get(el);
+    }
+    return null;
+  }
+  function reveal(target) {
+    for (let el = target; el && el !== documentRoot; el = el.parentElement) {
+      if (el.tagName === 'DETAILS') el.open = true;
+    }
+  }
+  function navigate(target, updateHash = true, focus = true) {
+    if (!target) return;
+    reveal(target);
+    const session = target.closest('.mado-session');
+    if (session) setActive(sessions.indexOf(session));
+    const entry = owningEntry(target);
+    if (updateHash) {
+      const url = new URL(location.href);
+      url.hash = target === documentRoot ? '' : entry?.key || target.id;
+      history.replaceState(null, '', url);
+    }
+    requestAnimationFrame(() => {
+      if (!target.isConnected) return;
+      if (target === documentRoot) window.scrollTo({top:0});
+      else target.scrollIntoView({block:'start'});
+      if (focus) {
+        if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+        target.focus({preventScroll:true});
+      }
+    });
+  }
+  function hashTarget(hash) {
+    try { const key = decodeURIComponent(hash.replace(/^#/, '')); return destinations.get(key) || document.getElementById(key); }
+    catch { return null; }
+  }
+  document.addEventListener('click', event => {
+    const link = event.target.closest?.('a[href^="#"]');
+    if (!link || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const target = hashTarget(link.hash);
+    if (target) { event.preventDefault(); navigate(target); }
+  });
+  const overlay = $('#mado-search-overlay'), searchInput = $('#mado-search-input');
+  const highlightSupported = Boolean(window.Highlight && window.CSS?.highlights);
+  let previousFocus = null, searchRanges = [], currentMatch = -1, lastMatchQuery = '';
+  let searchJob = null, regexWorkerUrl = null, regexMode = false;
+
+  // CSS ranges leave authored content and Laboratory event handlers untouched.
+  // Group inline text by reading block so phrases can cross <strong> or code spans.
+  function searchBlocks(root) {
+    const blocks = new Map();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        return node.parentElement.closest('svg, template, script, style, input, textarea, select, [hidden], [aria-hidden="true"]')
+          ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      const owner = node.parentElement.closest('p, h1, h2, h3, h4, h5, h6, li, dt, dd, td, th, caption, pre, figcaption, summary, output, label, button, .component-heading, .laboratory-heading, .callout') || node.parentElement;
+      if (!blocks.has(owner)) blocks.set(owner, {text:'', segments:[]});
+      const block = blocks.get(owner), start = block.text.length;
+      block.text += node.nodeValue;
+      block.segments.push({node, start, end:block.text.length});
+    }
+    return [...blocks.values()].filter(block => block.text.trim());
+  }
+  function queryPattern() {
+    const source = searchInput.value;
+    if (!source.trim()) return null;
+    if (source.length > 4096) throw new Error('Use at most 4,096 characters.');
+    if (regexMode) {
+      if (source.length > 512) throw new Error('Use at most 512 characters.');
+      return new RegExp(source, 'giu');
+    }
+    const words = source.trim().split(/\s+/);
+    return new RegExp(words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'), 'giu');
+  }
+  function matchQueryKey(pattern) { return pattern ? (regexMode ? 'regex:' : 'literal:') + pattern.source : ''; }
+  function paintMatches(pattern, blocks = [], matches = []) {
+    const key = matchQueryKey(pattern);
+    const previous = key === lastMatchQuery ? searchRanges[currentMatch] : null;
+    lastMatchQuery = key;
+    searchRanges = [];
+    matches.forEach(match => {
+      const block = blocks[match.block];
+      const start = block.segments.find(part => part.end > match.start);
+      const end = block.segments.find(part => part.end >= match.end);
+      const range = document.createRange();
+      range.setStart(start.node, match.start - start.start);
+      range.setEnd(end.node, match.end - end.start);
+      searchRanges.push(range);
+    });
+    searchRanges.sort((a, b) => a.compareBoundaryPoints(Range.START_TO_START, b));
+    // Preserve the current occurrence when unrelated Laboratory output changes.
+    // If that occurrence disappears, return to an unselected result list.
+    currentMatch = previous ? searchRanges.findIndex(range =>
+      range.startContainer === previous.startContainer && range.startOffset === previous.startOffset &&
+      range.endContainer === previous.endContainer && range.endOffset === previous.endOffset) : -1;
+    if (highlightSupported) {
+      CSS.highlights.delete('mado-find');
+      if (searchRanges.length) CSS.highlights.set('mado-find', new Highlight(...searchRanges));
+    }
+    $('#mado-search-state').hidden = !pattern;
+    $('.mado-search-tools').classList.toggle('has-matches', Boolean(pattern));
+    paintMatchNavigation();
+  }
+  function paintMatchNavigation() {
+    const active = searchRanges[currentMatch];
+    $('#mado-search-match-count').textContent = active
+      ? (currentMatch + 1) + ' of ' + searchRanges.length
+      : searchRanges.length + (searchRanges.length === 1 ? ' highlight' : ' highlights');
+    $('#mado-search-match-count').title = highlightSupported ? '' : 'Use browser find for highlighting';
+    $('#mado-search-prev').disabled = $('#mado-search-next').disabled = searchRanges.length === 0;
+    if (highlightSupported) {
+      CSS.highlights.delete('mado-find-current');
+      if (active) {
+        const highlight = new Highlight(active);
+        highlight.priority = 1;
+        CSS.highlights.set('mado-find-current', highlight);
+      }
+    }
+  }
+  function jumpToMatch(index, target = null, focus = false) {
+    if (!searchRanges.length || searchJob) return;
+    currentMatch = (index + searchRanges.length) % searchRanges.length;
+    const range = searchRanges[currentMatch];
+    paintMatchNavigation();
+    if (!overlay.hidden) closeSearch(false, true);
+    const parent = range.startContainer.parentElement;
+    reveal(parent);
+    target ||= owningEntry(parent)?.target;
+    // Keep a stable Session/Component URL. Button focus stays put for repeated clicks.
+    navigate(target, true, focus);
+    requestAnimationFrame(() => {
+      if (!range.startContainer.isConnected) return;
+      // Reveal the occurrence, not just the start of a long code block.
+      for (let el = parent; el && el !== $('.mado-sessions'); el = el.parentElement) {
+        if (el.scrollWidth > el.clientWidth && /auto|scroll/.test(getComputedStyle(el).overflowX)) {
+          const rect = range.getClientRects()[0], box = el.getBoundingClientRect();
+          if (rect && (rect.left < box.left || rect.right > box.right))
+            el.scrollLeft += rect.left - box.left - el.clientWidth / 2;
+        }
+      }
+      const rect = range.getClientRects()[0];
+      if (rect) window.scrollBy({top:rect.top - innerHeight * .45, behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+    });
+  }
+  function stepMatch(delta) {
+    const next = currentMatch < 0 ? (delta > 0 ? 0 : searchRanges.length - 1) : currentMatch + delta;
+    jumpToMatch(next);
+  }
+  // User-authored regex runs off the UI thread. A slow expression can be stopped.
+  function regexWorker() {
+    self.onmessage = ({data}) => {
+      const pattern = new RegExp(data.source, 'giu');
+      const matches = [], found = [];
+      let truncated = false;
+      scan: for (let block = 0; block < data.blocks.length; block += 1) {
+        for (const match of data.blocks[block].matchAll(pattern)) {
+          if (!match[0].length) continue;
+          if (matches.length === data.limit) { truncated = true; break scan; }
+          matches.push({block, start:match.index, end:match.index + match[0].length});
+        }
+      }
+      function hasMatch(text) {
+        for (const match of text.matchAll(pattern)) if (match[0].length) return true;
+        return false;
+      }
+      data.entries.forEach((texts, index) => { if (texts.some(hasMatch)) found.push(index); });
+      self.postMessage({matches, found, truncated});
+    };
+  }
+  function cancelSearchJob() {
+    if (searchJob) { clearTimeout(searchJob.timer); searchJob.worker.terminate(); searchJob = null; }
+    $('#mado-search-results').setAttribute('aria-busy', 'false');
+  }
+  function searchFeedback(message = '', error = false) {
+    $('#mado-search-feedback').textContent = message;
+    $('#mado-search-feedback').classList.toggle('mado-search-error', error);
+    searchInput.setAttribute('aria-invalid', String(error));
+  }
+  function clearSearch() {
+    cancelSearchJob(); searchInput.value = ''; paintMatches(null); searchFeedback();
+  }
+  function failSearch(message) {
+    cancelSearchJob(); paintMatches(null); $('#mado-search-results').replaceChildren(); searchFeedback(message, true);
+  }
+  function paintSearch() {
+    cancelSearchJob();
+    let pattern;
+    try { pattern = queryPattern(); }
+    catch (error) { failSearch((regexMode ? 'Invalid regex: ' : 'Invalid search: ') + error.message); return; }
+    searchFeedback();
+    if (!pattern) { paintMatches(null); renderSearchResults(entries); return; }
+    if (matchQueryKey(pattern) !== lastMatchQuery) paintMatches(null);
+    $('#mado-search-prev').disabled = $('#mado-search-next').disabled = true;
+    if ($('#mado-search-results').contains(document.activeElement)) searchInput.focus();
+    $('#mado-search-results').replaceChildren();
+    $('#mado-search-results').setAttribute('aria-busy', 'true');
+    searchFeedback('Searching…');
+    const blocks = searchBlocks($('.mado-sessions'));
+    const texts = entries.map(entry => [entry.id, entry.label, entry.kind, ...searchBlocks(entry.target).map(block => block.text)]);
+    try {
+      regexWorkerUrl ||= URL.createObjectURL(new Blob(['(' + regexWorker.toString() + ')()'], {type:'text/javascript'}));
+      const worker = new Worker(regexWorkerUrl);
+      const job = {worker, timer:null};
+      searchJob = job;
+      job.timer = setTimeout(() => {
+        if (searchJob === job) failSearch('Search took too long. Simplify the query and try again.');
+      }, 750);
+      worker.onerror = event => {
+        event.preventDefault();
+        if (searchJob === job) failSearch('Search could not run. Try another query or use browser find.');
+      };
+      worker.onmessage = ({data}) => {
+        if (searchJob !== job) return;
+        cancelSearchJob();
+        // Laboratory output may have changed while the worker searched its snapshot.
+        if (blocks.some(block => block.segments.some(part => !part.node.isConnected || part.node.nodeValue !== block.text.slice(part.start, part.end)))) {
+          paintSearch(); return;
+        }
+        paintMatches(pattern, blocks, data.matches);
+        renderSearchResults(data.found.map(index => entries[index]));
+        searchFeedback(data.truncated ? 'Showing the first ' + MATCH_LIMIT.toLocaleString('en-US') + ' highlights. Narrow the query to see later matches.' : highlightSupported ? '' : 'Highlighting needs a current browser. Results and navigation still work; browser Find is also available.');
+        if (job.jumpWhenReady && !overlay.hidden) $('#mado-search-results a')?.click();
+      };
+      worker.postMessage({limit:MATCH_LIMIT, source:pattern.source, blocks:blocks.map(block => block.text), entries:texts});
+    } catch (error) {
+      failSearch('Search could not start. Use browser find instead.');
+    }
+  }
+  function renderSearchResults(found) {
+    const results = $('#mado-search-results'); results.replaceChildren();
+    found.forEach(entry => {
+      const link = document.createElement('a'); link.href = '#'+entry.key;
+      const label = document.createElement('span'); label.textContent = entry.label;
+      const kind = document.createElement('small'); kind.textContent = entry.kind;
+      link.append(label,kind); link.addEventListener('click', event => {
+        event.preventDefault(); event.stopPropagation();
+        const index = searchRanges.findIndex(range => entry.target.contains(range.startContainer));
+        if (index >= 0) jumpToMatch(index, entry.target, true);
+        else { closeSearch(false, true); navigate(entry.target); }
+      });
+      results.append(link);
+    });
+    if (!found.length) { const p = document.createElement('p'); p.textContent = regexMode ? 'No non-empty matches in Sessions or Components.' : 'No matching Sessions or Components.'; results.append(p); }
+  }
+  function openSearch() {
+    previousFocus = document.activeElement; overlay.hidden = false;
+    $('.mado-document').inert = true; $('.mado-search-tools').inert = true;
+    paintSearch(); searchInput.focus();
+  }
+  function closeSearch(restore = true, keepHighlights = false) {
+    overlay.hidden = true; $('.mado-document').inert = false; $('.mado-search-tools').inert = false;
+    if (!keepHighlights) clearSearch();
+    if (restore && previousFocus) previousFocus.focus();
+  }
+  $('#mado-search-prev').addEventListener('click', () => stepMatch(-1));
+  $('#mado-search-next').addEventListener('click', () => stepMatch(1));
+  $('#mado-search-clear').addEventListener('click', () => { clearSearch(); $('#mado-search-open').focus(); });
+  // Laboratory output can change after jumping to a result. Rebuild only the ranges.
+  let pendingMatches = false;
+  new MutationObserver(() => {
+    if (!searchInput.value.trim() || pendingMatches) return;
+    pendingMatches = true;
+    requestAnimationFrame(() => { pendingMatches = false; paintSearch(); });
+  }).observe($('.mado-sessions'), {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:['hidden', 'aria-hidden']});
+  $('#mado-search-regex').addEventListener('click', () => {
+    regexMode = !regexMode;
+    $('#mado-search-regex').setAttribute('aria-pressed', String(regexMode));
+    $('#mado-search-label').textContent = regexMode ? 'Find Sessions and Components using a regular expression' : 'Find Sessions and Components';
+    $('#mado-search-open span').textContent = regexMode ? 'Find with regex' : 'Find in document';
+    searchInput.placeholder = regexMode ? 'Regex: retry|timeout' : 'Find Sessions and Components…';
+    if (regexMode) searchInput.setAttribute('maxlength', '512'); else searchInput.setAttribute('maxlength', '4096');
+    if (regexMode) $('#mado-search-help').innerHTML = String.raw`JavaScript regex · ignores case · no surrounding <code>/</code><br>Try <code>retry|timeout</code> or <code>attempt\s+\d+</code>. Empty matches are skipped.`;
+    else $('#mado-search-help').textContent = 'Literal search · ignores case. Enable Regex for pattern matching.';
+    paintSearch(); searchInput.focus();
+  });
+  searchInput.addEventListener('input', paintSearch);
+  window.addEventListener('pagehide', () => { cancelSearchJob(); if (regexWorkerUrl) URL.revokeObjectURL(regexWorkerUrl); regexWorkerUrl = null; });
+  $('#mado-search-open').addEventListener('click', openSearch); $('#mado-search-close').addEventListener('click', () => closeSearch());
+  overlay.addEventListener('click', event => { if (event.target === overlay) closeSearch(); });
+  document.addEventListener('keydown', event => {
+    // Do not make native find search an inert document behind the custom dialog.
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f' && !overlay.hidden) { closeSearch(); return; }
+    if (!overlay.hidden) {
+      if (event.key === 'Escape') { event.preventDefault(); closeSearch(); }
+      if (event.key === 'Tab') {
+        const focusable = $$('input, button, a', overlay), first = focusable[0], last = focusable[focusable.length-1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const results = $$('#mado-search-results a');
+        if (results.length) { event.preventDefault(); const i = results.indexOf(document.activeElement); results[(i+(event.key === 'ArrowDown' ? 1 : -1)+results.length)%results.length].focus(); }
+      }
+      if (event.key === 'Enter' && document.activeElement === searchInput) { event.preventDefault(); if (searchJob) searchJob.jumpWhenReady = true; else $('#mado-search-results a')?.click(); }
+      return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (event.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), .mado-laboratory, .visual, pre')) return;
+    if (event.key === '/') { event.preventDefault(); openSearch(); }
+    if (event.target.closest('.mado-search-state') && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault(); stepMatch(event.key === 'ArrowLeft' ? -1 : 1); return;
+    }
+    if (event.key === 'Escape') { clearSearch(); }
+  });
+
+  function updateNavMetrics() {
+    const height = getComputedStyle(index).position === 'sticky' ? index.getBoundingClientRect().height : 0;
+    document.documentElement.style.setProperty('--mado-scroll-offset', (height + 16) + 'px');
+  }
+  let pendingScroll = false;
+  window.addEventListener('scroll', () => {
+    if (pendingScroll) return;
+    pendingScroll = true;
+    requestAnimationFrame(() => {
+      pendingScroll = false;
+      let active = sessions.length ? 0 : -1;
+      sessions.forEach((session, i) => { if (session.getBoundingClientRect().top <= innerHeight * .32) active = i; });
+      setActive(active);
+    });
+  }, {passive:true});
+  function restoreHash() { const target = hashTarget(location.hash); if (target) navigate(target, false, false); }
+  window.addEventListener('hashchange', restoreHash);
+  window.addEventListener('popstate', restoreHash);
+  window.addEventListener('resize', updateNavMetrics);
+  window.addEventListener('pageshow', event => { if (event.persisted && searchInput.value.trim()) paintSearch(); });
+  if (window.ResizeObserver) new ResizeObserver(updateNavMetrics).observe(index);
+  $('#mado-search-open').hidden = false;
+  setActive(sessions.length ? 0 : -1); updateNavMetrics(); restoreHash();
+})();
+</script>
+</body>
+</html>

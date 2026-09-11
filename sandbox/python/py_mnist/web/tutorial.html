@@ -1,0 +1,1024 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="mado-format-version" content="2" />
+<title>MNIST: from pixels to browser predictions</title>
+<!-- Mado-owned populated template. Format-2 identity markers are unchanged.
+     The authoring model edits Session/Component fragments, never this structure.
+     Design decision and archived comparison: docs/adr/0008-editorial-template-and-search.md. -->
+<style>
+:root {
+  color-scheme: light;
+  --mado-bg: #ffffff; --mado-bg-2: #e5f3fb; --mado-panel: #ffffff;
+  --mado-ink: #183746; --mado-ink-2: #3b5866; --mado-ink-3: #526d7a;
+  --mado-line: #c4dce6; --mado-line-2: #66838f;
+  --mado-accent: #09688f; --mado-accent-soft: #daeff8; --mado-accent-on: #ffffff;
+  --mado-positive: #266746; --mado-positive-soft: #e3efe5; --mado-positive-on: #ffffff;
+  --mado-danger: #a13229; --mado-danger-soft: #fbe5df;
+  --mado-code: #f9fdff; --mado-code-ink: #263c49;
+  --mado-band: #eaf5fc; --mado-hero-bg: #14394d;
+  --mado-find-bg: #ffe08a; --mado-find-ink: #14394d;
+  --mado-find-current-bg: #09688f; --mado-find-current-ink: #ffffff;
+  --mado-serif: Georgia, "Times New Roman", serif;
+  --mado-sans: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+  --mado-mono: Consolas, "SF Mono", ui-monospace, monospace;
+  --mado-measure: 69ch; --mado-scroll-offset: 80px;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: var(--mado-scroll-offset); }
+body { margin: 0; background: var(--mado-bg); color: var(--mado-ink); font: 16px/1.75 var(--mado-sans); }
+button, input, select, textarea { font: inherit; }
+button, select, summary { cursor: pointer; }
+a { color: var(--mado-accent); text-underline-offset: .22em; }
+:focus-visible { outline: 2px solid var(--mado-accent); outline-offset: 4px; }
+::selection { background: var(--mado-accent); color: var(--mado-accent-on); }
+[hidden] { display: none !important; }
+h1, h2, h3, h4, p, figure, pre { margin: 0; }
+h1, h2, h3, h4 { line-height: 1.2; }
+p + p { margin-top: 1em; }
+strong { font-weight: 650; color: var(--mado-ink); }
+code, kbd { font-family: var(--mado-mono); font-size: .88em; }
+:not(pre) > code { color: var(--mado-accent); overflow-wrap: anywhere; }
+pre { padding: 22px; background: var(--mado-code); border: 1px solid var(--mado-line); overflow: auto; border-radius: 2px; line-height: 1.7; }
+pre code { font-size: 13px; color: var(--mado-code-ink); }
+pre .comment, pre .ts-comment { color: var(--mado-ink-3); }
+pre .keyword, pre .ts-keyword { color: var(--mado-accent); }
+pre .string, pre .ts-string { color: var(--mado-positive); }
+table { width: 100%; border-collapse: collapse; font-size: .88rem; line-height: 1.55; }
+th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--mado-line); vertical-align: top; overflow-wrap: anywhere; }
+th { color: var(--mado-ink-2); font-weight: 600; background: var(--mado-bg-2); }
+td { color: var(--mado-ink-2); }
+svg { max-width: 100%; height: auto; }
+figure svg { display: block; width: 100%; }
+figcaption { color: var(--mado-ink-3); font-size: .82rem; margin-top: 12px; }
+.mado-sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.mado-skip-link { position: fixed; top: -80px; left: 16px; z-index: 200; padding: 8px 14px; background: var(--mado-accent); color: var(--mado-accent-on); }
+.mado-skip-link:focus { top: 16px; }
+.mado-noscript { padding: 10px 23px; background: var(--mado-bg-2); color: var(--mado-ink-2); font-size: .85rem; }
+.mado-document { padding-bottom: 100px; }
+.mado-hero { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 16px 45px; padding: 46px max(32px, calc((100% - 1150px)/2)) 35px; background: var(--mado-hero-bg); --mado-ink: #ffffff; --mado-ink-2: #e6f5fc; --mado-ink-3: #c6e5f4; --mado-accent: #8edafc; --mado-accent-on: #14394d; color: var(--mado-ink); }
+.mado-signature { display: flex; grid-column: 1/-1; gap: 12px; align-items: center; margin-bottom: 12px; font: 11px/1.5 var(--mado-mono); letter-spacing: .1em; color: var(--mado-ink-3); }
+.mado-signature::before { content: ""; width: 18px; height: 18px; border: 1px solid var(--mado-accent); box-shadow: inset 0 0 0 5px var(--mado-hero-bg); background: var(--mado-accent); flex: none; }
+.mado-title { grid-row: span 2; font: 400 clamp(2.6rem, 3.8vw, 3.8rem)/1.14 var(--mado-serif); letter-spacing: -.04em; max-width: 16ch; overflow-wrap: anywhere; }
+.mado-meta { align-self: center; max-width: 62ch; color: var(--mado-ink-2); }
+.mado-index { position: sticky; top: 0; z-index: 20; padding: 12px max(32px, calc((100% - 1150px)/2)); background: var(--mado-bg-2); border-bottom: 1px solid var(--mado-line); }
+.mado-index.mado-index-long { position: static; }
+.mado-index-cards { display: flex; flex-wrap: wrap; gap: 5px 24px; }
+.mado-index-card { display: inline-flex; gap: 8px; align-items: baseline; padding: 5px 0; text-decoration: none; line-height: 1.5; min-width: 0; }
+.mado-index-number { font: 11px var(--mado-mono); color: var(--mado-accent); }
+.mado-index-title { font-size: .8rem; color: var(--mado-ink-2); overflow-wrap: anywhere; }
+.mado-index-card:hover .mado-index-title, .mado-index-card[aria-current] .mado-index-title { color: var(--mado-accent); text-decoration: underline; text-underline-offset: 5px; }
+.mado-session { display: grid; grid-template-columns: minmax(0, .6fr) minmax(0, 2.4fr); gap: 30px; margin: 0; padding: 34px max(32px, calc((100% - 1150px)/2)) 40px; border-top: 1px solid var(--mado-line); min-width: 0; }
+.mado-session:nth-child(odd) { background: var(--mado-band); }
+.mado-session > h2 { font: 400 1.5rem/1.22 var(--mado-serif); overflow-wrap: anywhere; }
+.mado-session-number { display: block; margin-bottom: 15px; color: var(--mado-accent); font: 12px/1.5 var(--mado-mono); }
+.mado-session-content { min-width: 0; color: var(--mado-ink-2); overflow-wrap: anywhere; }
+.mado-session-content > * + * { margin-top: 1.25rem; }
+.mado-session-content > :is(p, ul, ol, h3, h4, blockquote) { max-width: var(--mado-measure); }
+.mado-session-content > [data-mado-component-id], .mado-session-content > .mado-laboratory { max-width: none; width: 100%; }
+.mado-session-content h3 { color: var(--mado-ink); font-size: 1.06rem; margin-top: 25px; }
+.mado-session-content h4 { color: var(--mado-ink); font-size: 1rem; }
+.mado-session-content ul, .mado-session-content ol { padding-left: 20px; }
+.mado-session-content li + li { margin-top: 7px; }
+.mado-session-content blockquote, .callout { border-left: 3px solid var(--mado-accent); background: var(--mado-accent-soft); margin-left: 0; margin-right: 0; padding: 17px 21px; font-size: .9rem; }
+.component-frame, .card, .chart { border: 1px solid var(--mado-line); border-radius: 2px; background: var(--mado-panel); }
+.component-frame { overflow: hidden; }
+.component-heading { display: flex; justify-content: space-between; gap: 15px; padding: 12px 18px; border-bottom: 1px solid var(--mado-line); font: 11px/1.5 var(--mado-mono); color: var(--mado-ink-3); }
+.component-frame pre { border: 0; border-radius: 0; }
+.card, .chart { padding: 18px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); gap: 15px; }
+.twocol { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+.visual { background: var(--mado-panel); border: 1px solid var(--mado-line); padding: 22px; overflow-x: auto; }
+.reference-note { border-top: 1px solid var(--mado-line); padding-top: 18px; font-size: .9rem; }
+.reference-note > h3 { margin-top: 0; margin-bottom: 14px; }
+details { border: 1px solid var(--mado-line); padding: 14px 18px; background: var(--mado-panel); }
+summary { color: var(--mado-ink); }
+details[open] > :not(summary) { margin-top: 16px; }
+.mado-laboratory { border: 1px solid var(--mado-line-2); border-radius: 2px; background: var(--mado-panel); color: var(--mado-ink); padding: 22px; }
+.mado-laboratory label { color: var(--mado-ink-2); }
+.mado-laboratory input, .mado-laboratory select, .mado-laboratory textarea { max-width: 100%; accent-color: var(--mado-positive); }
+.mado-laboratory button { padding: 7px 13px; border: 1px solid var(--mado-positive); border-radius: 2px; color: var(--mado-positive-on); background: var(--mado-positive); }
+.mado-laboratory > :first-child { margin-top: 0; }
+.mado-laboratory > :last-child { margin-bottom: 0; }
+.mado-footer { max-width: 1150px; margin: 45px auto 0; padding: 0 30px; display: flex; justify-content: space-between; gap: 20px; color: var(--mado-ink-3); font: 11px/1.5 var(--mado-mono); }
+/* Search chrome is assembled below with the same theme tokens. */
+/* Template-owned find. Native browser find remains available across every Session. */
+.mado-search-tools { position: fixed; top: 18px; right: 23px; z-index: 30; display: grid; justify-items: end; gap: 6px; max-width: calc(100vw - 30px); }
+.mado-search-trigger { border: 1px solid var(--mado-line-2); background: var(--mado-panel); color: var(--mado-ink-2); padding: 6px 10px; border-radius: 2px; font-size: .75rem; }
+.mado-search-state { display: flex; align-items: center; gap: 10px; padding: 5px 9px; background: var(--mado-panel); border: 1px solid var(--mado-line-2); font: 11px/1.5 var(--mado-mono); color: var(--mado-ink-2); }
+.mado-search-state button { border: 0; border-bottom: 1px solid currentColor; padding: 0; background: transparent; color: var(--mado-accent); font: inherit; }
+.mado-search-state .mado-search-step { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid var(--mado-line-2); font-size: 16px; line-height: 1; }
+.mado-search-state .mado-search-step:disabled { opacity: .45; cursor: default; }
+#mado-search-match-count { white-space: nowrap; }
+::highlight(mado-find) { background-color: var(--mado-find-bg); color: var(--mado-find-ink); }
+::highlight(mado-find-current) { background-color: var(--mado-find-current-bg); color: var(--mado-find-current-ink); }
+@media print { ::highlight(mado-find), ::highlight(mado-find-current) { background-color: transparent; color: inherit; } }
+.mado-search-trigger kbd { margin-left: 17px; color: var(--mado-accent); }
+.mado-search-overlay { position: fixed; inset: 0; z-index: 90; padding: min(15vh, 120px) 20px 20px; background: #172a3b66; }
+.mado-search-dialog { max-width: 650px; margin: auto; background: var(--mado-panel); border: 1px solid var(--mado-line-2); border-radius: 9px; box-shadow: 0 20px 80px #172a3b33; }
+.mado-search-top { display: flex; gap: 15px; align-items: center; padding: 19px; border-bottom: 1px solid var(--mado-line); }
+.mado-search-top input { width: 100%; min-width: 0; padding: 4px; background: transparent; color: var(--mado-ink); border: 0; outline-offset: 4px; }
+.mado-search-top input::placeholder { color: var(--mado-ink-3); opacity: 1; }
+.mado-search-top button { color: var(--mado-ink-3); background: transparent; border: 1px solid var(--mado-line-2); border-radius: 4px; font: 11px var(--mado-mono); padding: 5px 8px; }
+.mado-search-top #mado-search-regex { border-radius: 2px; white-space: nowrap; }
+.mado-search-top #mado-search-regex[aria-pressed="true"] { background: var(--mado-accent); border-color: var(--mado-accent); color: var(--mado-accent-on); }
+.mado-search-help, .mado-search-feedback { padding: 8px 19px 0; color: var(--mado-ink-3); font-size: .76rem; line-height: 1.6; }
+.mado-search-feedback:empty { display: none; }
+.mado-search-feedback.mado-search-error { color: var(--mado-danger); }
+.mado-search-top input[aria-invalid="true"] { outline: 1px solid var(--mado-danger); }
+.mado-search-results { max-height: 48vh; overflow-y: auto; padding: 8px; }
+.mado-search-results a { display: flex; gap: 14px; justify-content: space-between; align-items: baseline; color: var(--mado-ink-2); padding: 12px; text-decoration: none; font-size: .85rem; border-radius: 4px; }
+.mado-search-results a:hover, .mado-search-results a:focus { background: var(--mado-accent-soft); color: var(--mado-accent); }
+.mado-search-results small { flex-shrink: 0; font: 10px var(--mado-mono); color: var(--mado-ink-3); }
+.mado-search-results p { padding: 12px; color: var(--mado-ink-3); font-size: .85rem; }
+
+
+.mado-search-tools { top: auto; bottom: 25px; right: 25px; }
+@media (max-width: 1100px) {
+  .mado-index { position: static; }
+  .mado-search-tools { bottom: auto; top: 12px; right: 14px; }
+}
+@media (max-width: 850px) {
+  .mado-session { display: block; }
+  .mado-session > h2 { display: flex; gap: 18px; align-items: baseline; margin-bottom: 23px; font-size: 1.8rem; }
+  .mado-session-number { margin: 0; }
+}
+@media (max-width: 700px) {
+  body { font-size: 15px; }
+  .mado-hero { display: block; padding: 60px 23px 28px; }
+  .mado-signature { margin-bottom: 24px; }
+  .mado-meta { margin-top: 20px; }
+  .mado-title { font-size: clamp(2.5rem, 8.5vw, 3.4rem); }
+  .mado-signature { font-size: 10px; }
+  .mado-index { padding: 15px 23px 20px; }
+  .mado-index-cards { display: block; }
+  .mado-index-card { display: flex; padding: 7px 0; border-top: 1px solid var(--mado-line); }
+  .mado-index-card:first-child { border-top: 0; }
+  .mado-session { padding: 32px 23px 38px; }
+  .twocol { grid-template-columns: 1fr; }
+  .visual { padding: 15px 5px; }
+  .visual svg { min-width: 580px; }
+  th, td { padding: 11px 8px; font-size: .77rem; }
+  .component-heading { font-size: 10px; padding: 11px; }
+  .component-heading > span { display: none; }
+  .mado-laboratory { padding: 16px; }
+  .mado-footer { flex-direction: column; gap: 10px; }
+  .mado-search-tools { display: flex; align-items: center; flex-wrap: wrap; }
+  .mado-search-state { font-size: 10px; padding: 4px 6px; gap: 7px; }
+  .mado-search-state .mado-search-step { width: 26px; height: 26px; }
+  .mado-search-tools.has-matches { flex-wrap: nowrap; }
+  .mado-search-tools.has-matches .mado-search-trigger span, .mado-search-tools.has-matches .mado-search-trigger kbd { display: none; }
+  .mado-search-tools.has-matches .mado-search-trigger::before { content: "Find"; }
+  .mado-search-trigger { padding: 4px 8px; }
+  .mado-search-trigger kbd { margin-left: 8px; }
+}
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+@media print {
+  html { color-scheme: light; }
+  .mado-search-tools, .mado-search-overlay { display: none !important; }
+  .mado-document { padding-bottom: 0; }
+  .mado-index { position: static; }
+  .mado-hero { background: white; --mado-ink: #183746; --mado-ink-2: #3b5866; --mado-ink-3: #526d7a; --mado-accent: #09688f; }
+  .mado-session { display: block; padding: 24px; }
+  .mado-session > h2 { margin-bottom: 20px; break-after: avoid; }
+  .visual { overflow: visible; }
+  .visual svg { min-width: 0; }
+}
+</style>
+</head>
+<body>
+<a class="mado-skip-link" href="#mado-content">Skip to Sessions</a>
+<noscript><p class="mado-noscript">JavaScript enables search and Laboratories. All Sessions remain readable.</p></noscript>
+<div class="mado-search-tools">
+  <button class="mado-search-trigger" id="mado-search-open" type="button" aria-label="Find in document" aria-haspopup="dialog" hidden><span>Find in document</span> <kbd>/</kbd></button>
+  <div class="mado-search-state" id="mado-search-state" hidden>
+    <button type="button" class="mado-search-step" id="mado-search-prev" aria-label="Previous match" title="Previous match" disabled>&lt;</button>
+    <span id="mado-search-match-count" aria-live="polite"></span>
+    <button type="button" class="mado-search-step" id="mado-search-next" aria-label="Next match" title="Next match" disabled>&gt;</button>
+    <button type="button" id="mado-search-clear" aria-label="Clear search highlights">Clear</button>
+  </div>
+</div>
+<main class="mado-document" id="mado-top" data-mado-document="tutorial">
+<header class="mado-hero">
+  <div class="mado-signature">MADO HTML / TUTORIAL DOCUMENT</div>
+  <h1 class="mado-title">MNIST: from pixels to browser predictions</h1>
+  
+</header>
+<nav class="mado-index" aria-label="Session index">
+<div class="mado-index-cards">
+          <a class="mado-index-card" href="#session-what-is-mnist">
+            <span class="mado-index-number" aria-hidden="true">01</span>
+            <span class="mado-index-title">What is MNIST?</span>
+          </a>
+          <a class="mado-index-card" href="#session-flatten-the-image">
+            <span class="mado-index-number" aria-hidden="true">02</span>
+            <span class="mado-index-title">Turn the image into 784 inputs</span>
+          </a>
+          <a class="mado-index-card" href="#session-inside-the-network">
+            <span class="mado-index-number" aria-hidden="true">03</span>
+            <span class="mado-index-title">Follow the signal through the network</span>
+          </a>
+          <a class="mado-index-card" href="#session-train-the-model">
+            <span class="mado-index-number" aria-hidden="true">04</span>
+            <span class="mado-index-title">Train and test the model</span>
+          </a>
+          <a class="mado-index-card" href="#session-export-the-model">
+            <span class="mado-index-number" aria-hidden="true">05</span>
+            <span class="mado-index-title">Export the learned model to ONNX</span>
+          </a>
+          <a class="mado-index-card" href="#session-load-in-the-browser">
+            <span class="mado-index-number" aria-hidden="true">06</span>
+            <span class="mado-index-title">Load the model in HTML and predict a drawing</span>
+          </a></div>
+</nav>
+<span id="mado-content" class="mado-sr-only" tabindex="-1">Sessions</span>
+<div class="mado-sessions">
+      <section class="mado-session chapter" id="session-what-is-mnist" data-mado-session-id="what-is-mnist">
+        <h2><span class="mado-session-number" aria-hidden="true">1. </span><span class="mado-session-title">What is MNIST?</span></h2>
+        <div class="mado-session-content content"><p>This tutorial follows the code in <code>app/main.py</code> and the drawing page in <code>web/</code>. The goal is to train a model in Python, export what it learned, and use it to recognize a digit drawn in a browser.</p>
+<div data-mado-component-id="dataset-explained">
+<h3>Pictures paired with answers</h3>
+<p><strong>MNIST</strong> is a dataset of handwritten digits. Its name comes from Modified National Institute of Standards and Technology. Every example has two parts: a grayscale image and a label telling us which digit the writer intended.</p>
+<table>
+<caption>The data used by this project</caption>
+<thead><tr><th scope="col">Property</th><th scope="col">Value</th></tr></thead>
+<tbody>
+<tr><th scope="row">Training set</th><td>60,000 images used to learn the weights</td></tr>
+<tr><th scope="row">Test set</th><td>10,000 separate images used for final evaluation</td></tr>
+<tr><th scope="row">Image size</th><td>28 rows by 28 columns, one grayscale channel</td></tr>
+<tr><th scope="row">Pixel values on disk</th><td>Integers from 0, black, to 255, white</td></tr>
+<tr><th scope="row">Label</th><td>One integer from 0 to 9</td></tr>
+</tbody>
+</table>
+<p>A picture of a handwritten seven is the <em>input</em>. The integer <code>7</code> is its <em>target</em>. During training the model sees both. During prediction it receives only the picture and must estimate the digit.</p>
+</div>
+<div data-mado-component-id="load-data">
+<h3>Load and scale the images</h3>
+<pre><code class="language-python">from torchvision import datasets, transforms
+
+# Convert pixels to float32 values between 0 and 1.
+# Also arrange each image as [channel, height, width].
+to_tensor = transforms.ToTensor()
+
+training_data = datasets.MNIST(
+    root="data", train=True, download=True, transform=to_tensor
+)
+test_data = datasets.MNIST(
+    root="data", train=False, download=True, transform=to_tensor
+)
+
+image, label = training_data[0]
+print(image.shape)  # torch.Size([1, 28, 28])
+print(label)        # The correct digit, stored separately from the pixels</code></pre>
+<p>Dividing intensities by 255 changes their scale, not the handwriting. A dark background becomes values near zero; the light strokes become values near one. The label remains an integer. Do not feed the label into the network as an extra input.</p>
+<p><code>download=True</code> downloads missing files and reuses an existing local copy. Run commands in this tutorial from <code>sandbox/python/py_mnist</code>.</p>
+</div></div>
+      </section>
+      <section class="mado-session chapter" id="session-flatten-the-image" data-mado-session-id="flatten-the-image">
+        <h2><span class="mado-session-number" aria-hidden="true">2. </span><span class="mado-session-title">Turn the image into 784 inputs</span></h2>
+        <div class="mado-session-content content"><p>The first learned layer in this model is a fully connected layer. It expects a row of input values for each example, not a two-dimensional picture. <strong>Flattening changes the shape without changing the pixel values or their order.</strong></p>
+<div data-mado-component-id="flatten-diagram">
+<figure>
+<svg aria-label="A three by three example image is flattened row by row into nine numbers. MNIST uses the same ordering with 28 by 28 pixels and 784 numbers." role="img" viewBox="0 0 900 310">
+<rect fill="#fafaf7" height="310" rx="12" width="900"></rect>
+<g fill="#1c302e" font-family="sans-serif">
+<text font-size="19" font-weight="bold" x="30" y="35">Small example: 3 × 3 pixels</text>
+<text font-size="19" font-weight="bold" x="400" y="35">One row: 9 values, same order</text>
+<g stroke="#6b8481" stroke-width="1">
+<rect fill="#d7ece7" height="48" width="48" x="55" y="65"></rect><rect fill="#d7ece7" height="48" width="48" x="103" y="65"></rect><rect fill="#d7ece7" height="48" width="48" x="151" y="65"></rect>
+<rect fill="#fae4bc" height="48" width="48" x="55" y="113"></rect><rect fill="#fae4bc" height="48" width="48" x="103" y="113"></rect><rect fill="#fae4bc" height="48" width="48" x="151" y="113"></rect>
+<rect fill="#dfe4fc" height="48" width="48" x="55" y="161"></rect><rect fill="#dfe4fc" height="48" width="48" x="103" y="161"></rect><rect fill="#dfe4fc" height="48" width="48" x="151" y="161"></rect>
+<rect fill="#d7ece7" height="48" width="144" x="400" y="113"></rect>
+<rect fill="#fae4bc" height="48" width="144" x="544" y="113"></rect>
+<rect fill="#dfe4fc" height="48" width="144" x="688" y="113"></rect>
+</g>
+<g font-size="20" text-anchor="middle">
+<text x="79" y="96">0</text><text x="127" y="96">1</text><text x="175" y="96">0</text>
+<text x="79" y="144">0</text><text x="127" y="144">1</text><text x="175" y="144">0</text>
+<text x="79" y="192">1</text><text x="127" y="192">1</text><text x="175" y="192">1</text>
+<text x="424" y="144">0</text><text x="472" y="144">1</text><text x="520" y="144">0</text>
+<text x="568" y="144">0</text><text x="616" y="144">1</text><text x="664" y="144">0</text>
+<text x="712" y="144">1</text><text x="760" y="144">1</text><text x="808" y="144">1</text>
+</g>
+<path d="M230 137 H370" stroke="#365c56" stroke-width="3"></path>
+<path d="M370 137 L356 129 L356 145 Z" fill="#365c56"></path>
+<text font-size="16" x="246" y="116">Read each row</text>
+<g font-size="15" text-anchor="middle"><text x="472" y="188">row 0</text><text x="616" y="188">row 1</text><text x="760" y="188">row 2</text></g>
+<text font-size="18" x="30" y="255">For MNIST: flat_index = row × 28 + column</text>
+<text font-size="16" x="30" y="283">Row 0 → indices 0–27. Row 1 → 28–55. Last pixel → 783. Indices start at zero.</text>
+</g>
+</svg>
+<figcaption>The colors mark row boundaries, not pixel intensities. This toy image uses only zero and one; real MNIST images also contain gray values between them.</figcaption>
+</figure>
+</div>
+<div data-mado-component-id="batch-shapes">
+<h3>Keep different images separate</h3>
+<p>A batch is a group of examples processed together. With a batch size of 64, <code>nn.Flatten()</code> transforms <code>[64, 1, 28, 28]</code> into <code>[64, 784]</code>. It keeps the first dimension, the batch, and combines the remaining dimensions.</p>
+<pre><code class="language-python">from torch import nn
+from torch.utils.data import DataLoader
+
+loader = DataLoader(training_data, batch_size=64, shuffle=True)
+images, labels = next(iter(loader))
+
+flat = nn.Flatten()(images)
+print(images.shape)  # [64, 1, 28, 28]
+print(flat.shape)    # [64, 784]
+print(labels.shape)  # [64], one target for each image</code></pre>
+<p>Do not use <code>images.flatten()</code> without specifying dimensions here: its default combines the batch too, mixing all the examples into a single long vector.</p>
+<p>The model already includes <code>nn.Flatten()</code>. The browser therefore sends <code>[1, 1, 28, 28]</code>, not <code>[1, 784]</code>. The exported model performs the same flattening internally.</p>
+<details><summary>Does every image model need flattening at the start?</summary><p>No. This project uses a fully connected network. A convolutional network can process the two-dimensional arrangement directly. Flattening preserves the values and their positions in a fixed ordering, but this dense layer has no built-in concept of neighboring pixels.</p></details>
+</div></div>
+      </section>
+      <section class="mado-session chapter" id="session-inside-the-network" data-mado-session-id="inside-the-network">
+        <h2><span class="mado-session-number" aria-hidden="true">3. </span><span class="mado-session-title">Follow the signal through the network</span></h2>
+        <div class="mado-session-content content"><p>The network is a function with adjustable numbers called <strong>weights</strong> and <strong>biases</strong>. A forward pass applies that function to the pixels. Training adjusts those numbers; prediction reuses them unchanged.</p>
+<div data-mado-component-id="network-diagram"><figure><svg aria-label="A 28 by 28 digit image becomes 784 input values. Every hidden unit combines all 784 values using learned weights and a bias, then applies ReLU. The output layer combines the 128 hidden activations into ten logits. Softmax converts the logits to scores and the largest selects the digit. Only some input and hidden units are drawn." role="img" viewBox="0 0 1040 610">
+<rect fill="#fafaf7" height="610" rx="12" width="1040"></rect>
+<g fill="#213a37" font-family="sans-serif">
+<g font-size="20" font-weight="bold" text-anchor="middle">
+<text x="76" y="45">Image</text><text x="285" y="45">784 inputs</text><text x="535" y="45">128 hidden units</text><text x="848" y="45">10 output scores</text></g>
+<g font-size="15" text-anchor="middle">
+<text x="285" y="72">Pixel values, no learning here</text><text x="535" y="72">Learned sum, then ReLU</text><text x="848" y="72">Learned sum, no ReLU</text></g>
+<rect fill="#0b1715" height="104" rx="6" width="104" x="25" y="245"></rect>
+<path d="M44 268 L106 268 L65 330" fill="none" stroke="#ffffff" stroke-linecap="round" stroke-linejoin="round" stroke-width="10"></path>
+<text font-size="16" text-anchor="middle" x="76" y="376">28 × 28 pixels</text>
+<path d="M144 295 H213" stroke="#406e60" stroke-width="3"></path>
+<path d="M213 295 L201 288 L201 302 Z" fill="#406e60"></path>
+<text font-size="15" text-anchor="middle" x="178" y="278">Flatten</text>
+<g opacity="0.6" stroke="#a0b6b0" stroke-width="1"><line x1="303" x2="515" y1="155" y2="185"></line><line x1="303" x2="515" y1="155" y2="255"></line><line x1="303" x2="515" y1="155" y2="325"></line><line x1="303" x2="515" y1="155" y2="445"></line><line x1="303" x2="515" y1="215" y2="185"></line><line x1="303" x2="515" y1="215" y2="255"></line><line x1="303" x2="515" y1="215" y2="325"></line><line x1="303" x2="515" y1="215" y2="445"></line><line x1="303" x2="515" y1="275" y2="185"></line><line x1="303" x2="515" y1="275" y2="255"></line><line x1="303" x2="515" y1="275" y2="325"></line><line x1="303" x2="515" y1="275" y2="445"></line><line x1="303" x2="515" y1="335" y2="185"></line><line x1="303" x2="515" y1="335" y2="255"></line><line x1="303" x2="515" y1="335" y2="325"></line><line x1="303" x2="515" y1="335" y2="445"></line><line x1="303" x2="515" y1="445" y2="185"></line><line x1="303" x2="515" y1="445" y2="255"></line><line x1="303" x2="515" y1="445" y2="325"></line><line x1="303" x2="515" y1="445" y2="445"></line><line x1="555" x2="777" y1="185" y2="130"></line><line x1="555" x2="777" y1="185" y2="165"></line><line x1="555" x2="777" y1="185" y2="200"></line><line x1="555" x2="777" y1="185" y2="235"></line><line x1="555" x2="777" y1="185" y2="270"></line><line x1="555" x2="777" y1="185" y2="305"></line><line x1="555" x2="777" y1="185" y2="340"></line><line x1="555" x2="777" y1="185" y2="375"></line><line x1="555" x2="777" y1="185" y2="410"></line><line x1="555" x2="777" y1="185" y2="445"></line><line x1="555" x2="777" y1="255" y2="130"></line><line x1="555" x2="777" y1="255" y2="165"></line><line x1="555" x2="777" y1="255" y2="200"></line><line x1="555" x2="777" y1="255" y2="235"></line><line x1="555" x2="777" y1="255" y2="270"></line><line x1="555" x2="777" y1="255" y2="305"></line><line x1="555" x2="777" y1="255" y2="340"></line><line x1="555" x2="777" y1="255" y2="375"></line><line x1="555" x2="777" y1="255" y2="410"></line><line x1="555" x2="777" y1="255" y2="445"></line><line x1="555" x2="777" y1="325" y2="130"></line><line x1="555" x2="777" y1="325" y2="165"></line><line x1="555" x2="777" y1="325" y2="200"></line><line x1="555" x2="777" y1="325" y2="235"></line><line x1="555" x2="777" y1="325" y2="270"></line><line x1="555" x2="777" y1="325" y2="305"></line><line x1="555" x2="777" y1="325" y2="340"></line><line x1="555" x2="777" y1="325" y2="375"></line><line x1="555" x2="777" y1="325" y2="410"></line><line x1="555" x2="777" y1="325" y2="445"></line><line x1="555" x2="777" y1="445" y2="130"></line><line x1="555" x2="777" y1="445" y2="165"></line><line x1="555" x2="777" y1="445" y2="200"></line><line x1="555" x2="777" y1="445" y2="235"></line><line x1="555" x2="777" y1="445" y2="270"></line><line x1="555" x2="777" y1="445" y2="305"></line><line x1="555" x2="777" y1="445" y2="340"></line><line x1="555" x2="777" y1="445" y2="375"></line><line x1="555" x2="777" y1="445" y2="410"></line><line x1="555" x2="777" y1="445" y2="445"></line></g><circle cx="285" cy="155" fill="#d7ece7" r="18" stroke="#406e60" stroke-width="2"></circle><text font-size="16" text-anchor="end" x="255" y="160">x0</text><circle cx="285" cy="215" fill="#d7ece7" r="18" stroke="#406e60" stroke-width="2"></circle><text font-size="16" text-anchor="end" x="255" y="220">x1</text><circle cx="285" cy="275" fill="#d7ece7" r="18" stroke="#406e60" stroke-width="2"></circle><text font-size="16" text-anchor="end" x="255" y="280">x2</text><circle cx="285" cy="335" fill="#d7ece7" r="18" stroke="#406e60" stroke-width="2"></circle><text font-size="16" text-anchor="end" x="255" y="340">x3</text><circle cx="285" cy="445" fill="#d7ece7" r="18" stroke="#406e60" stroke-width="2"></circle><text font-size="16" text-anchor="end" x="255" y="450">x783</text><text font-size="27" text-anchor="middle" x="285" y="395">⋮</text><circle cx="535" cy="185" fill="#fae4bc" r="20" stroke="#9c6d24" stroke-width="2"></circle><text font-size="13" text-anchor="middle" x="535" y="190">h0</text><circle cx="535" cy="255" fill="#fae4bc" r="20" stroke="#9c6d24" stroke-width="2"></circle><text font-size="13" text-anchor="middle" x="535" y="260">h1</text><circle cx="535" cy="325" fill="#fae4bc" r="20" stroke="#9c6d24" stroke-width="2"></circle><text font-size="13" text-anchor="middle" x="535" y="330">h2</text><circle cx="535" cy="445" fill="#fae4bc" r="20" stroke="#9c6d24" stroke-width="2"></circle><text font-size="13" text-anchor="middle" x="535" y="450">h127</text><text font-size="27" text-anchor="middle" x="535" y="392">⋮</text><text font-size="14" text-anchor="middle" x="795" y="104">Digit</text><text font-size="14" text-anchor="middle" x="885" y="104">Logit</text><circle cx="795" cy="130" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="135">0</text><text font-size="16" text-anchor="middle" x="885" y="135">0.2</text><circle cx="795" cy="165" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="170">1</text><text font-size="16" text-anchor="middle" x="885" y="170">-1.1</text><circle cx="795" cy="200" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="205">2</text><text font-size="16" text-anchor="middle" x="885" y="205">0.8</text><circle cx="795" cy="235" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="240">3</text><text font-size="16" text-anchor="middle" x="885" y="240">1.2</text><circle cx="795" cy="270" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="275">4</text><text font-size="16" text-anchor="middle" x="885" y="275">-0.4</text><circle cx="795" cy="305" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="310">5</text><text font-size="16" text-anchor="middle" x="885" y="310">0.1</text><circle cx="795" cy="340" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="345">6</text><text font-size="16" text-anchor="middle" x="885" y="345">-0.7</text><rect fill="#d7ece7" height="32" rx="5" width="238" x="766" y="359"></rect><circle cx="795" cy="375" fill="#406e60" r="17" stroke="#536685"></circle><text fill="#ffffff" font-size="16" text-anchor="middle" x="795" y="380">7</text><text font-size="16" text-anchor="middle" x="885" y="380">4.6</text><text font-size="14" x="927" y="380">largest</text><circle cx="795" cy="410" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="415">8</text><text font-size="16" text-anchor="middle" x="885" y="415">0.5</text><circle cx="795" cy="445" fill="#e4e8f6" r="17" stroke="#536685"></circle><text fill="#213a37" font-size="16" text-anchor="middle" x="795" y="450">9</text><text font-size="16" text-anchor="middle" x="885" y="450">1.0</text><g font-size="16" text-anchor="middle">
+<text x="285" y="498">One value per pixel</text><text x="535" y="498">Each sees all 784 inputs</text><text x="848" y="498">Each uses all 128 hidden values</text></g>
+<rect fill="#e5ece7" height="55" rx="8" width="990" x="25" y="530"></rect>
+<text font-size="17" x="45" y="554">Display step: softmax(logits) → digit 7 gets 87.9% → predicted digit = 7</text>
+<text font-size="14" x="45" y="576">Illustrative scores, not a captured model result. Only a few input and hidden units are drawn.</text>
+</g></svg><figcaption>Follow the connections left to right. A line represents a learned weight. The input nodes hold pixel intensities; the hidden and output nodes perform weighted sums. All layers are fully connected, even though this drawing omits most nodes and connections.</figcaption></figure></div>
+<div data-mado-component-id="layer-computation">
+<h3>What each layer actually does</h3>
+<ol>
+<li><strong>Input: hold 784 pixel values.</strong> Flattening has no trainable parameters. Pixel position determines which input gets each value. The input layer does not identify strokes by itself.</li>
+<li><strong>Hidden layer: combine pixels into 128 activations.</strong> Hidden unit j multiplies each input by its own weight, adds the products and a bias, then applies ReLU. ReLU returns zero for a negative sum and otherwise returns the sum.</li>
+<li><strong>Output layer: produce ten logits.</strong> Each output combines all 128 hidden activations with another set of weights and a bias. Output index 0 scores digit 0, and so on through digit 9. The last layer has no ReLU or softmax in this model.</li>
+</ol>
+<pre><code>For hidden unit j:
+    sum_j = b_j + w_j0*x0 + w_j1*x1 + ... + w_j783*x783
+    h_j = max(0, sum_j)
+
+For digit k:
+    logit_k = c_k + v_k0*h0 + v_k1*h1 + ... + v_k127*h127</code></pre>
+<p>For example, a toy hidden unit with two inputs might compute <code>0.8*0.5 + 0.2*(-1.0) - 0.1 = 0.1</code>. ReLU keeps <code>0.1</code>. If that sum were <code>-0.3</code>, its activation would be <code>0</code>. The real hidden units sum 784 terms, not two.</p>
+<p>The hidden units may learn useful combinations of pixels, but we do not assign a unit the job of finding a particular stroke. This is a dense network, not a convolutional edge detector.</p>
+</div>
+<div data-mado-component-id="model-definition">
+<h3>The diagram as Python</h3>
+<pre><code class="language-python">model = nn.Sequential(
+    nn.Flatten(),            # [batch, 1, 28, 28] → [batch, 784]
+    nn.Linear(784, 128),     # Weighted sums plus 128 biases
+    nn.ReLU(),              # Negative sums become zero
+    nn.Linear(128, 10),      # Ten raw scores per image
+)</code></pre>
+<p>The hidden layer learns <code>784*128 + 128 = 100,480</code> parameters. The output layer learns <code>128*10 + 10 = 1,290</code>. That is <strong>101,770 trainable numbers</strong> in total. Flatten and ReLU add none.</p>
+<h3>A score is not yet a probability</h3>
+<p>Logits can be negative and do not sum to one. To pick a digit, use <code>argmax</code>, the index of the largest logit. To show probability-like scores in the page, apply <code>softmax</code> first. Softmax preserves the winning index and makes the ten scores sum to one.</p>
+<p>Even a high softmax score is not a guarantee of correctness. The model must choose among ten digits, so it can confidently label a doodle as a digit.</p>
+</div></div>
+      </section>
+      <section class="mado-session chapter" id="session-train-the-model" data-mado-session-id="train-the-model">
+        <h2><span class="mado-session-number" aria-hidden="true">4. </span><span class="mado-session-title">Train and test the model</span></h2>
+        <div class="mado-session-content content"><p>Before training, the weights are random and the predictions are mostly unhelpful. Training repeatedly asks: which changes to the weights would reduce the error on the labeled examples?</p>
+<div data-mado-component-id="training-loop">
+<h3>Five operations per mini-batch</h3>
+<p>The project uses batches of up to 64 images, Adam as the optimizer, a learning rate of <code>0.001</code>, and three epochs by default. An <strong>epoch</strong> is one complete pass through the training examples.</p>
+<pre><code class="language-python">import torch
+from torch import nn
+from torch.utils.data import DataLoader
+
+training_loader = DataLoader(
+    training_data, batch_size=64, shuffle=True
+)
+loss_function = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+
+model.train()
+for epoch in range(3):
+    for images, labels in training_loader:
+        # 1. Clear gradients left by the previous batch.
+        optimizer.zero_grad()
+
+        # 2. Forward pass: produce ten logits per image.
+        logits = model(images)
+
+        # 3. Compare the scores with the correct integer labels.
+        loss = loss_function(logits, labels)
+
+        # 4. Backpropagation: calculate gradients for the weights.
+        loss.backward()
+
+        # 5. Adam uses those gradients to update the weights.
+        optimizer.step()</code></pre>
+<p>This is the same update sequence as <code>train_one_epoch()</code> in <code>app/main.py</code>, with the surrounding epoch loop shown together. The project also accumulates batch losses to report a mean for each epoch.</p>
+</div>
+<div data-mado-component-id="loss-and-gradients">
+<h3>What are loss and gradients?</h3>
+<p><strong>Loss</strong> is a number measuring how poorly the scores agree with the target labels. Cross entropy penalizes a model that gives the correct digit a low probability. PyTorch accepts raw logits and performs the equivalent probability calculation internally in a numerically stable way.</p>
+<p><strong>A gradient</strong> tells us how a small change to a parameter affects loss locally. Backpropagation computes these derivatives through the output layer and hidden layer. Adam uses them, together with statistics from earlier updates, to choose parameter changes. The learning rate controls their scale.</p>
+<p><code>loss.backward()</code> computes gradients; it does not change the weights. <code>optimizer.step()</code> changes the weights. PyTorch accumulates gradients by default, which is why this simple loop clears them each batch.</p>
+<p>Do not add softmax to the model before <code>CrossEntropyLoss</code>. Also do not replace logits with <code>argmax</code> during training: the loss needs the full scores, not just the winning digit.</p>
+</div>
+<div data-mado-component-id="held-out-evaluation">
+<h3>Evaluate without learning from the answers</h3>
+<pre><code class="language-python">test_loader = DataLoader(test_data, batch_size=64, shuffle=False)
+model.eval()
+correct = 0
+count = 0
+
+with torch.no_grad():
+    for images, labels in test_loader:
+        logits = model(images)
+        predicted_digits = logits.argmax(dim=1)
+        correct += (predicted_digits == labels).sum().item()
+        count += labels.size(0)
+
+print(f"Test accuracy: {correct / count:.2%}")</code></pre>
+<p><code>model.eval()</code> selects evaluation behavior for layers such as dropout, if added later. <code>torch.no_grad()</code> separately turns off gradient tracking. Neither replaces the other. There is no backward pass or optimizer update during this evaluation.</p>
+<p><strong>Accuracy</strong> is the fraction of correct guesses. Loss also considers how the model distributes its scores. They measure different things. More epochs can eventually overfit: training performance improves while performance on unseen images does not.</p>
+<p>Keep test images out of training. To compare architectures or learning rates repeatedly, reserve a validation split from the training data. Select settings using that validation set, then evaluate the final model on the test set.</p>
+<h3>Run the complete program</h3>
+<pre><code class="language-bash">uv sync
+uv run -m app.main
+
+# A shorter smoke test, not the model to deploy for best results:
+uv run -m app.main --quick --epochs 1</code></pre>
+<p>The program prints training loss and final test accuracy, then saves <code>outputs/predictions.png</code> for inspecting individual test predictions. Each training invocation starts a new model.</p>
+</div></div>
+      </section>
+      <section class="mado-session chapter" id="session-export-the-model" data-mado-session-id="export-the-model">
+        <h2><span class="mado-session-number" aria-hidden="true">5. </span><span class="mado-session-title">Export the learned model to ONNX</span></h2>
+        <div class="mado-session-content content"><p>The browser does not need the training data, loss function, optimizer, or Python interpreter. It needs the forward computation and its learned parameters. <strong>ONNX</strong>, Open Neural Network Exchange, stores that computation as a portable graph with the weights.</p>
+<div data-mado-component-id="export-code">
+<h3>Export after training</h3>
+<pre><code class="language-python">from pathlib import Path
+import torch
+
+path = Path("web/mnist.onnx")
+path.parent.mkdir(parents=True, exist_ok=True)
+model.eval()
+
+torch.onnx.export(
+    model,
+    (torch.zeros(1, 1, 28, 28),),  # Example input establishes shape and dtype
+    str(path),
+    input_names=["image"],
+    output_names=["logits"],
+    opset_version=18,
+    dynamo=True,
+    external_data=False,         # Include the weights in this one file
+)</code></pre>
+<p>This is the export performed by <code>export_model()</code>. The zero image is a shape example, not a new training example. Exporting does not replace the learned weights with zeros or retrain the model.</p>
+<p><code>opset_version=18</code> selects the ONNX operator definitions used in the graph. It is not the Python, model, or runtime version. The receiving runtime must support those operators.</p>
+</div>
+<div data-mado-component-id="model-contract">
+<h3>The contract the browser must follow</h3>
+<table>
+<caption>Names, shapes, and types of the exported model</caption>
+<thead><tr><th scope="col">Boundary</th><th scope="col">Name</th><th scope="col">Shape</th><th scope="col">Values</th></tr></thead>
+<tbody>
+<tr><th scope="row">Input</th><td><code>image</code></td><td><code>[1, 1, 28, 28]</code></td><td>float32 intensities, scaled to 0 through 1</td></tr>
+<tr><th scope="row">Output</th><td><code>logits</code></td><td><code>[1, 10]</code></td><td>Raw scores for digits 0 through 9</td></tr>
+</tbody>
+</table>
+<p>The exported batch size is fixed at one because the drawing page predicts one image at a time. ONNX includes Flatten, so the page supplies an image-shaped tensor. Cropping, resizing, and centering the drawing happen outside the exported graph, in JavaScript.</p>
+<h3>Create the file with this project</h3>
+<pre><code class="language-bash">uv run -m app.main --export</code></pre>
+<p>This command trains, evaluates, and writes <code>web/mnist.onnx</code>. The current network produces a file of roughly 403 KiB. You can reuse it every time the page loads. A new export overwrites it; a fresh checkout needs a new export because the generated model is ignored by Git.</p>
+<p>The export is for inference, not a checkpoint for resuming Adam training. It does not include the optimizer's accumulated state.</p>
+<h3>Verify the boundary</h3>
+<pre><code class="language-bash">uv run python -m unittest discover -s tests -v</code></pre>
+<p>The export test checks the ONNX graph and runs a synthetic image through both PyTorch and an ONNX reference evaluator. Their output logits must agree within floating-point tolerances. The browser smoke test later checks the WebAssembly runtime too.</p>
+</div>
+<div data-mado-component-id="onnx-versus-wasm">
+<h3>ONNX is the model; WASM is the execution engine</h3>
+<p>This project does <strong>not</strong> compile the Python program into a WebAssembly file. It exports the learned network to ONNX. ONNX Runtime Web supplies a WebAssembly engine that executes that network in the browser.</p>
+<pre><code>app/main.py          trains and exports
+        ↓
+web/mnist.onnx       computation graph + learned parameters
+        ↓
+ONNX Runtime Web    executes the graph using its WASM backend
+        ↓
+ten logits          one score per digit</code></pre>
+</div></div>
+      </section>
+      <section class="mado-session chapter" id="session-load-in-the-browser" data-mado-session-id="load-in-the-browser">
+        <h2><span class="mado-session-number" aria-hidden="true">6. </span><span class="mado-session-title">Load the model in HTML and predict a drawing</span></h2>
+        <div class="mado-session-content content"><p>The HTML page provides a canvas and result display. JavaScript prepares the pixels and calls ONNX Runtime. WebAssembly performs the network computation. The static server only delivers files; it does not receive drawings or calculate predictions.</p>
+<div data-mado-component-id="html-runtime-loading">
+<h3>Load the runtime and your application</h3>
+<p><code>web/index.html</code> loads these scripts. They are shown here as code, not executed by this tutorial.</p>
+<pre><code class="language-html">&lt;!-- Runtime JavaScript and its WASM assets must use the same version. --&gt;
+&lt;script defer
+  src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"&gt;
+&lt;/script&gt;
+&lt;script type="module" src="app.mjs"&gt;&lt;/script&gt;</code></pre>
+<p>The runtime exposes <code>ort</code>. Our application waits for the window's load event before creating the session, so the deferred runtime script is available first. It reports a loading error if the runtime or model cannot be fetched.</p>
+<pre><code class="language-javascript">// Inside loadModel(), after the runtime script has loaded:
+ort.env.wasm.wasmPaths =
+  "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/";
+ort.env.wasm.numThreads = 1;
+
+const response = await fetch("./mnist.onnx", { cache: "no-cache" });
+if (!response.ok) throw new Error("Export the model first.");
+
+const session = await ort.InferenceSession.create(
+  await response.arrayBuffer(),
+  { executionProviders: ["wasm"] },
+);</code></pre>
+<p>Create the session once and reuse it for each drawing. Selecting <code>wasm</code> explicitly makes this a CPU WebAssembly example, not a WebGPU example. One thread avoids needing cross-origin isolation headers on the static server.</p>
+</div>
+<div data-mado-component-id="canvas-preparation">
+<h3>Make the canvas resemble the training data</h3>
+<p>The pad is 280 by 280 pixels, ten times the model's input dimensions. Sending those pixels directly would have both the wrong shape and the wrong scale.</p>
+<ol>
+<li>Find the bounding box of the light ink. If there is no ink, return no prediction.</li>
+<li>Crop to that box and resize with the aspect ratio preserved. Fit the longest side into 20 pixels, leaving a margin in the final image.</li>
+<li>Place it on a black 28 by 28 canvas and shift it so its pixel mass is near the center.</li>
+<li>Read intensities row by row and divide by 255. Produce a <code>Float32Array</code> containing exactly 784 values.</li>
+</ol>
+<p><code>prepareInput()</code> in <code>web/preprocessing.mjs</code> implements this sequence. Centering by mass means pixels with more ink contribute more to the center calculation. The algorithm approximates MNIST's preparation; it cannot make every drawing match MNIST handwriting.</p>
+<p>The data buffer is a flat array in memory, but the tensor shape <code>[1, 1, 28, 28]</code> tells the runtime how to interpret it. The model's own Flatten operation then turns that logical image shape into 784 inputs to the dense layer.</p>
+</div>
+<div data-mado-component-id="browser-inference">
+<h3>Run the model and read its answer</h3>
+<p>This simplified function shows the inference part of <code>web/app.mjs</code>. The full page also handles drawing events, blank input, loading failures, and ignoring stale results if you clear or change the pad while a prediction is running.</p>
+<pre><code class="language-javascript">import { prepareInput, softmax } from "./preprocessing.mjs";
+
+async function predictDigit(session, canvas) {
+  const pixels = prepareInput(canvas);
+  if (!pixels) return null; // Do not guess a digit for an empty pad.
+
+  const input = new ort.Tensor("float32", pixels, [1, 1, 28, 28]);
+
+  // "image" and "logits" are the names selected during Python export.
+  const output = await session.run({ image: input });
+  const logits = output.logits.data;
+
+  // Softmax is for the displayed scores, not part of the exported model.
+  const scores = softmax(logits);
+  const digit = scores.indexOf(Math.max(...scores));
+  return { digit, scores };
+}</code></pre>
+<details><summary>How does softmax convert logits to scores?</summary>
+<pre><code class="language-javascript">function softmax(logits) {
+  const maximum = Math.max(...logits);
+  const exp = Array.from(logits, value =&gt; Math.exp(value - maximum));
+  const total = exp.reduce((sum, value) =&gt; sum + value, 0);
+  return exp.map(value =&gt; value / total);
+}</code></pre>
+<p>Subtracting the maximum prevents large positive logits from overflowing when exponentiated. It leaves the final probabilities unchanged. A score of 0.9 becomes 90% in the display, but it is not a validated promise of 90% reliability on your handwriting.</p></details>
+<p>Pointer events collect mouse, touch, or pen strokes. After the pen lifts, the application waits briefly, prepares the image, and predicts automatically. The result panel displays the winning digit, all ten scores, and the actual 28 by 28 input.</p>
+</div>
+<div data-mado-component-id="run-browser-demo">
+<h3>Try the existing page</h3>
+<pre><code class="language-bash"># Train and export once. Repeat only when you want a new model.
+uv run -m app.main --export
+
+# Serve static files, with correct JavaScript module MIME types.
+uv run -m app.serve</code></pre>
+<p>Open <a href="http://127.0.0.1:8000">http://127.0.0.1:8000</a>. Draw a single digit, inspect the small input preview, and compare the predicted digit with what you intended. Use Clear pad before trying another digit. If this tutorial is served at that same address, <a href="index.html">open the drawing page</a>.</p>
+<p>Do not open the drawing application through <code>file://</code>; it fetches the model and imports JavaScript modules. The tutorial itself is a standalone document and can be opened directly. If port 8000 is occupied, use <code>uv run -m app.serve --port 8001</code> and open that port instead.</p>
+<p>Drawings stay in browser memory. Runtime assets currently download from jsDelivr, so the application needs internet access for those assets. The model loads from your static server. This is not a single offline HTML application, and no Python process is involved in prediction.</p>
+<h3>Check the complete browser path</h3>
+<pre><code class="language-bash"># Pure JavaScript checks, requires Node 18 or newer:
+node --test tests/web.test.mjs
+
+# Real WASM inference and drawing checks, requires Chrome and an exported model:
+uv run --with playwright python tests/browser_smoke.py</code></pre>
+<p>The browser check draws a zero using pointer events and verifies its prediction, tensor shape and range, clearing, stale-result protection, mobile input, and missing-model handling.</p>
+<h3>Keep these boundaries in mind</h3>
+<ul>
+<li>Training learns the weights from labeled examples.</li>
+<li>Export packages the forward computation and learned weights.</li>
+<li>Preprocessing makes a new drawing compatible with the model's input.</li>
+<li>Inference applies the fixed weights to that input. It does not learn from your drawing.</li>
+</ul>
+</div></div>
+      </section></div>
+<footer class="mado-footer"><span>Mado HTML / End of Tutorial Document</span><a href="#mado-top">Back to beginning ↑</a></footer>
+</main>
+<div class="mado-search-overlay" id="mado-search-overlay" hidden>
+  <div class="mado-search-dialog" role="dialog" aria-modal="true" aria-labelledby="mado-search-label">
+    <div class="mado-search-top"><label class="mado-sr-only" id="mado-search-label" for="mado-search-input">Find Sessions and Components</label><input type="search" id="mado-search-input" placeholder="Find Sessions and Components…" aria-describedby="mado-search-help mado-search-feedback" maxlength="4096" autocomplete="off" spellcheck="false" autocapitalize="off"><button type="button" id="mado-search-regex" aria-label="Use regular expressions" aria-pressed="false" title="Use regular expressions">Regex</button><button type="button" id="mado-search-close" aria-label="Close search">esc</button></div>
+    <p class="mado-search-help" id="mado-search-help">Literal search · ignores case. Enable Regex for pattern matching.</p>
+    <p class="mado-search-feedback" id="mado-search-feedback" role="status" aria-live="polite"></p>
+    <div class="mado-search-results" id="mado-search-results" aria-busy="false"></div>
+  </div>
+</div>
+<script>
+(() => {
+  'use strict';
+  const $ = (selector, root = document) => root.querySelector(selector);
+  const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const documentRoot = $('main.mado-document');
+  const contentRoot = $('.mado-sessions', documentRoot);
+  const index = $('.mado-index', documentRoot);
+  const sessions = $$('.mado-session[data-mado-session-id]', contentRoot);
+  const links = $$('.mado-index-card', index);
+  const renderedLaboratories = new WeakMap();
+  const targetEntries = new WeakMap();
+  const destinations = new Map();
+  const entries = [];
+  const MATCH_LIMIT = 2000;
+
+  function decodeLaboratorySource(source) {
+    const hex = source.getAttribute('data-mado-laboratory-source');
+    if (!hex || hex.length % 2 || !/^[0-9a-f]+$/i.test(hex)) throw new Error('Missing or invalid validated Laboratory source');
+    const bytes = Uint8Array.from(hex.match(/../g), pair => parseInt(pair, 16));
+    return new TextDecoder('utf-8', {fatal:true}).decode(bytes);
+  }
+  function initLaboratories() {
+    $$('template[data-mado-component-kind="laboratory"]', contentRoot).forEach(source => {
+      const laboratory = document.createElement('section');
+      const title = source.getAttribute('data-mado-title') || 'Interactive Laboratory';
+      laboratory.className = "mado-laboratory";
+      laboratory.setAttribute('role', 'region');
+      laboratory.setAttribute('aria-label', title);
+      source.after(laboratory);
+      renderedLaboratories.set(source, laboratory);
+      try {
+        const parsed = document.createElement('template');
+        parsed.innerHTML = decodeLaboratorySource(source);
+        const scripts = $$('script', parsed.content).map(script => { const text = script.textContent; script.remove(); return text; });
+        laboratory.append(parsed.content);
+        // Trusted source, not a security boundary. One failure must not disable search.
+        scripts.forEach(script => {
+          try { Function("root", script)(laboratory); }
+          catch (error) { console.error('Laboratory failed:', title, error); }
+        });
+      } catch (error) {
+        laboratory.textContent = 'This Laboratory could not be initialized.';
+        console.error('Laboratory failed:', title, error);
+      }
+    });
+  }
+  initLaboratories();
+
+  const normalize = text => (text || '').replace(/\s+/g, ' ').trim();
+  function register(entry) {
+    entries.push(entry);
+    targetEntries.set(entry.target, entry);
+    destinations.set(entry.key, entry.target);
+  }
+  sessions.forEach(session => {
+    const sid = session.getAttribute('data-mado-session-id');
+    register({id:sid, key:session.id, label:normalize($('.mado-session-title', session).textContent), kind:'Session', target:session});
+    $$('[data-mado-component-id]', $('.mado-session-content', session)).forEach(component => {
+      // Runtime Laboratory internals are not addressable parent-document Components.
+      if (component.closest('.mado-laboratory')) return;
+      const cid = component.getAttribute('data-mado-component-id');
+      const laboratory = renderedLaboratories.get(component);
+      const label = component.getAttribute('data-mado-title') || component.getAttribute('aria-label') || $('figcaption, summary, h3, h4', component)?.textContent || cid;
+      // IDs are Session-local. The URL key is namespaced without overwriting authored IDs.
+      register({id:cid, key:'mado-component:' + sid + ':' + cid, label:normalize(label), kind:laboratory ? 'Laboratory' : 'Component', target:laboratory || component});
+    });
+  });
+  index.hidden = sessions.length === 0;
+  index.classList.toggle('mado-index-long', sessions.length > 8);
+
+  function setActive(position) {
+    links.forEach((link, i) => i === position ? link.setAttribute('aria-current', 'location') : link.removeAttribute('aria-current'));
+  }
+  function owningEntry(target) {
+    for (let el = target; el && el !== documentRoot; el = el.parentElement) {
+      if (targetEntries.has(el)) return targetEntries.get(el);
+    }
+    return null;
+  }
+  function reveal(target) {
+    for (let el = target; el && el !== documentRoot; el = el.parentElement) {
+      if (el.tagName === 'DETAILS') el.open = true;
+    }
+  }
+  function navigate(target, updateHash = true, focus = true) {
+    if (!target) return;
+    reveal(target);
+    const session = target.closest('.mado-session');
+    if (session) setActive(sessions.indexOf(session));
+    const entry = owningEntry(target);
+    if (updateHash) {
+      const url = new URL(location.href);
+      url.hash = target === documentRoot ? '' : entry?.key || target.id;
+      history.replaceState(null, '', url);
+    }
+    requestAnimationFrame(() => {
+      if (!target.isConnected) return;
+      if (target === documentRoot) window.scrollTo({top:0});
+      else target.scrollIntoView({block:'start'});
+      if (focus) {
+        if (!target.hasAttribute('tabindex')) target.setAttribute('tabindex', '-1');
+        target.focus({preventScroll:true});
+      }
+    });
+  }
+  function hashTarget(hash) {
+    try { const key = decodeURIComponent(hash.replace(/^#/, '')); return destinations.get(key) || document.getElementById(key); }
+    catch { return null; }
+  }
+  document.addEventListener('click', event => {
+    const link = event.target.closest?.('a[href^="#"]');
+    if (!link || event.button || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+    const target = hashTarget(link.hash);
+    if (target) { event.preventDefault(); navigate(target); }
+  });
+  const overlay = $('#mado-search-overlay'), searchInput = $('#mado-search-input');
+  const highlightSupported = Boolean(window.Highlight && window.CSS?.highlights);
+  let previousFocus = null, searchRanges = [], currentMatch = -1, lastMatchQuery = '';
+  let searchJob = null, regexWorkerUrl = null, regexMode = false;
+
+  // CSS ranges leave authored content and Laboratory event handlers untouched.
+  // Group inline text by reading block so phrases can cross <strong> or code spans.
+  function searchBlocks(root) {
+    const blocks = new Map();
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        return node.parentElement.closest('svg, template, script, style, input, textarea, select, [hidden], [aria-hidden="true"]')
+          ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT;
+      }
+    });
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      const owner = node.parentElement.closest('p, h1, h2, h3, h4, h5, h6, li, dt, dd, td, th, caption, pre, figcaption, summary, output, label, button, .component-heading, .laboratory-heading, .callout') || node.parentElement;
+      if (!blocks.has(owner)) blocks.set(owner, {text:'', segments:[]});
+      const block = blocks.get(owner), start = block.text.length;
+      block.text += node.nodeValue;
+      block.segments.push({node, start, end:block.text.length});
+    }
+    return [...blocks.values()].filter(block => block.text.trim());
+  }
+  function queryPattern() {
+    const source = searchInput.value;
+    if (!source.trim()) return null;
+    if (source.length > 4096) throw new Error('Use at most 4,096 characters.');
+    if (regexMode) {
+      if (source.length > 512) throw new Error('Use at most 512 characters.');
+      return new RegExp(source, 'giu');
+    }
+    const words = source.trim().split(/\s+/);
+    return new RegExp(words.map(word => word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('\\s+'), 'giu');
+  }
+  function matchQueryKey(pattern) { return pattern ? (regexMode ? 'regex:' : 'literal:') + pattern.source : ''; }
+  function paintMatches(pattern, blocks = [], matches = []) {
+    const key = matchQueryKey(pattern);
+    const previous = key === lastMatchQuery ? searchRanges[currentMatch] : null;
+    lastMatchQuery = key;
+    searchRanges = [];
+    matches.forEach(match => {
+      const block = blocks[match.block];
+      const start = block.segments.find(part => part.end > match.start);
+      const end = block.segments.find(part => part.end >= match.end);
+      const range = document.createRange();
+      range.setStart(start.node, match.start - start.start);
+      range.setEnd(end.node, match.end - end.start);
+      searchRanges.push(range);
+    });
+    searchRanges.sort((a, b) => a.compareBoundaryPoints(Range.START_TO_START, b));
+    // Preserve the current occurrence when unrelated Laboratory output changes.
+    // If that occurrence disappears, return to an unselected result list.
+    currentMatch = previous ? searchRanges.findIndex(range =>
+      range.startContainer === previous.startContainer && range.startOffset === previous.startOffset &&
+      range.endContainer === previous.endContainer && range.endOffset === previous.endOffset) : -1;
+    if (highlightSupported) {
+      CSS.highlights.delete('mado-find');
+      if (searchRanges.length) CSS.highlights.set('mado-find', new Highlight(...searchRanges));
+    }
+    $('#mado-search-state').hidden = !pattern;
+    $('.mado-search-tools').classList.toggle('has-matches', Boolean(pattern));
+    paintMatchNavigation();
+  }
+  function paintMatchNavigation() {
+    const active = searchRanges[currentMatch];
+    $('#mado-search-match-count').textContent = active
+      ? (currentMatch + 1) + ' of ' + searchRanges.length
+      : searchRanges.length + (searchRanges.length === 1 ? ' highlight' : ' highlights');
+    $('#mado-search-match-count').title = highlightSupported ? '' : 'Use browser find for highlighting';
+    $('#mado-search-prev').disabled = $('#mado-search-next').disabled = searchRanges.length === 0;
+    if (highlightSupported) {
+      CSS.highlights.delete('mado-find-current');
+      if (active) {
+        const highlight = new Highlight(active);
+        highlight.priority = 1;
+        CSS.highlights.set('mado-find-current', highlight);
+      }
+    }
+  }
+  function jumpToMatch(index, target = null, focus = false) {
+    if (!searchRanges.length || searchJob) return;
+    currentMatch = (index + searchRanges.length) % searchRanges.length;
+    const range = searchRanges[currentMatch];
+    paintMatchNavigation();
+    if (!overlay.hidden) closeSearch(false, true);
+    const parent = range.startContainer.parentElement;
+    reveal(parent);
+    target ||= owningEntry(parent)?.target;
+    // Keep a stable Session/Component URL. Button focus stays put for repeated clicks.
+    navigate(target, true, focus);
+    requestAnimationFrame(() => {
+      if (!range.startContainer.isConnected) return;
+      // Reveal the occurrence, not just the start of a long code block.
+      for (let el = parent; el && el !== $('.mado-sessions'); el = el.parentElement) {
+        if (el.scrollWidth > el.clientWidth && /auto|scroll/.test(getComputedStyle(el).overflowX)) {
+          const rect = range.getClientRects()[0], box = el.getBoundingClientRect();
+          if (rect && (rect.left < box.left || rect.right > box.right))
+            el.scrollLeft += rect.left - box.left - el.clientWidth / 2;
+        }
+      }
+      const rect = range.getClientRects()[0];
+      if (rect) window.scrollBy({top:rect.top - innerHeight * .45, behavior:matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth'});
+    });
+  }
+  function stepMatch(delta) {
+    const next = currentMatch < 0 ? (delta > 0 ? 0 : searchRanges.length - 1) : currentMatch + delta;
+    jumpToMatch(next);
+  }
+  // User-authored regex runs off the UI thread. A slow expression can be stopped.
+  function regexWorker() {
+    self.onmessage = ({data}) => {
+      const pattern = new RegExp(data.source, 'giu');
+      const matches = [], found = [];
+      let truncated = false;
+      scan: for (let block = 0; block < data.blocks.length; block += 1) {
+        for (const match of data.blocks[block].matchAll(pattern)) {
+          if (!match[0].length) continue;
+          if (matches.length === data.limit) { truncated = true; break scan; }
+          matches.push({block, start:match.index, end:match.index + match[0].length});
+        }
+      }
+      function hasMatch(text) {
+        for (const match of text.matchAll(pattern)) if (match[0].length) return true;
+        return false;
+      }
+      data.entries.forEach((texts, index) => { if (texts.some(hasMatch)) found.push(index); });
+      self.postMessage({matches, found, truncated});
+    };
+  }
+  function cancelSearchJob() {
+    if (searchJob) { clearTimeout(searchJob.timer); searchJob.worker.terminate(); searchJob = null; }
+    $('#mado-search-results').setAttribute('aria-busy', 'false');
+  }
+  function searchFeedback(message = '', error = false) {
+    $('#mado-search-feedback').textContent = message;
+    $('#mado-search-feedback').classList.toggle('mado-search-error', error);
+    searchInput.setAttribute('aria-invalid', String(error));
+  }
+  function clearSearch() {
+    cancelSearchJob(); searchInput.value = ''; paintMatches(null); searchFeedback();
+  }
+  function failSearch(message) {
+    cancelSearchJob(); paintMatches(null); $('#mado-search-results').replaceChildren(); searchFeedback(message, true);
+  }
+  function paintSearch() {
+    cancelSearchJob();
+    let pattern;
+    try { pattern = queryPattern(); }
+    catch (error) { failSearch((regexMode ? 'Invalid regex: ' : 'Invalid search: ') + error.message); return; }
+    searchFeedback();
+    if (!pattern) { paintMatches(null); renderSearchResults(entries); return; }
+    if (matchQueryKey(pattern) !== lastMatchQuery) paintMatches(null);
+    $('#mado-search-prev').disabled = $('#mado-search-next').disabled = true;
+    if ($('#mado-search-results').contains(document.activeElement)) searchInput.focus();
+    $('#mado-search-results').replaceChildren();
+    $('#mado-search-results').setAttribute('aria-busy', 'true');
+    searchFeedback('Searching…');
+    const blocks = searchBlocks($('.mado-sessions'));
+    const texts = entries.map(entry => [entry.id, entry.label, entry.kind, ...searchBlocks(entry.target).map(block => block.text)]);
+    try {
+      regexWorkerUrl ||= URL.createObjectURL(new Blob(['(' + regexWorker.toString() + ')()'], {type:'text/javascript'}));
+      const worker = new Worker(regexWorkerUrl);
+      const job = {worker, timer:null};
+      searchJob = job;
+      job.timer = setTimeout(() => {
+        if (searchJob === job) failSearch('Search took too long. Simplify the query and try again.');
+      }, 750);
+      worker.onerror = event => {
+        event.preventDefault();
+        if (searchJob === job) failSearch('Search could not run. Try another query or use browser find.');
+      };
+      worker.onmessage = ({data}) => {
+        if (searchJob !== job) return;
+        cancelSearchJob();
+        // Laboratory output may have changed while the worker searched its snapshot.
+        if (blocks.some(block => block.segments.some(part => !part.node.isConnected || part.node.nodeValue !== block.text.slice(part.start, part.end)))) {
+          paintSearch(); return;
+        }
+        paintMatches(pattern, blocks, data.matches);
+        renderSearchResults(data.found.map(index => entries[index]));
+        searchFeedback(data.truncated ? 'Showing the first ' + MATCH_LIMIT.toLocaleString('en-US') + ' highlights. Narrow the query to see later matches.' : highlightSupported ? '' : 'Highlighting needs a current browser. Results and navigation still work; browser Find is also available.');
+        if (job.jumpWhenReady && !overlay.hidden) $('#mado-search-results a')?.click();
+      };
+      worker.postMessage({limit:MATCH_LIMIT, source:pattern.source, blocks:blocks.map(block => block.text), entries:texts});
+    } catch (error) {
+      failSearch('Search could not start. Use browser find instead.');
+    }
+  }
+  function renderSearchResults(found) {
+    const results = $('#mado-search-results'); results.replaceChildren();
+    found.forEach(entry => {
+      const link = document.createElement('a'); link.href = '#'+entry.key;
+      const label = document.createElement('span'); label.textContent = entry.label;
+      const kind = document.createElement('small'); kind.textContent = entry.kind;
+      link.append(label,kind); link.addEventListener('click', event => {
+        event.preventDefault(); event.stopPropagation();
+        const index = searchRanges.findIndex(range => entry.target.contains(range.startContainer));
+        if (index >= 0) jumpToMatch(index, entry.target, true);
+        else { closeSearch(false, true); navigate(entry.target); }
+      });
+      results.append(link);
+    });
+    if (!found.length) { const p = document.createElement('p'); p.textContent = regexMode ? 'No non-empty matches in Sessions or Components.' : 'No matching Sessions or Components.'; results.append(p); }
+  }
+  function openSearch() {
+    previousFocus = document.activeElement; overlay.hidden = false;
+    $('.mado-document').inert = true; $('.mado-search-tools').inert = true;
+    paintSearch(); searchInput.focus();
+  }
+  function closeSearch(restore = true, keepHighlights = false) {
+    overlay.hidden = true; $('.mado-document').inert = false; $('.mado-search-tools').inert = false;
+    if (!keepHighlights) clearSearch();
+    if (restore && previousFocus) previousFocus.focus();
+  }
+  $('#mado-search-prev').addEventListener('click', () => stepMatch(-1));
+  $('#mado-search-next').addEventListener('click', () => stepMatch(1));
+  $('#mado-search-clear').addEventListener('click', () => { clearSearch(); $('#mado-search-open').focus(); });
+  // Laboratory output can change after jumping to a result. Rebuild only the ranges.
+  let pendingMatches = false;
+  new MutationObserver(() => {
+    if (!searchInput.value.trim() || pendingMatches) return;
+    pendingMatches = true;
+    requestAnimationFrame(() => { pendingMatches = false; paintSearch(); });
+  }).observe($('.mado-sessions'), {subtree:true, childList:true, characterData:true, attributes:true, attributeFilter:['hidden', 'aria-hidden']});
+  $('#mado-search-regex').addEventListener('click', () => {
+    regexMode = !regexMode;
+    $('#mado-search-regex').setAttribute('aria-pressed', String(regexMode));
+    $('#mado-search-label').textContent = regexMode ? 'Find Sessions and Components using a regular expression' : 'Find Sessions and Components';
+    $('#mado-search-open span').textContent = regexMode ? 'Find with regex' : 'Find in document';
+    searchInput.placeholder = regexMode ? 'Regex: retry|timeout' : 'Find Sessions and Components…';
+    if (regexMode) searchInput.setAttribute('maxlength', '512'); else searchInput.setAttribute('maxlength', '4096');
+    if (regexMode) $('#mado-search-help').innerHTML = String.raw`JavaScript regex · ignores case · no surrounding <code>/</code><br>Try <code>retry|timeout</code> or <code>attempt\s+\d+</code>. Empty matches are skipped.`;
+    else $('#mado-search-help').textContent = 'Literal search · ignores case. Enable Regex for pattern matching.';
+    paintSearch(); searchInput.focus();
+  });
+  searchInput.addEventListener('input', paintSearch);
+  window.addEventListener('pagehide', () => { cancelSearchJob(); if (regexWorkerUrl) URL.revokeObjectURL(regexWorkerUrl); regexWorkerUrl = null; });
+  $('#mado-search-open').addEventListener('click', openSearch); $('#mado-search-close').addEventListener('click', () => closeSearch());
+  overlay.addEventListener('click', event => { if (event.target === overlay) closeSearch(); });
+  document.addEventListener('keydown', event => {
+    // Do not make native find search an inert document behind the custom dialog.
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'f' && !overlay.hidden) { closeSearch(); return; }
+    if (!overlay.hidden) {
+      if (event.key === 'Escape') { event.preventDefault(); closeSearch(); }
+      if (event.key === 'Tab') {
+        const focusable = $$('input, button, a', overlay), first = focusable[0], last = focusable[focusable.length-1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+      }
+      if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+        const results = $$('#mado-search-results a');
+        if (results.length) { event.preventDefault(); const i = results.indexOf(document.activeElement); results[(i+(event.key === 'ArrowDown' ? 1 : -1)+results.length)%results.length].focus(); }
+      }
+      if (event.key === 'Enter' && document.activeElement === searchInput) { event.preventDefault(); if (searchJob) searchJob.jumpWhenReady = true; else $('#mado-search-results a')?.click(); }
+      return;
+    }
+    if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
+    if (event.target.closest('input, textarea, select, [contenteditable]:not([contenteditable="false"]), .mado-laboratory, .visual, pre')) return;
+    if (event.key === '/') { event.preventDefault(); openSearch(); }
+    if (event.target.closest('.mado-search-state') && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+      event.preventDefault(); stepMatch(event.key === 'ArrowLeft' ? -1 : 1); return;
+    }
+    if (event.key === 'Escape') { clearSearch(); }
+  });
+
+  function updateNavMetrics() {
+    const height = getComputedStyle(index).position === 'sticky' ? index.getBoundingClientRect().height : 0;
+    document.documentElement.style.setProperty('--mado-scroll-offset', (height + 16) + 'px');
+  }
+  let pendingScroll = false;
+  window.addEventListener('scroll', () => {
+    if (pendingScroll) return;
+    pendingScroll = true;
+    requestAnimationFrame(() => {
+      pendingScroll = false;
+      let active = sessions.length ? 0 : -1;
+      sessions.forEach((session, i) => { if (session.getBoundingClientRect().top <= innerHeight * .32) active = i; });
+      setActive(active);
+    });
+  }, {passive:true});
+  function restoreHash() { const target = hashTarget(location.hash); if (target) navigate(target, false, false); }
+  window.addEventListener('hashchange', restoreHash);
+  window.addEventListener('popstate', restoreHash);
+  window.addEventListener('resize', updateNavMetrics);
+  window.addEventListener('pageshow', event => { if (event.persisted && searchInput.value.trim()) paintSearch(); });
+  if (window.ResizeObserver) new ResizeObserver(updateNavMetrics).observe(index);
+  $('#mado-search-open').hidden = false;
+  setActive(sessions.length ? 0 : -1); updateNavMetrics(); restoreHash();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+version: '3'
+
+tasks:
+
+  default:
+    cmds:
+      - task --list
+
+  run:
+    aliases: ["r"]
+    desc: "Run the Application"
+    cmds:
+      - uv run -m app.main
+
+  export:
+    desc: "Train and export the ONNX model for the browser"
+    cmds:
+      - uv run -m app.main --export
+
+  web:
+    desc: "Serve the drawing demo at http://127.0.0.1:8000"
+    cmds:
+      - uv run -m app.serve
+
+  test:
+    desc: "Run offline Python and JavaScript tests, requires Node 18+"
+    cmds:
+      - uv run python -m unittest discover -s tests -v
+      - node --test tests/web.test.mjs
