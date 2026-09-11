@@ -8,12 +8,12 @@
     "build": "vite build",
     "preview": "vite preview"
   },
-  "dependencies": {
-    "typegpu": "^0.12.4"
-  },
   "devDependencies": {
     "@webgpu/types": "^0.1.65",
     "typescript": "^5.8.3",
     "vite": "^7.1.3"
+  },
+  "dependencies": {
+    "typegpu": "^0.12.0"
   }
 }

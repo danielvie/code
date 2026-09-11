@@ -1,4 +1,5 @@
 import './styles.css';
+import './prototype-layouts.css';
 import tgpu, { common, d } from 'typegpu';
 
 const app = document.querySelector('#app');
@@ -25,6 +26,7 @@ const icons = {
   gain: '<svg viewBox="0 0 24 24"><path d="M4 16 9 11l3 3 7-8"/><path d="M15 6h4v4"/></svg>',
   scope: '<svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><path d="M7 14h2l2-5 2 7 2-4h2"/></svg>',
   reset: '<svg viewBox="0 0 24 24"><path d="M5 8a8 8 0 1 1 1 9"/><path d="M5 4v4h4"/></svg>',
+  panel: '<svg viewBox="0 0 24 24"><rect x="3.5" y="4" width="17" height="16" rx="1"/><path d="M9 4v16M14 9l-3 3 3 3"/></svg>',
 };
 
 const blockDefinitions = {
@@ -95,15 +97,15 @@ const createNode = (type, x, y) => ({
 });
 
 const initialNodes = [
-  { ...createNode('source', 78, 195), id: 'source-1' },
-  { ...createNode('filter', 350, 215), id: 'filter-1' },
-  { ...createNode('gain', 350, 462), id: 'gain-1' },
-  { ...createNode('scope', 635, 245), id: 'scope-1' },
+  { ...createNode('source', 50, 275), id: 'source-1' },
+  { ...createNode('filter', 410, 70), id: 'filter-1' },
+  { ...createNode('gain', 410, 510), id: 'gain-1' },
+  { ...createNode('scope', 780, 275), id: 'scope-1' },
 ];
 const initialEdges = [
   { id: 'edge-1', source: 'source-1', sourcePort: 'out', target: 'filter-1', targetPort: 'in', bend: 0 },
-  { id: 'edge-2', source: 'filter-1', sourcePort: 'out', target: 'gain-1', targetPort: 'in', bend: 0 },
-  { id: 'edge-3', source: 'gain-1', sourcePort: 'out', target: 'scope-1', targetPort: 'in', bend: -40 },
+  { id: 'edge-2', source: 'filter-1', sourcePort: 'out', target: 'gain-1', targetPort: 'in', bend: -60 },
+  { id: 'edge-3', source: 'gain-1', sourcePort: 'out', target: 'scope-1', targetPort: 'in', bend: 60 },
 ];
 
 const initialState = () => ({
@@ -183,14 +185,14 @@ app.innerHTML = `
 
       <section class="canvas-panel">
         <div class="canvas-header">
-          <div class="canvas-tabs"><div class="canvas-tab active">${icons.blocks}<span>Graph editor</span></div><div class="canvas-tab">${icons.sliders}<span>Parameters</span></div></div>
-          <div class="canvas-tools">
+          <div class="canvas-header-start"><button class="panel-toggle panel-toggle-left" id="toggle-left-panel" title="Collapse block library" aria-label="Collapse block library" aria-pressed="false">${icons.panel}</button><div class="canvas-tabs"><div class="canvas-tab active">${icons.blocks}<span>Graph editor</span></div><div class="canvas-tab">${icons.sliders}<span>Parameters</span></div></div></div>
+          <div class="canvas-header-end"><div class="canvas-tools">
             <button class="icon-button active" id="select-mode" title="Select and move nodes">${icons.select}</button>
             <button class="icon-button" id="pan-mode" title="Pan canvas">${icons.pan}</button>
             <span class="tool-divider"></span>
             <button class="icon-button" id="zoom-out" title="Zoom out">${icons.minus}</button><span class="zoom-readout" id="zoom-readout">100%</span><button class="icon-button" id="zoom-in" title="Zoom in">${icons.plus}</button>
             <button class="icon-button" id="zoom-reset" title="Reset zoom">${icons.maximize}</button>
-          </div>
+          </div><button class="panel-toggle panel-toggle-right" id="toggle-right-panel" title="Collapse inspector" aria-label="Collapse inspector" aria-pressed="false">${icons.panel}</button></div>
         </div>
         <div class="canvas-viewport" id="canvas-viewport">
           <canvas id="gpu-canvas" aria-hidden="true"></canvas>
@@ -216,6 +218,22 @@ const connections = document.querySelector('#connections');
 const inspector = document.querySelector('#inspector');
 const dropHint = document.querySelector('#drop-hint');
 const toast = document.querySelector('#toast');
+const shell = document.querySelector('.app-shell');
+const leftPanelButton = document.querySelector('#toggle-left-panel');
+const rightPanelButton = document.querySelector('#toggle-right-panel');
+
+function setPanelCollapsed(side, collapsed) {
+  shell.classList.toggle(`${side}-collapsed`, collapsed);
+  const button = side === 'left' ? leftPanelButton : rightPanelButton;
+  const panelName = side === 'left' ? 'block library' : 'inspector';
+  button.setAttribute('aria-pressed', String(collapsed));
+  button.setAttribute('aria-label', `${collapsed ? 'Expand' : 'Collapse'} ${panelName}`);
+  button.title = `${collapsed ? 'Expand' : 'Collapse'} ${panelName}`;
+  window.setTimeout(() => { resizeGpuCanvas(); renderConnections(); }, 220);
+}
+
+leftPanelButton.addEventListener('click', () => setPanelCollapsed('left', !shell.classList.contains('left-collapsed')));
+rightPanelButton.addEventListener('click', () => setPanelCollapsed('right', !shell.classList.contains('right-collapsed')));
 
 function fieldControl(field, context = 'node') {
   const fieldId = `${context}-field-${field.key}`;
@@ -1220,7 +1238,9 @@ document.querySelector('#reset-button').addEventListener('click', () => {
   showToast('Example graph reset');
 });
 window.addEventListener('keydown', (event) => {
-  if ((event.key === 'Delete' || event.key === 'Backspace') && !['INPUT', 'SELECT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+  const focusedElement = document.activeElement;
+  const isEditing = ['INPUT', 'SELECT', 'TEXTAREA'].includes(focusedElement?.tagName) || focusedElement?.isContentEditable;
+  if ((event.key === 'Delete' || event.key === 'Backspace') && !isEditing) {
     event.preventDefault();
     removeSelection();
   }
