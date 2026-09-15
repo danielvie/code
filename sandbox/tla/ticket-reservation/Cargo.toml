@@ -1,0 +1,8 @@
+[package]
+name = "ticket-reservation"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# Keep this exercise independent of any enclosing Cargo workspace.
+[workspace]

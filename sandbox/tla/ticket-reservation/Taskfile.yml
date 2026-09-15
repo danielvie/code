@@ -1,0 +1,58 @@
+version: '3'
+
+env:
+  CARGO_HOME: '{{.ROOT_DIR}}/tools/cargo-home'
+  CARGO_TARGET_DIR: '{{.ROOT_DIR}}/target'
+
+tasks:
+  default:
+    desc: List available commands
+    cmds:
+      - task --list
+
+  run:
+    desc: Run the ticket reservation demo
+    cmds:
+      - cargo run --offline
+
+  interactive:
+    desc: Open the interactive ticket reservation shell
+    interactive: true
+    cmds:
+      - cargo run --offline -- --interactive
+
+  build:
+    desc: Build the Rust app
+    cmds:
+      - cargo build --offline
+
+  test:
+    desc: Run Rust tests against the saved TLC graph
+    cmds:
+      - cargo test --offline -- --nocapture
+
+  model:
+    desc: Check the broken and fixed models and verify fixture freshness
+    cmds:
+      - python3 scripts/check_model.py
+
+  model:update-fixture:
+    desc: Check the models and replace the TLC fixture after a reviewed model change
+    cmds:
+      - python3 scripts/check_model.py --update-fixture
+
+  fmt:
+    desc: Format Rust source
+    cmds:
+      - cargo fmt --all
+
+  lint:
+    desc: Check Rust formatting and Clippy warnings
+    cmds:
+      - cargo fmt --all -- --check
+      - cargo clippy --offline --all-targets -- -D warnings
+
+  check:
+    desc: Run all model checks, fixture verification, formatting, linting, and tests
+    cmds:
+      - bash scripts/check.sh

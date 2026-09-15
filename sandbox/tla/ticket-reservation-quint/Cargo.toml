@@ -1,0 +1,17 @@
+[package]
+name = "ticket-reservation-quint"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[dependencies]
+# Test the real implementation from the TLA+ exercise, not a second copy.
+ticket-reservation = { path = "../ticket-reservation" }
+
+[dev-dependencies]
+# quint-connect's switch! macro refers to anyhow in the calling crate.
+anyhow = "1"
+quint-connect = "=0.1.2"
+serde = { version = "1", features = ["derive"] }

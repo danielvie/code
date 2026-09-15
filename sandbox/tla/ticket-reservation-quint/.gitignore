@@ -1,0 +1,6 @@
+/node_modules/
+/.task/
+/target/
+/tools/
+/artifacts/
+/_apalache-out/

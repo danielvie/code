@@ -1,0 +1,112 @@
+version: '3'
+
+vars:
+  LOCAL: 'bash "{{.ROOT_DIR}}/scripts/with-env.sh"'
+env:
+  QUINT_SEED: '{{.QUINT_SEED | default "42"}}'
+
+tasks:
+  default:
+    desc: List available commands
+    cmds:
+      - task --list
+
+  setup:
+    desc: Install locked local dependencies and download the Rust evaluator
+    run: once
+    sources:
+      - package.json
+      - package-lock.json
+      - Cargo.toml
+      - Cargo.lock
+      - Taskfile.yml
+      - scripts/with-env.sh
+    generates:
+      - node_modules/.bin/quint
+      - tools/setup.stamp
+    cmds:
+      - '{{.LOCAL}} npm ci --no-audit --no-fund'
+      - '{{.LOCAL}} cargo fetch --locked'
+      - '{{.LOCAL}} quint run model/ticket.qnt --max-samples=1 --max-steps=0 --seed=42 --verbosity=0'
+      - touch tools/setup.stamp
+
+  run:
+    desc: Run the demo against the original Rust ticket implementation
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} cargo run --locked'
+
+  typecheck:
+    desc: Parse and typecheck the Quint model
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} quint typecheck model/ticket.qnt'
+
+  simulate:
+    desc: Check invariants on 1000 sampled traces of up to 30 steps
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} quint run model/ticket.qnt --invariant=inv --max-samples=1000 --max-steps=30 --seed="$QUINT_SEED"'
+
+  model:test:
+    desc: Run the five named scenarios in Quint alone
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} quint test model/ticket.qnt --max-samples=1 --seed="$QUINT_SEED"'
+
+  verify:
+    desc: Model-check invariants through 10 steps with Apalache (requires Java 17+)
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} quint verify model/ticket.qnt --backend=apalache --invariant=inv --max-steps=10'
+
+  trace:
+    desc: Export one sampled execution as artifacts/trace_0.itf.json
+    deps: [setup]
+    cmds:
+      - >-
+        {{.LOCAL}} quint run model/ticket.qnt --invariant=inv --mbt
+        --max-samples=1 --max-steps=30 --n-traces=1 --seed="$QUINT_SEED"
+        --out-itf='artifacts/trace_{seq}.itf.json'
+
+  test:
+    desc: Run Rust model-based tests (1000 traces, five scenarios, fault detection)
+    aliases: [mbt]
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} cargo test --locked --test mbt -- --nocapture --test-threads=1'
+
+  test:mutation:
+    desc: Show MBT catching a deliberately faulty test adapter (expected mismatch)
+    deps: [setup]
+    env:
+      QUINT_VERBOSE: '1'
+    cmds:
+      - '{{.LOCAL}} cargo test --locked --test mbt faulty_adapter_is_detected -- --nocapture'
+
+  build:
+    desc: Build the Rust demo
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} cargo build --locked'
+
+  fmt:
+    desc: Format this project's Rust code
+    cmds:
+      - '{{.LOCAL}} cargo fmt'
+
+  lint:
+    desc: Check Rust formatting and Clippy warnings
+    deps: [setup]
+    cmds:
+      - '{{.LOCAL}} cargo fmt -- --check'
+      - '{{.LOCAL}} cargo clippy --locked --all-targets -- -D warnings'
+
+  check:
+    desc: Run typechecking, model scenarios, simulation, linting, and MBT
+    cmds:
+      - task: typecheck
+      - task: model:test
+      - task: simulate
+      - task: lint
+      - task: test

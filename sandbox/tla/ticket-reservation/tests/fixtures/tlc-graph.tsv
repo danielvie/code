@@ -1,0 +1,17 @@
+# Generated from TLC. Do not edit by hand.
+init	available,nobody,nobody
+state	available,nobody,nobody
+state	reserved,alice,nobody
+state	reserved,bob,nobody
+state	sold,alice,alice
+state	sold,bob,bob
+edge	available,nobody,nobody	Reserve(alice)	reserved,alice,nobody
+edge	available,nobody,nobody	Reserve(bob)	reserved,bob,nobody
+edge	reserved,alice,nobody	Cancel(alice)	available,nobody,nobody
+edge	reserved,alice,nobody	Confirm(alice)	sold,alice,alice
+edge	reserved,alice,nobody	Expire	available,nobody,nobody
+edge	reserved,bob,nobody	Cancel(bob)	available,nobody,nobody
+edge	reserved,bob,nobody	Confirm(bob)	sold,bob,bob
+edge	reserved,bob,nobody	Expire	available,nobody,nobody
+edge	sold,alice,alice	SoldIdle	sold,alice,alice
+edge	sold,bob,bob	SoldIdle	sold,bob,bob

@@ -1,0 +1,12 @@
+{
+  "name": "ticket-reservation-quint",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Quint model and Rust model-based tests for ticket reservation",
+  "devDependencies": {
+    "@informalsystems/quint": "0.32.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
