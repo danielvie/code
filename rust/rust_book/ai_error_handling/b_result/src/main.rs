@@ -109,5 +109,32 @@ fn main() {
     // The ? Operator Shortcut
     // ================================================
     
+    // fn read_username_from_file() -> Result<String, io::Error> {
+    //     let mut username_file = File::open("hello.txt")?;
+    //     let mut username = String::new();
+    //     username_file.read_to_string(&mut username)?;
+    // 
+    //     Ok(username)
+    // }
+
+    // let res = read_username_from_file();
+    // println!("res: {res:?}");
+    
+    
+    // ================================================
+    // Where to Use the ? Operator
+    // ================================================
+    
+    // only in functions whose return type is compatible with the value the `?` is used on
+    // the return type has to be a Result so that it's compatible sith the early return
+    
+    // ? can also be used with `Option`
+    
+    // fn last_char_of_first_line(text: &str) -> Option<char> {
+    //     text.lines().next()?.chars().last()
+    // }
+
+    // let res = last_char_of_first_line("ik ben hier");
+    // println!("res: {res:?}");
     
 }
