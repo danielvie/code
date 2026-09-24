@@ -1,0 +1,18 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  run:
+    aliases: [r]
+    desc: "Run main application"
+    cmds:
+      - cargo run
+      
+  clear:
+    aliases: [c]
+    desc: "Clear main application"
+    cmds:
+      - rm hello.txt
