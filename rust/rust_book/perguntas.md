@@ -1,4 +1,6 @@
-- posso ter um modulo fora da pasta `src`?
-- como fazer DLL's no rust
-- em a_vector, posso forcar ver um endereco mesmo que ele mude no caminho?
-- criar caso com vec! que tenha None no exemplo
+- [ ] posso ter um modulo fora da pasta `src`?
+- [ ] como fazer DLL's no rust
+- [ ] usar DLL gerada em c/cpp em rust
+- [ ] em a_vector, posso forcar ver um endereco mesmo que ele mude no caminho?
+- [ ] criar caso com vec! que tenha None no exemplo
+- [ ] criar uma FMU e rodar em um ambiente diferente
