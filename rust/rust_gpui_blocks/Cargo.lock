@@ -2181,13 +2181,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "gpui_counter"
-version = "0.1.0"
-dependencies = [
- "gpui",
-]
-
-[[package]]
 name = "gpui_derive_refineable"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2196,6 +2189,17 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.119",
+]
+
+[[package]]
+name = "gpui_diagram_poc"
+version = "0.1.0"
+dependencies = [
+ "gpui",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "unicode-segmentation",
 ]
 
 [[package]]

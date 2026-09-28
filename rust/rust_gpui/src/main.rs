@@ -1,39 +1,63 @@
-mod diagram_model;
-mod diagram_prototype;
-mod diagram_router;
-mod diagram_selection;
-mod diagram_store;
-mod label_editor;
+use gpui::{
+    App, Application, Bounds, Context, Window, WindowBounds, WindowOptions, div, prelude::*, px,
+    rgb, size,
+};
 
-use diagram_prototype::DiagramPrototype;
-use gpui::{App, Application, Bounds, WindowBounds, WindowOptions, prelude::*, px, size};
+struct Counter {
+    count: u64,
+}
+
+impl Render for Counter {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        div()
+            .flex()
+            .items_center()
+            .justify_center()
+            .size_full()
+            .bg(rgb(0x1e1e2e))
+            .text_color(rgb(0xffffff))
+            .child(
+                div()
+                    .flex()
+                    .flex_col()
+                    .items_center()
+                    .gap_4()
+                    .p_6()
+                    .rounded_lg()
+                    .bg(rgb(0x313244))
+                    .child("Hello, GPUI!")
+                    .child(div().text_3xl().child(format!("Count: {}", self.count)))
+                    .child(
+                        div()
+                            .id("increment")
+                            .px_4()
+                            .py_2()
+                            .rounded_md()
+                            .bg(rgb(0x89b4fa))
+                            .hover(|style| style.bg(rgb(0x8fa5ca)))
+                            .text_color(rgb(0x1e1e2e))
+                            .cursor_pointer()
+                            .child("Add one")
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.count += 1;
+                                cx.notify();
+                            })),
+                    ),
+            )
+    }
+}
 
 fn main() {
-    let (store, snapshot) = diagram_store::Store::open(diagram_store::Store::default_path())
-        .unwrap_or_else(|error| {
-            eprintln!("Cannot open the diagram: {error}");
-            std::process::exit(1);
-        });
-    Application::new().run(move |cx: &mut App| {
-        let bounds = Bounds::centered(None, size(px(1280.), px(860.)), cx);
+    Application::new().run(|cx: &mut App| {
+        let bounds = Bounds::centered(None, size(px(400.0), px(300.0)), cx);
         cx.open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::Windowed(bounds)),
-                window_min_size: Some(size(px(960.), px(600.))),
                 ..Default::default()
             },
-            move |window, cx| {
-                window.set_window_title("GPUI diagram PoC");
-                cx.new(|cx| DiagramPrototype::new(window, cx, store, snapshot))
-            },
+            |_, cx| cx.new(|_| Counter { count: 0 }),
         )
         .expect("failed to open GPUI window");
-        cx.on_window_closed(|cx| {
-            if cx.windows().is_empty() {
-                cx.quit();
-            }
-        })
-        .detach();
         cx.activate(true);
     });
 }

@@ -2,31 +2,22 @@ version: '3'
 
 tasks:
   default:
+    desc: List tasks
     cmds:
       - task --list
 
   run:
-    aliases: [r]
-    desc: Run the diagram PoC
+    desc: Run the GPUI counter
     cmds:
       - cargo run
 
-  dev:
-    desc: Rebuild and restart on code changes, restoring the autosaved diagram
-    cmds:
-      - python -u scripts/dev.py
-
-  counter:
-    desc: Run the original counter and drag/drop learning example
-    cmds:
-      - cargo run --example counter
-
-  check:
-    desc: Type-check without building an executable
+  test:
+    desc: Check the app and run tests
     cmds:
       - cargo check
+      - cargo test
 
-  fmt:
-    desc: Format Rust source
+  clear:
+    desc: Remove build artifacts
     cmds:
-      - cargo fmt
+      - cargo clean
