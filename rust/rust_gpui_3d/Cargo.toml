@@ -1,0 +1,14 @@
+[package]
+name = "gpui_3d_playground"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+anyhow = "1"
+bytemuck = { version = "1", features = ["derive"] }
+glam = "0.29"
+gpui = "=0.2.2"
+image = { version = "0.25", default-features = false, features = ["png"] }
+pollster = "0.4"
+wgpu = "24"

@@ -1,0 +1,45 @@
+version: '3'
+
+dir: '{{.TASKFILE_DIR}}'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  run:
+    aliases: [r]
+    desc: Run the drawing app
+    cmds:
+      - cargo run
+
+  release:
+    desc: Run the drawing app with release optimizations
+    cmds:
+      - cargo run --release
+
+  build:
+    desc: Build the drawing app
+    cmds:
+      - cargo build
+
+  check:
+    desc: Type-check without building an executable
+    cmds:
+      - cargo check
+
+  test:
+    desc: Run Rust tests
+    cmds:
+      - cargo test
+
+  fmt:
+    desc: Format Rust source
+    cmds:
+      - cargo fmt
+
+  lint:
+    desc: Check formatting and lint all targets
+    cmds:
+      - cargo fmt --check
+      - cargo clippy --all-targets -- -D warnings
