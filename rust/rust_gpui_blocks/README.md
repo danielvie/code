@@ -14,7 +14,15 @@ task run
 cargo run
 ```
 
-Use `task counter` for the original counter and drag/drop learning example. `task check` type-checks the project and `task fmt` formats it.
+`task check` type-checks the project and `task fmt` formats it.
+
+## Browser prototype
+
+Install the `wasm32-unknown-unknown` target and `wasm-pack`, then run `task web-run`. Open http://localhost:6300/ in a browser. The command builds the WebAssembly module and serves the static files; no backend is needed. Run `task web-test` for browser-core tests and a WebAssembly build.
+
+The browser version shares the Rust model, routing, selection geometry, and save validation with the desktop app. Use **+ Block**, `N`, or double-click empty space to add a block. Click to select a block, port, or wire; Shift-click blocks to select more than one, or drag empty space to box-select fully enclosed blocks. Drag a selected block to move the group. **+ Input** and **+ Output** add ports to the selected block. Double-click a block or port, or press `F2`, to rename it; Enter saves and Escape cancels. Delete/Backspace or **Delete** removes the selection and its attached wires. Click an output then an input, or drag between them, to connect. Escape cancels an unfinished connection.
+
+The mouse wheel pans; Ctrl+wheel zooms around the pointer. Middle-button drag also pans; the +/− buttons zoom and **Fit** shows all blocks. Unroutable wires show red crosses at their endpoints and a count in the footer. The 3600-pixel workspace and connection rules match the native app. Browser saves live in `localStorage`, separately from the desktop `.local/diagram.json` file. The diagram, pan, and zoom survive reloads; selection and unfinished edits do not. The browser uses its native text input rather than GPUI's custom label editor. Reset diagram replaces the browser save with the sample diagram. Invalid saved data is not overwritten automatically. The browser cannot silently write the desktop save file or take its file lock; avoid editing the same browser diagram in multiple tabs.
 
 ## Development loop
 
@@ -57,7 +65,7 @@ Requires stable Rust and a graphical desktop session. On Windows, use the MSVC t
 | Select text | Shift+Arrow, Shift+Home/End, mouse drag, or Ctrl+A; double-click selects a word |
 | Move/select by word | Ctrl+Left/Right; add Shift to select |
 | Edit text | Type, Backspace/Delete, Ctrl+Backspace/Delete, Ctrl+C/X/V |
-| Connect | Click a filled output square on the right, then an empty input square on another block's left |
+| Connect | Click a filled output square on the right, then an empty input square on another block's left; or drag from output to input |
 | Cancel a connection | `Escape` or click empty canvas |
 | Delete | Select blocks, a port, or a wire, then **Delete** or the Delete key |
 | Pan | Middle-button drag or scroll |
@@ -99,10 +107,12 @@ No undo, block resizing, nested blocks, SysML model validation, typed signals, o
 - `src/diagram_router.rs`: obstacle-aware orthogonal routing.
 - `src/diagram_selection.rs`: Shift-selection, full-containment box selection, and group movement.
 - `src/label_editor.rs`: text selection, word navigation, shaped-text painting, and caret feedback.
-- `src/diagram_store.rs`: versioned saves, validation, atomic replacement, and single-writer locking.
+- `src/diagram_store.rs`: versioned saves, atomic replacement, and single-writer locking.
+- `src/diagram_validate.rs`: save validation shared by desktop and browser.
+- `web/src/lib.rs`: Wasm interface to the shared diagram model and router.
+- `web/app.js`: browser drawing, pointer events, and local storage.
 - `scripts/dev.py`: build watcher and restart lifecycle.
 - `scripts/test_dev.py`: watcher checks without launching a GUI.
-- `examples/counter.rs`: preserved learning example, using the original `src/drag_drop.rs` and `src/increment_button.rs`.
 
 Run `cargo test` and `python -m unittest discover -s scripts -p 'test_*.py'` for the routing, selection, text editing, persistence, and watcher checks.
 

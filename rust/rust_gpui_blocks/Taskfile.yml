@@ -11,15 +11,46 @@ tasks:
     cmds:
       - cargo run
 
+  web-build:
+    desc: Build the shared Rust model and router for the browser
+    cmds:
+      - wasm-pack build web --target web --out-dir pkg
+
+  web:
+    desc: Build and serve web version
+    cmds:
+      - task: web-run
+
+  web-run:
+    desc: Build and serve the browser diagram at http://localhost:6300
+    deps: [web-build]
+    cmds:
+      - echo Serving http://localhost:6300/
+      - python -m http.server 6300 --bind 127.0.0.1 --directory web
+
+  web-test:
+    desc: Test the browser core and compile its WebAssembly module
+    cmds:
+      - cargo test --manifest-path web/Cargo.toml
+      - task web-build
+
+  test:
+    desc: Run desktop and browser core tests
+    cmds:
+      - cargo test
+      - cargo test --manifest-path web/Cargo.toml
+
+  clear:
+    desc: Remove build artifacts without deleting saved diagrams
+    cmds:
+      - cargo clean
+      - cargo clean --manifest-path web/Cargo.toml
+      - python -c "import shutil; shutil.rmtree('web/pkg', ignore_errors=True)"
+
   dev:
     desc: Rebuild and restart on code changes, restoring the autosaved diagram
     cmds:
       - python -u scripts/dev.py
-
-  counter:
-    desc: Run the original counter and drag/drop learning example
-    cmds:
-      - cargo run --example counter
 
   check:
     desc: Type-check without building an executable

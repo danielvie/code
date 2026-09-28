@@ -94,7 +94,7 @@ impl Diagram {
             &b.inputs[p.index]
         }
     }
-    pub fn connect(&mut self, a: Port, b: Port) -> Result<(), &'static str> {
+    pub fn can_connect(&self, a: Port, b: Port) -> Result<(), &'static str> {
         if !a.output || b.output {
             return Err("Connect an output on the right to an input on the left.");
         }
@@ -104,6 +104,10 @@ impl Diagram {
         if self.wires.iter().any(|w| w.to == b) {
             return Err("This input is occupied. Select its wire and delete it first.");
         }
+        Ok(())
+    }
+    pub fn connect(&mut self, a: Port, b: Port) -> Result<(), &'static str> {
+        self.can_connect(a, b)?;
         self.wires.push(Wire {
             id: self.next_id,
             from: a,
@@ -223,5 +227,45 @@ impl Diagram {
             .unwrap();
         }
         d
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn drop_targets_follow_connection_rules() {
+        let mut d = Diagram::demo();
+        let from = Port {
+            block: 0,
+            index: 0,
+            output: true,
+        };
+        let occupied = Port {
+            block: 3,
+            output: false,
+            ..from
+        };
+        assert!(d.can_connect(from, occupied).is_err());
+        let target = Port {
+            block: d.add(Pos::new(1200., 120.)),
+            output: false,
+            ..from
+        };
+        assert!(d.can_connect(from, target).is_ok());
+        d.connect(from, target).unwrap();
+        assert!(d.can_connect(from, target).is_err());
+        assert!(
+            d.can_connect(
+                from,
+                Port {
+                    output: false,
+                    ..from
+                }
+            )
+            .is_err()
+        );
+        assert!(d.can_connect(from, from).is_err());
     }
 }

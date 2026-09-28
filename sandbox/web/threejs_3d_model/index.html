@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#071727" />
+    <meta name="description" content="An interactive cart-pole lab. Swing up an inverted pendulum, tune its LQR controller, and inspect the response in 3D." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+    <title>Cart-Pole Lab | Inverted Pendulum</title>
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#top" aria-label="Cart-Pole Lab home">
+          <span class="brand-mark" aria-hidden="true"><span class="brand-pivot"></span></span>
+          <span class="brand-name">CART<span class="brand-slash">/</span>POLE <span class="brand-light">LAB</span></span>
+        </a>
+        <div class="topbar-center">INTERACTIVE CONTROL SYSTEMS <span class="topbar-separator">/</span> EXPERIMENT 001</div>
+        <div class="topbar-right"><span class="live-dot"></span> SIMULATION ONLINE <span class="version">V 1.0</span></div>
+      </header>
+
+      <main id="top" class="workspace">
+        <section class="page-intro">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-rule"></span> THE CONTROL THEORY PLAYGROUND <span class="intro-index">01 / 03</span></div>
+            <h1>Find the <em>balance.</em></h1>
+            <p>A pendulum that wants to fall. A controller that won't let it.<br class="desktop-break" /> Change the system, then see what it takes to keep it upright.</p>
+          </div>
+          <div class="intro-stamp" aria-hidden="true"><span>CP</span><small>ENGINEERING<br/>STUDY / 001</small></div>
+        </section>
+
+        <div class="main-grid">
+          <div class="left-column">
+            <section class="viewport-panel panel" aria-label="Interactive three-dimensional cart-pole model">
+              <div class="panel-heading viewport-heading">
+                <div class="panel-heading-left"><span class="section-number">01</span><span class="heading-divider"></span><span>LIVE SIMULATION</span></div>
+                <div class="viewport-mode"><span id="status-dot" class="mode-dot idle"></span><span id="mode-label">AWAITING START</span></div>
+              </div>
+              <div class="scene-wrap">
+                <div id="scene" class="scene" aria-label="3D view. Drag outside the cart stand to orbit, or middle-drag anywhere. Click or drag within the stand to set the cart target."></div>
+                <div class="scene-grid-overlay" aria-hidden="true"></div>
+                <div class="scene-label scene-label-top"><span class="label-cross">+</span> FIG. 01 &nbsp; CART-POLE ASSEMBLY</div>
+                <div class="scene-coordinates">X <span id="coordinate-x">+0.00</span> M <span class="coord-divider">/</span> θ <span id="coordinate-theta">180.0</span>°</div>
+                <div class="scene-hint"><span class="orbit-icon" aria-hidden="true">⟳</span> DRAG OUTSIDE STAND TO ORBIT <span class="hint-divider">·</span> MIDDLE-DRAG ANYWHERE<br/><span class="hint-indent">CLICK OR DRAG IN STAND TO SET TARGET</span></div>
+                <div id="target-tooltip" class="target-tooltip" aria-hidden="true">SET TARGET <strong id="preview-target">+0.00 m</strong></div>
+                <div class="axis-key"><i class="axis-line axis-x"></i> X <i class="axis-line axis-y"></i> Y <i class="axis-line axis-z"></i> Z</div>
+              </div>
+              <div class="transport">
+                <button id="start-button" class="button button-primary" type="button"><span class="button-icon">▶</span><span id="start-text">BEGIN SWING-UP</span><span class="button-arrow">↗</span></button>
+                <button id="pause-button" class="button button-secondary" type="button" disabled><span id="pause-icon">Ⅱ</span> <span id="pause-text">PAUSE</span></button>
+                <button id="reset-button" class="button button-secondary" type="button"><span class="reset-icon">↺</span> RESET</button>
+                <span class="transport-time">T+ <span id="time-value">00:00.0</span></span>
+              </div>
+            </section>
+
+            <div class="telemetry-grid">
+              <section class="response-panel panel">
+                <div class="panel-heading"><div class="panel-heading-left"><span class="section-number">02</span><span class="heading-divider"></span><span>SYSTEM RESPONSE</span></div><span class="tiny-muted">LIVE / LAST 12 S</span></div>
+                <div class="chart-topline"><div><span class="chart-legend-dot"></span> UPRIGHT ERROR <span class="chart-unit">|θ| / DEGREES</span></div><span id="chart-current">+180.0°</span></div>
+                <div class="chart-wrap"><canvas id="response-chart" aria-label="Time history of pendulum angle"></canvas><div class="chart-y-labels"><span>180°</span><span>90°</span><span>0°</span></div></div>
+                <div class="chart-bottom"><span>−12 SEC</span><span>NOW →</span></div>
+              </section>
+              <section class="readouts-panel panel">
+                <div class="panel-heading"><div class="panel-heading-left"><span class="section-number">03</span><span class="heading-divider"></span><span>READOUTS</span></div><span class="tiny-muted">REAL TIME</span></div>
+                <div class="readout"><span>ANGLE <small>θ</small></span><strong id="readout-angle">+180.0<span>°</span></strong></div>
+                <div class="readout"><span>CART POSITION <small>x</small></span><strong id="readout-position">+0.00<span> m</span></strong></div>
+                <div class="readout"><span>POSITION TARGET <small>x*</small></span><strong id="readout-target">+0.00<span> m</span></strong></div>
+                <div class="readout"><span>CONTROL FORCE <small>u</small></span><strong id="readout-force">+0.0<span> N</span></strong></div>
+                <div class="readout-foot"><span class="pulse-dot"></span><span id="readout-note">SYSTEM AT REST</span><span>120 HZ</span></div>
+              </section>
+            </div>
+          </div>
+
+          <aside class="controls-panel panel" aria-label="Simulation parameters and controller settings">
+            <div class="panel-heading controls-heading"><div class="panel-heading-left"><span class="section-number">04</span><span class="heading-divider"></span><span>CONTROL DESK</span></div><span class="controls-icon" aria-hidden="true">⌘</span></div>
+            <div class="controls-content">
+              <div class="controls-intro"><h2>Tune the response.</h2><p>Position and angle priorities correct errors. Velocity priorities resist motion. Effort penalty limits motor force.</p></div>
+              <div class="control-group controller-group"><div class="group-title"><span>01 / CONTROLLER TUNING</span><span class="group-line"></span></div>
+                <div id="controller-controls"></div>
+              </div>
+              <details class="advanced-settings">
+                <summary><span>ADVANCED SETTINGS</span><span class="advanced-summary-right">PHYSICAL SYSTEM <span class="advanced-toggle" aria-hidden="true">+</span></span></summary>
+                <div class="advanced-content">
+                  <div class="preset-row"><span class="field-caption">QUICK SETUPS</span><div class="preset-buttons"><button class="preset active" data-preset="standard" type="button">STANDARD</button><button class="preset" data-preset="heavy" type="button">HEAVY LOAD</button><button class="preset" data-preset="moon" type="button">LOW G</button></div></div>
+                  <div class="control-group physical-group"><div class="group-title"><span>02 / PHYSICAL SYSTEM</span><span class="group-line"></span></div>
+                    <div id="physical-controls"></div>
+                  </div>
+                </div>
+              </details>
+              <div class="push-section"><div class="push-copy"><span class="field-caption">TEST THE CONTROLLER</span><span>Apply a brief external push</span></div><div class="push-actions"><button id="push-left" type="button" aria-label="Push cart left">← <span>LEFT</span></button><button id="push-right" type="button" aria-label="Push cart right"><span>RIGHT</span> →</button></div></div>
+              <div class="gain-box"><div class="gain-title"><span>COMPUTED LQR GAIN</span><span class="gain-live">● LIVE</span></div><div class="gain-equation">u = −K · [ x−x*, ẋ, θ, θ̇ ]<sup>T</sup></div><div class="gain-values" id="gain-values">K = [ −3.19, −5.76, −57.38, −18.78 ]</div><p>LQR tracks x* while balancing upright. The energy-based swing-up gets the pendulum there first.</p></div>
+            </div>
+          </aside>
+        </div>
+        <section class="method-panel panel" aria-label="How the controller works">
+          <div class="panel-heading"><div class="panel-heading-left"><span class="section-number">05</span><span class="heading-divider"></span><span>INSIDE THE LOOP</span></div><span class="tiny-muted">THE METHOD</span></div>
+          <div class="method-grid">
+            <div class="method-step"><span class="method-index">01 / GET MOVING</span><h3>Build energy</h3><p>At rest, the pendulum hangs down. The cart moves under it to add energy until it can reach the top.</p><code>E = ½mL²θ̇² + mgL cos θ</code></div>
+            <div class="method-step"><span class="method-index">02 / HAND OFF</span><h3>Catch it upright</h3><p>Near upright, with manageable speed and room on the rail, control switches from swing-up to LQR.</p><code>|θ| &lt; 0.27 rad &nbsp;·&nbsp; |θ̇| &lt; 2.5 rad/s</code></div>
+            <div class="method-step"><span class="method-index">03 / STAY THERE</span><h3>Close the loop</h3><p>LQR weights four states: position error and cart velocity, pole angle and angular speed. Raise a priority to penalize that state more; raise effort penalty to use less force.</p><code>u = −K[x−x*, ẋ, θ, θ̇]ᵀ</code></div>
+          </div>
+          <div class="method-note">MODEL NOTE <span>Point-mass pendulum, massless rod, motor force saturation, and a finite rail. LQR is computed around upright, so it is a local controller rather than a guarantee for every starting angle.</span></div>
+        </section>
+        <footer class="footer"><span>AN OPEN-LOOP PROBLEM, CLOSED-LOOP THINKING.</span><span>NONLINEAR PLANT <i></i> ENERGY SWING-UP <i></i> DISCRETE LQR</span></footer>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

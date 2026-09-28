@@ -1,5 +1,5 @@
 //! Prototype 1: can a GPUI canvas support direct block/port manipulation and live routing?
-//! Diagram changes autosave locally. The old learning example remains in examples/counter.rs.
+//! Diagram changes autosave locally.
 use crate::diagram_model::{Block, COLORS, Diagram, GRID, Port, Pos, WIDTH};
 use crate::diagram_router::{Junction, Route, junctions, route_all, wire_distance};
 use crate::diagram_selection::{GroupDrag, Marquee, clicked_blocks};
@@ -35,6 +35,7 @@ pub struct DiagramPrototype {
     junctions: Vec<Junction>,
     selection: Option<Selection>,
     pending: Option<Port>,
+    hovered: Option<Port>,
     drag: Option<GroupDrag>,
     marquee: Option<Marquee>,
     pan_drag: Option<(Point<Pixels>, Pos)>,
@@ -87,6 +88,7 @@ impl DiagramPrototype {
             junctions,
             selection: None,
             pending: None,
+            hovered: None,
             drag: None,
             marquee: None,
             pan_drag: None,
@@ -173,7 +175,21 @@ impl DiagramPrototype {
             cx.notify();
             return;
         }
-        self.update_gesture(self.world(e.position));
+        self.mouse = self.world(e.position);
+        self.update_gesture(self.mouse);
+        self.hovered = self.port_at(e.position);
+        if let Some(from) = self.pending
+            && let Some(to) = self
+                .hovered
+                .filter(|&to| self.diagram.can_connect(from, to).is_ok())
+        {
+            self.diagram
+                .connect(from, to)
+                .expect("validated drop target");
+            self.pending = None;
+            self.reroute();
+            self.status = "Connected. Drag either block to test the routing.".into();
+        }
         self.drag = None;
         self.marquee = None;
         cx.notify();
@@ -201,6 +217,13 @@ impl DiagramPrototype {
         }
         None
     }
+    fn port_at(&self, screen: Point<Pixels>) -> Option<Port> {
+        if self.bounds.get().contains(&screen) {
+            self.hit_port(self.world(screen))
+        } else {
+            None
+        }
+    }
     fn down(&mut self, e: &MouseDownEvent, window: &mut Window, cx: &mut Context<Self>) {
         window.focus(&self.focus);
         if self.edit.is_some() {
@@ -213,7 +236,8 @@ impl DiagramPrototype {
         self.drag = None;
         self.marquee = None;
         self.pan_drag = None;
-        let hit_port = self.hit_port(p);
+        let hit_port = self.port_at(e.position);
+        self.hovered = hit_port;
         if let Some(port) = hit_port.filter(|_| !e.modifiers.shift) {
             self.selection = Some(Selection::Port(port));
             if e.click_count == 2 {
@@ -221,7 +245,7 @@ impl DiagramPrototype {
             } else if port.output {
                 self.pending = Some(port);
                 self.status = format!(
-                    "Connecting {}. Click an input, or Escape to cancel.",
+                    "Connecting {}. Drag to an input or click one; Escape cancels.",
                     self.diagram.port_name(port)
                 );
             } else if let Some(from) = self.pending {
@@ -305,6 +329,8 @@ impl DiagramPrototype {
             return;
         }
         self.mouse = self.world(e.position);
+        let old_hover = self.hovered;
+        self.hovered = self.port_at(e.position);
         if let Some((start, pan)) = self.pan_drag {
             if e.pressed_button == Some(MouseButton::Middle) {
                 self.pan = Pos::new(
@@ -326,7 +352,7 @@ impl DiagramPrototype {
             cx.notify();
         }
         self.autosave();
-        if self.pending.is_some() {
+        if self.pending.is_some() || self.hovered != old_hover {
             cx.notify();
         }
     }
@@ -658,6 +684,12 @@ impl DiagramPrototype {
                 let port_color = incoming_color.unwrap_or(COLORS[b.id % COLORS.len()]);
                 let active =
                     self.selection == Some(Selection::Port(port)) || self.pending == Some(port);
+                let hovered = self.hovered == Some(port) && self.edit.is_none();
+                let valid_target = hovered
+                    && self
+                        .pending
+                        .is_some_and(|from| self.diagram.can_connect(from, port).is_ok());
+                let port_size = if hovered { (10. * z).max(16.) } else { 10. * z };
                 let y = (60. + index as f32 * 24.) * z;
                 body = body
                     .child(
@@ -674,14 +706,24 @@ impl DiagramPrototype {
                     .child(
                         div()
                             .absolute()
-                            .left(px(if output { WIDTH * z - 5. * z } else { -5. * z }))
-                            .top(px(y - 5. * z))
-                            .size(px(10. * z))
+                            .left(px(if output { WIDTH * z } else { 0. } - port_size / 2.))
+                            .top(px(y - port_size / 2.))
+                            .size(px(port_size))
                             .border_1()
-                            .when(active, |element| element.border_2())
-                            .border_color(rgb(if active { 0x2563eb } else { port_color }))
-                            .bg(rgb(if output {
-                                if active { 0xfabf36 } else { port_color }
+                            .when(active || hovered, |element| element.border_2())
+                            .border_color(rgb(if valid_target {
+                                0x128275
+                            } else if active || hovered {
+                                0x2563eb
+                            } else {
+                                port_color
+                            }))
+                            .bg(rgb(if valid_target {
+                                0x9ce5d3
+                            } else if hovered || (active && output) {
+                                0xfabf36
+                            } else if output {
+                                port_color
                             } else {
                                 // Keep the source color even when this input is selected.
                                 incoming_color.unwrap_or(0xffffff)

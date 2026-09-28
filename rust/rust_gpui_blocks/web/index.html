@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Diagram browser prototype</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Diagram browser prototype</h1>
+    <div class="controls">
+      <button id="add-block" type="button">+ Block</button>
+      <button id="add-input" type="button">+ Input</button>
+      <button id="add-output" type="button">+ Output</button>
+      <button id="rename" type="button">Rename</button>
+      <button id="delete" type="button">Delete</button>
+      <button id="zoom-out" type="button" aria-label="Zoom out">−</button>
+      <span id="zoom-level">100%</span>
+      <button id="zoom-in" type="button" aria-label="Zoom in">+</button>
+      <button id="fit" type="button">Fit</button>
+      <button id="reset" type="button">Reset diagram</button>
+    </div>
+  </header>
+  <main>
+    <svg id="diagram" viewBox="0 0 1280 840" aria-label="Block diagram" xmlns="http://www.w3.org/2000/svg">
+      <defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#dde3eb"/></pattern></defs>
+      <rect x="-4000" y="-4000" width="12000" height="12000" fill="url(#grid)"/>
+      <g id="wires"></g><g id="blocks"></g><g id="preview"></g>
+    </svg>
+    <div id="editor" hidden>
+      <label id="editor-title" for="editor-input"></label>
+      <input id="editor-input" type="text" maxlength="128" autocomplete="off" spellcheck="false">
+      <small>Enter saves · Escape cancels</small>
+    </div>
+  </main>
+  <footer><span id="selection">Nothing selected</span><span id="counts"></span><span id="status" role="status">Loading...</span></footer>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

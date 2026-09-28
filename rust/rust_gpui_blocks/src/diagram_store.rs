@@ -1,8 +1,8 @@
 //! Versioned, atomic autosave. A separate lock file prevents competing writers.
-use crate::diagram_model::{COLORS, Diagram, GRID, Pos};
+use crate::diagram_model::{Diagram, Pos};
+use crate::diagram_validate::validate_diagram;
 use serde::{Deserialize, Serialize};
 use std::{
-    collections::HashSet,
     fs::{self, File, OpenOptions},
     io::{self, Write},
     path::{Path, PathBuf},
@@ -119,67 +119,7 @@ fn validate(s: &Snapshot) -> Result<(), &'static str> {
     {
         return Err("invalid viewport");
     }
-    let mut ids = HashSet::new();
-    for b in &s.diagram.blocks {
-        if !ids.insert(b.id) {
-            return Err("duplicate id");
-        }
-        if b.inputs.len() > 6 || b.outputs.len() > 6 {
-            return Err("too many ports");
-        }
-        for label in std::iter::once(&b.name).chain(&b.inputs).chain(&b.outputs) {
-            if label.trim().is_empty()
-                || label.chars().count() > 64
-                || label.chars().any(char::is_control)
-            {
-                return Err("invalid label");
-            }
-        }
-        for v in [b.pos.x, b.pos.y] {
-            if !v.is_finite()
-                || !(0.0..=3600.0).contains(&v)
-                || (v / GRID - (v / GRID).round()).abs() > 0.001
-            {
-                return Err("invalid block position");
-            }
-        }
-    }
-    let mut occupied = HashSet::new();
-    for w in &s.diagram.wires {
-        if !ids.insert(w.id) {
-            return Err("duplicate id");
-        }
-        let from = s
-            .diagram
-            .blocks
-            .iter()
-            .find(|b| b.id == w.from.block)
-            .ok_or("missing source block")?;
-        let to = s
-            .diagram
-            .blocks
-            .iter()
-            .find(|b| b.id == w.to.block)
-            .ok_or("missing destination block")?;
-        if !w.from.output
-            || w.to.output
-            || from.id == to.id
-            || w.from.index >= from.outputs.len()
-            || w.to.index >= to.inputs.len()
-        {
-            return Err("invalid connection endpoints");
-        }
-        if !occupied.insert((w.to.block, w.to.index)) {
-            return Err("multiple connections to one input");
-        }
-        if w.color != COLORS[from.id % COLORS.len()] {
-            return Err("invalid connection color");
-        }
-    }
-    if ids.iter().any(|&id| id >= s.diagram.next_id) || s.diagram.next_id == usize::MAX {
-        return Err("invalid next id");
-    }
-    Ok(())
+    validate_diagram(&s.diagram)
 }
 
 #[cfg(test)]

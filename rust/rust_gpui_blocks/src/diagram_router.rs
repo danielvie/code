@@ -1,16 +1,17 @@
 //! Grid A*: block clearance is mandatory; bends and wire congestion cost extra.
 //! Prototype 1 deliberately reports unroutable edges instead of drawing through blocks.
 use crate::diagram_model::{Diagram, GRID, Pos, WIDTH};
+use serde::Serialize;
 use std::{cmp::Reverse, collections::BinaryHeap};
 
-#[derive(Clone)]
+#[derive(Clone, Serialize)]
 pub struct Route {
     pub wire: usize,
     pub color: u32,
     pub points: Vec<Pos>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct Junction {
     pub position: Pos,
     pub color: u32,

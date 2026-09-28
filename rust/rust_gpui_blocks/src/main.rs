@@ -3,6 +3,7 @@ mod diagram_prototype;
 mod diagram_router;
 mod diagram_selection;
 mod diagram_store;
+mod diagram_validate;
 mod label_editor;
 
 use diagram_prototype::DiagramPrototype;

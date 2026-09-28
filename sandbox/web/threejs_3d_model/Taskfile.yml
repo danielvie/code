@@ -1,0 +1,12 @@
+version: '3'
+
+tasks:
+  default:
+    desc: Show available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Start the Vite development server
+    cmds:
+      - npm run dev
