@@ -1,0 +1,193 @@
+{
+  "version": 1,
+  "diagram": {
+    "blocks": [
+      {
+        "id": 0,
+        "name": "Power supply",
+        "kind": "Electrical",
+        "pos": {
+          "x": 60.0,
+          "y": 120.0
+        },
+        "inputs": [],
+        "outputs": [
+          "dc",
+          "status"
+        ]
+      },
+      {
+        "id": 1,
+        "name": "Sensor system",
+        "kind": "Acquisition",
+        "pos": {
+          "x": 120.0,
+          "y": 576.0
+        },
+        "inputs": [
+          "power"
+        ],
+        "outputs": [
+          "temperature",
+          "humidity"
+        ]
+      },
+      {
+        "id": 2,
+        "name": "Control system",
+        "kind": "Controller",
+        "pos": {
+          "x": 468.0,
+          "y": 312.0
+        },
+        "inputs": [
+          "power",
+          "temperature",
+          "humidity"
+        ],
+        "outputs": [
+          "heat",
+          "cool",
+          "air"
+        ]
+      },
+      {
+        "id": 3,
+        "name": "Heater system",
+        "kind": "Actuator",
+        "pos": {
+          "x": 816.0,
+          "y": 72.0
+        },
+        "inputs": [
+          "command"
+        ],
+        "outputs": [
+          "status"
+        ]
+      },
+      {
+        "id": 4,
+        "name": "Cooler system",
+        "kind": "Actuator",
+        "pos": {
+          "x": 816.0,
+          "y": 312.0
+        },
+        "inputs": [
+          "command"
+        ],
+        "outputs": [
+          "status"
+        ]
+      },
+      {
+        "id": 5,
+        "name": "Air transfer",
+        "kind": "Actuator",
+        "pos": {
+          "x": 816.0,
+          "y": 552.0
+        },
+        "inputs": [
+          "command"
+        ],
+        "outputs": [
+          "flow"
+        ]
+      }
+    ],
+    "wires": [
+      {
+        "id": 6,
+        "from": {
+          "block": 0,
+          "index": 0,
+          "output": true
+        },
+        "to": {
+          "block": 1,
+          "index": 0,
+          "output": false
+        },
+        "color": 3234774
+      },
+      {
+        "id": 7,
+        "from": {
+          "block": 0,
+          "index": 0,
+          "output": true
+        },
+        "to": {
+          "block": 2,
+          "index": 0,
+          "output": false
+        },
+        "color": 3234774
+      },
+      {
+        "id": 8,
+        "from": {
+          "block": 1,
+          "index": 0,
+          "output": true
+        },
+        "to": {
+          "block": 2,
+          "index": 1,
+          "output": false
+        },
+        "color": 1213045
+      },
+      {
+        "id": 9,
+        "from": {
+          "block": 1,
+          "index": 1,
+          "output": true
+        },
+        "to": {
+          "block": 2,
+          "index": 2,
+          "output": false
+        },
+        "color": 1213045
+      },
+      {
+        "id": 10,
+        "from": {
+          "block": 2,
+          "index": 0,
+          "output": true
+        },
+        "to": {
+          "block": 3,
+          "index": 0,
+          "output": false
+        },
+        "color": 13204249
+      },
+      {
+        "id": 12,
+        "from": {
+          "block": 2,
+          "index": 2,
+          "output": true
+        },
+        "to": {
+          "block": 5,
+          "index": 0,
+          "output": false
+        },
+        "color": 13204249
+      }
+    ],
+    "next_id": 14
+  },
+  "pan": {
+    "x": 84.00003,
+    "y": -24.0
+  },
+  "zoom": 1.0
+}
