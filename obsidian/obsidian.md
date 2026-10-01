@@ -15,7 +15,11 @@
 - Vimrc Support
 
 # Theme
-- Border
+- Border with a Pi-inspired dark palette and compact headings.
+- Gold headings, blue links, peach bold text, and lavender italics.
+- JetBrainsMono Nerd Font, base font size 17px.
+- Saved settings and restore instructions: `_suport_theme/where_to.md`.
+- `theme_configuration.json` contains the same Style Settings values as `_suport_theme/data.json`.
   
 # Task queries
 
