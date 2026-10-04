@@ -25,3 +25,16 @@ disable annoying `python` suggestion
 ```powershell
 Manage App Execution Aliases
 ```
+
+delete `nul`
+
+node
+```powershell
+node -e "require('fs').unlinkSync('nul')"
+```
+
+python
+```py
+   import os
+   os.unlink(r"\\?\C:\SANDBOX\REPOS\sysmlv2\sysmlv2-code.git\nul")
+```
