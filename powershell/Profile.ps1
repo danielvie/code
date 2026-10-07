@@ -50,6 +50,7 @@ function pilot { C:\Users\daniel\AppData\Local\Voidstar\FilePilot\FPilot.exe $ar
 function e     { pilot $args }
 function ee    { explorer $args }
 function ll    { eza -a $args }
+function j     { mtn jump @args }
 
 # FD wrapper with path separator fix
 function fd  { fdfind --path-separator / $args }
@@ -203,8 +204,6 @@ Set-PSReadLineKeyHandler -Key "Ctrl+e" -ScriptBlock { FZF_explorer }
 Set-PSReadLineKeyHandler -Key "Alt+e"  -ScriptBlock { FZF_explorer }
 
 # --- Aliases ---
-
-Set-Alias ag    antigravity
 Set-Alias b     bun
 Set-Alias c     code
 Set-Alias cdvim cd_nvim
@@ -214,7 +213,6 @@ Set-Alias g     git
 Set-Alias gwt   git-wt
 Set-Alias gfe   gfetch
 Set-Alias gs    gstatus
-Set-Alias j     just
 Set-Alias m     mingw32-make
 Set-Alias o     ollama
 Set-Alias ob    obsidian
