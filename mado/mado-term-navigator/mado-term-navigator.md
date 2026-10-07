@@ -14,4 +14,7 @@ Set-PSReadLineKeyHandler -Chord 'Ctrl+d' -ScriptBlock {
     mtn sub
     [Microsoft.PowerShell.PSConsoleReadLine]::InvokePrompt()
 }
+
+function j     { mtn jump @args }
 ```
+
