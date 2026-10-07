@@ -1,0 +1,72 @@
+[
+  {
+    "path": "C:/Program Files",
+    "depth": 3,
+    "include_hidden": false,
+    "respect_ignore_files": true,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/Program Files (x86)",
+    "depth": 3,
+    "include_hidden": false,
+    "respect_ignore_files": true,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/SANDBOX",
+    "depth": 5,
+    "include_hidden": false,
+    "respect_ignore_files": true,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/SANDBOX/NOTES/OBSIDIAN/main/main/BOEING/LTP/",
+    "depth": 5,
+    "include_hidden": false,
+    "respect_ignore_files": true,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/Users/daniel",
+    "depth": 4,
+    "include_hidden": true,
+    "respect_ignore_files": false,
+    "unrestricted": true
+  },
+  {
+    "path": "C:/Users/daniel/AppData/Local",
+    "depth": 4,
+    "include_hidden": false,
+    "respect_ignore_files": true,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/Users/daniel/AppData/Local/nvim",
+    "depth": 2,
+    "include_hidden": false,
+    "respect_ignore_files": false,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/Users/daniel/Documents",
+    "depth": 7,
+    "include_hidden": false,
+    "respect_ignore_files": false,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/Users/daniel/Documents/doutorado.git",
+    "depth": 10,
+    "include_hidden": false,
+    "respect_ignore_files": true,
+    "unrestricted": false
+  },
+  {
+    "path": "C:/Users/daniel/Downloads",
+    "depth": 0,
+    "include_hidden": false,
+    "respect_ignore_files": true,
+    "unrestricted": false
+  }
+]
