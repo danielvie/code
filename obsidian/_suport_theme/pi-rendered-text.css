@@ -1,0 +1,95 @@
+/* Pi-style note typography. Disable this snippet to restore the vault defaults. */
+.workspace-leaf-content[data-type="markdown"] :is(.markdown-preview-view, .markdown-source-view) {
+  --font-text: var(--font-text-override, var(--font-monospace));
+  --font-text-theme: var(--font-text);
+  --line-height-normal: 1.35;
+  --line-height-tight: 1.35;
+  --p-spacing: 1.35em;
+  --heading-spacing: 1.35em;
+  --h1-size: 1em;
+  --h2-size: 1em;
+  --h3-size: 1em;
+  --h4-size: 1em;
+  --h5-size: 1em;
+  --h6-size: 1em;
+  --h1-font: var(--font-text);
+  --h2-font: var(--font-text);
+  --h3-font: var(--font-text);
+  --h4-font: var(--font-text);
+  --h5-font: var(--font-text);
+  --h6-font: var(--font-text);
+  --h1-weight: 700;
+  --h2-weight: 700;
+  --h3-weight: 700;
+  --h4-weight: 700;
+  --h5-weight: 700;
+  --h6-weight: 700;
+  --h1-style: normal;
+  --h2-style: normal;
+  --h3-style: normal;
+  --h4-style: normal;
+  --h5-style: normal;
+  --h6-style: normal;
+  --list-spacing: 0;
+  --list-indent: 4ch;
+  --code-size: 1em;
+  --code-radius: 0;
+  --code-normal: var(--text-accent);
+  --blockquote-border-thickness: 1px;
+  --blockquote-background-color: transparent;
+  font-family: var(--font-text);
+  line-height: var(--line-height-normal);
+  color: var(--text-normal);
+}
+
+.theme-dark .workspace-leaf-content[data-type="markdown"] {
+  --background-primary: #202329;
+  background-color: var(--background-primary);
+}
+
+/* Colors from Pi's dark theme; light mode keeps the vault's own palette. */
+.theme-dark .workspace-leaf-content[data-type="markdown"] :is(.markdown-preview-view, .markdown-source-view) {
+  --text-normal: #dee0e1;
+  --text-muted: #9da5a9;
+  --bold-color: #68b78d;
+  --italic-color: #d49aa6;
+  --h1-color: #cd9a22;
+  --h2-color: #dca16d;
+  --h3-color: #79b8d8;
+  --h4-color: #73bfb0;
+  --h5-color: #b3a2df;
+  --h6-color: #aab5c4;
+  --link-color: #69add0;
+  --link-external-color: #69add0;
+  --code-normal: #a798d7;
+  --list-marker-color: #a798d7;
+  --blockquote-color: #9da5a9;
+  --blockquote-border-color: #9da5a9;
+}
+
+.workspace-leaf-content[data-type="markdown"] :is(.inline-title, .markdown-rendered h1) {
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  font-weight: 700;
+  line-height: 1.35;
+  text-decoration: underline;
+}
+
+.workspace-leaf-content[data-type="markdown"] .inline-title {
+  margin-bottom: 1.35em;
+  color: var(--h1-color);
+}
+
+.workspace-leaf-content[data-type="markdown"] .markdown-rendered :is(h1, h2, h3, h4, h5, h6) {
+  margin-block: 1.35em;
+  line-height: 1.35;
+}
+
+.workspace-leaf-content[data-type="markdown"] .markdown-source-view.mod-cm6 .cm-line.HyperMD-header {
+  padding-top: 0;
+  line-height: 1.35;
+}
+
+.workspace-leaf-content[data-type="markdown"] .cm-header-1 {
+  text-decoration: underline;
+}

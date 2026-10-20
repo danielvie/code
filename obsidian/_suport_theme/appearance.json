@@ -1,6 +1,11 @@
 {
   "textFontFamily": "JetBrainsMono Nerd Font",
-  "cssTheme": "Border",
+  "cssTheme": "",
   "baseFontSize": 17,
-  "interfaceFontFamily": "JetBrainsMono Nerd Font"
+  "interfaceFontFamily": "JetBrainsMono Nerd Font",
+  "enabledCssSnippets": [
+    "pi-rendered-text",
+    "pi-agent-colors"
+  ],
+  "theme": "obsidian"
 }

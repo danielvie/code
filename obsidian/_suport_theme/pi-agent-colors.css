@@ -1,0 +1,78 @@
+/* Restore the saved Pi panel palette without Border or global layout changes. */
+.theme-dark .workspace-leaf-content[data-type="pi-agent-view"] {
+  --background-primary: #282c34;
+  --background-primary-alt: #23272f;
+  --background-secondary: #23272f;
+  --background-secondary-alt: #34383a;
+  --background-modifier-hover: #ffffff13;
+  --background-modifier-border: #9da5a933;
+  --background-modifier-border-hover: #484e52;
+  --background-modifier-border-focus: #768186;
+  --background-modifier-error: #ea7f81;
+  --interactive-normal: #34383a;
+  --interactive-hover: #484e52;
+  --interactive-accent: #a798d7;
+  --interactive-accent-hover: #a798d7;
+  --text-accent: #a798d7;
+  --text-accent-hover: #a798d7;
+  --text-on-accent: #23272f;
+  --text-normal: #dee0e1;
+  --text-muted: #9da5a9;
+  --text-faint: #9da5a9;
+  --text-error: #ea7f81;
+  --text-warning: #cd9a22;
+  --text-success: #68b78d;
+  --text-highlight-bg: #4e2f1b;
+  --text-selection: #a798d766;
+  --h1-color: #cd9a22;
+  --h2-color: #69add0;
+  --h3-color: #a798d7;
+  --h4-color: #a798d7;
+  --h5-color: #a798d7;
+  --h6-color: #a798d7;
+  --bold-color: #de8d5a;
+  --italic-color: #a798d7;
+  --link-color: #69add0;
+  --link-color-hover: #a798d7;
+  --link-external-color: #69add0;
+  --link-external-color-hover: #a798d7;
+  --link-unresolved-color: #ea7f81;
+  --link-unresolved-decoration-color: #ea7f81;
+  --list-marker-color: #a798d7;
+  --list-marker-color-hover: #a798d7;
+  --code-normal: #a798d7;
+  --code-background: #23272f;
+  --code-comment: #9da5a9;
+  --code-function: #cd9a22;
+  --code-important: #cd9a22;
+  --code-keyword: #69add0;
+  --code-operator: #9da5a9;
+  --code-property: #5db3ba;
+  --code-punctuation: #9da5a9;
+  --code-string: #de8d5a;
+  --code-tag: #a798d7;
+  --code-value: #68b78d;
+  --blockquote-background-color: #34383a;
+  --blockquote-color: #9da5a9;
+  --tag-color: #a798d7;
+  --tag-background: #3a3055;
+  --tag-background-hover: #3a3055;
+  --checkbox-color: #68b78d;
+  --checkbox-color-hover: #68b78d;
+  background-color: var(--background-primary);
+  color: var(--text-normal);
+}
+
+.theme-dark .workspace-leaf-content[data-type="pi-agent-view"] .pi-agent-message-content {
+  background-color: var(--background-primary);
+}
+
+/* Pi supplies its own code backgrounds, so override color only, not geometry. */
+.theme-dark .pi-agent-view :is(.pi-agent-message-content, .pi-agent-message-answer).markdown-rendered pre {
+  --code-normal: #dee0e1;
+  background-color: var(--code-background);
+}
+
+.theme-dark .pi-agent-view :is(.pi-agent-message-content, .pi-agent-message-answer).markdown-rendered :not(pre) > code {
+  background-color: var(--code-background);
+}
