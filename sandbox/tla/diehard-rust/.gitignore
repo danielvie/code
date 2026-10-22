@@ -1,0 +1,8 @@
+# Rust build output and backup files
+/target/
+**/*.rs.bk
+
+# OS metadata
+.DS_Store
+Thumbs.db
+Desktop.ini

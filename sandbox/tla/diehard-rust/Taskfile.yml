@@ -1,0 +1,36 @@
+version: '3'
+
+dir: '{{.TASKFILE_DIR}}'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Find and print the DieHard solution using the Rust TLA+ checker
+    cmds:
+      - cargo run --locked
+
+  test:
+    desc: Check the solution trace and the full reachable state space
+    cmds:
+      - cargo test --locked
+
+  build:
+    desc: Build the Rust runner
+    cmds:
+      - cargo build --locked
+
+  check:
+    desc: Check formatting, lint the runner, and run tests
+    cmds:
+      - cargo fmt --all -- --check
+      - cargo clippy --locked --all-targets -- -D warnings
+      - task: test
+
+  clean:
+    desc: Remove Rust build output
+    cmds:
+      - cargo clean
