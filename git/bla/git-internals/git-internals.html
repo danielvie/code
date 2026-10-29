@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Git Under the Hood</title>
+<style>
+  :root {
+    --bg: #12151c;
+    --panel: #1a1f2b;
+    --text: #d7dce4;
+    --muted: #8b93a3;
+    --accent: #f05133;      /* git orange */
+    --blob: #4da3ff;
+    --tree: #ffc857;
+    --commit: #7ee787;
+    --tag: #d2a8ff;
+    --line: #3a4254;
+    --code-bg: #0d1017;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Segoe UI", system-ui, sans-serif;
+    line-height: 1.65;
+  }
+  main { max-width: 960px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+  h1 { font-size: 2.2rem; margin: 1rem 0 0.25rem; }
+  h1 span { color: var(--accent); }
+  .subtitle { color: var(--muted); margin-bottom: 3rem; }
+  h2 {
+    margin-top: 3.5rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 1.5rem;
+  }
+  h3 { margin-top: 2rem; font-size: 1.15rem; }
+  p, li { color: var(--text); }
+  .muted { color: var(--muted); }
+  code {
+    font-family: Consolas, "Cascadia Code", monospace;
+    background: var(--code-bg);
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  pre code { background: none; padding: 0; }
+  .cmt { color: var(--muted); }
+  .k { color: var(--accent); }
+  .figure {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin: 1.75rem 0;
+  }
+  .figure svg { width: 100%; height: auto; display: block; }
+  .caption { color: var(--muted); font-size: 0.88rem; margin-top: 0.75rem; text-align: center; }
+  table { border-collapse: collapse; width: 100%; margin: 1.25rem 0; font-size: 0.92rem; }
+  th, td { border: 1px solid var(--line); padding: 0.5rem 0.75rem; text-align: left; }
+  th { background: var(--code-bg); }
+  .legend { display: flex; gap: 1.5rem; flex-wrap: wrap; margin: 0.5rem 0 1rem; font-size: 0.85rem; }
+  .legend span::before {
+    content: ""; display: inline-block; width: 0.75em; height: 0.75em;
+    border-radius: 3px; margin-right: 0.4em; vertical-align: -1px;
+  }
+  .lg-blob::before { background: var(--blob); }
+  .lg-tree::before { background: var(--tree); }
+  .lg-commit::before { background: var(--commit); }
+  .lg-tag::before { background: var(--tag); }
+  .toc { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 1.25rem 1.75rem; }
+  .toc a { color: var(--text); text-decoration: none; }
+  .toc a:hover { color: var(--accent); }
+  .toc ol { margin: 0.5rem 0 0; padding-left: 1.25rem; }
+  .big-idea {
+    border-left: 4px solid var(--accent);
+    background: var(--panel);
+    padding: 0.9rem 1.25rem;
+    border-radius: 0 8px 8px 0;
+    margin: 1.5rem 0;
+  }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Git <span>Under the Hood</span></h1>
+<p class="subtitle">What a commit, a blob, and a tree really are — and how they fit together.</p>
+
+<nav class="toc">
+  <strong>Contents</strong>
+  <ol>
+    <li><a href="#big-idea">The big idea: a content-addressed filesystem</a></li>
+    <li><a href="#objects">The four object types</a></li>
+    <li><a href="#blob">The blob: your file's content</a></li>
+    <li><a href="#tree">The tree: a directory snapshot</a></li>
+    <li><a href="#commit">The commit: a pointer to a tree</a></li>
+    <li><a href="#graph">How commits form history</a></li>
+    <li><a href="#refs">Refs and HEAD: naming the tips</a></li>
+    <li><a href="#sha">How the SHA-1 is computed</a></li>
+    <li><a href="#lifecycle">Putting it together: add and commit</a></li>
+    <li><a href="#cheatsheet">Plumbing commands cheat sheet</a></li>
+  </ol>
+</nav>
+
+<!-- ============================================================ -->
+<h2 id="big-idea">1. The big idea: a content-addressed filesystem</h2>
+
+<p>Most people think of Git as "a tool that tracks changes to files". Under the hood it is something simpler and stranger: <strong>a key-value store</strong>. You hand Git some content, it hands you back a 40-character SHA-1 hash — the <em>key</em>. The content is stored in a file named by that hash inside <code>.git/objects/</code>.</p>
+
+<div class="big-idea">
+  Everything in Git — file contents, directories, commits, tags — is an object in this store, addressed by the hash of its own content. This is called <strong>content-addressable storage</strong>.
+</div>
+
+<p>Two immediate consequences fall out of this design:</p>
+<ul>
+  <li><strong>Identical content is stored only once.</strong> If two files have the same bytes, they are the same blob. If a file doesn't change between commits, the new commit simply points at the existing blob.</li>
+  <li><strong>Nothing can change silently.</strong> Change one byte of an object and its hash changes. The hash <em>is</em> a checksum of the content, so corruption and tampering are detectable by construction.</li>
+</ul>
+
+<div class="figure">
+<svg viewBox="0 0 860 240" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <!-- content -->
+  <rect x="30" y="70" width="220" height="100" rx="10" fill="#1a1f2b" stroke="#3a4254"/>
+  <text x="140" y="100" text-anchor="middle" fill="#d7dce4" font-size="15">file content</text>
+  <text x="140" y="130" text-anchor="middle" fill="#8b93a3" font-size="13">"hello world\n"</text>
+  <!-- arrow -->
+  <line x1="260" y1="120" x2="360" y2="120" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="310" y="105" text-anchor="middle" fill="#f05133" font-size="13">git hash-object</text>
+  <!-- hash -->
+  <rect x="370" y="85" width="300" height="70" rx="10" fill="#0d1017" stroke="#f05133"/>
+  <text x="520" y="115" text-anchor="middle" fill="#f05133" font-size="15">3b18e512dba79e4c8300dd08aeb37f8e</text>
+  <text x="520" y="138" text-anchor="middle" fill="#f05133" font-size="15">bc8f4bc</text>
+  <!-- arrow to disk -->
+  <line x1="680" y1="120" x2="740" y2="120" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow)"/>
+  <!-- disk file -->
+  <rect x="745" y="70" width="90" height="100" rx="10" fill="#1a1f2b" stroke="#3a4254"/>
+  <text x="790" y="105" text-anchor="middle" fill="#d7dce4" font-size="13">.git/</text>
+  <text x="790" y="125" text-anchor="middle" fill="#d7dce4" font-size="13">objects/</text>
+  <text x="790" y="148" text-anchor="middle" fill="#8b93a3" font-size="12">3b/18e5…</text>
+  <text x="430" y="35" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">Content becomes its own address</text>
+</svg>
+<p class="caption">The hash of the content is the key; the content is the value. The hash is derived from the content, never assigned.</p>
+</div>
+
+<p>On disk, objects live at <code>.git/objects/&lt;first 2 chars of hash&gt;/&lt;remaining 38 chars&gt;</code>, zlib-compressed. Try it yourself:</p>
+
+<pre><code><span class="cmt"># store content without creating a file at all</span>
+$ echo "hello world" | git hash-object --stdin
+3b18e512dba79e4c8300dd08aeb37f8ebc8f4bc
+
+<span class="cmt"># -w actually writes the object into .git/objects</span>
+$ echo "hello world" | git hash-object -w --stdin
+$ find .git/objects -type f
+.git/objects/3b/18e512dba79e4c8300dd08aeb37f8ebc8f4bc</code></pre>
+
+<!-- ============================================================ -->
+<h2 id="objects">2. The four object types</h2>
+
+<p>Every object in the store is one of exactly four types. Everything else in Git (branches, the index, remotes) is built on top of these.</p>
+
+<div class="legend">
+  <span class="lg-blob">blob — file content</span>
+  <span class="lg-tree">tree — directory</span>
+  <span class="lg-commit">commit — snapshot + history</span>
+  <span class="lg-tag">tag — annotated pointer</span>
+</div>
+
+<table>
+  <tr><th>Type</th><th>Stores</th><th>Points to</th></tr>
+  <tr><td><code style="color:var(--blob)">blob</code></td><td>Raw bytes of one file (no name, no metadata)</td><td>nothing</td></tr>
+  <tr><td><code style="color:var(--tree)">tree</code></td><td>One directory: a list of entries</td><td>blobs and other trees</td></tr>
+  <tr><td><code style="color:var(--commit)">commit</code></td><td>Snapshot metadata: author, message, parents</td><td>one tree + parent commits</td></tr>
+  <tr><td><code style="color:var(--tag)">tag</code></td><td>Annotated tag: tagger, message</td><td>usually a commit</td></tr>
+</table>
+
+<div class="figure">
+<svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="35" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">The object graph: everything points down</text>
+
+  <!-- commit -->
+  <rect x="330" y="60" width="200" height="80" rx="10" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="430" y="90" text-anchor="middle" fill="#7ee787" font-size="15" font-weight="bold">commit</text>
+  <text x="430" y="115" text-anchor="middle" fill="#8b93a3" font-size="12">tree, parent(s),</text>
+  <text x="430" y="132" text-anchor="middle" fill="#8b93a3" font-size="12">author, message</text>
+
+  <!-- tree root -->
+  <rect x="330" y="185" width="200" height="70" rx="10" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="430" y="215" text-anchor="middle" fill="#ffc857" font-size="15" font-weight="bold">tree</text>
+  <text x="430" y="238" text-anchor="middle" fill="#8b93a3" font-size="12">entries: mode, name, hash</text>
+
+  <!-- blobs -->
+  <rect x="120" y="185" width="140" height="70" rx="10" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="190" y="215" text-anchor="middle" fill="#4da3ff" font-size="15" font-weight="bold">blob</text>
+  <text x="190" y="238" text-anchor="middle" fill="#8b93a3" font-size="12">raw file bytes</text>
+
+  <rect x="600" y="185" width="140" height="70" rx="10" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="670" y="215" text-anchor="middle" fill="#4da3ff" font-size="15" font-weight="bold">blob</text>
+  <text x="670" y="238" text-anchor="middle" fill="#8b93a3" font-size="12">raw file bytes</text>
+
+  <!-- tag -->
+  <rect x="600" y="60" width="140" height="80" rx="10" fill="#1a1f2b" stroke="#d2a8ff" stroke-width="2"/>
+  <text x="670" y="90" text-anchor="middle" fill="#d2a8ff" font-size="15" font-weight="bold">tag</text>
+  <text x="670" y="115" text-anchor="middle" fill="#8b93a3" font-size="12">points at a commit</text>
+
+  <!-- arrows -->
+  <line x1="400" y1="140" x2="400" y2="182" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow2)"/>
+  <text x="415" y="168" fill="#8b93a3" font-size="12">tree</text>
+
+  <line x1="330" y1="230" x2="265" y2="230" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow2)"/>
+  <line x1="530" y1="230" x2="595" y2="230" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <line x1="670" y1="140" x2="560" y2="105" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow2)"/>
+</svg>
+<p class="caption">A commit points to a tree; trees point to blobs and subtrees. Blobs point at nothing — they are the leaves.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="blob">3. The blob: your file's content, and nothing else</h2>
+
+<p>A <strong>blob</strong> (binary large object) is the raw content of one file. Crucially, a blob does <em>not</em> know its own filename, permissions, or which directory it lives in. It is just bytes.</p>
+
+<p>This is why Git can deduplicate: rename a file, and no new blob is created — the same blob is simply referenced from a different place. Change one line of a 100&nbsp;MB file, and Git stores a <em>new</em> blob with the full new content (later, during packing, it computes deltas to save space — but conceptually each version is a full snapshot).</p>
+
+<div class="figure">
+<svg viewBox="0 0 860 260" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="35" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">Same content = same blob, regardless of name or location</text>
+
+  <!-- working dir -->
+  <rect x="40" y="70" width="240" height="150" rx="10" fill="#1a1f2b" stroke="#3a4254"/>
+  <text x="160" y="98" text-anchor="middle" fill="#d7dce4" font-size="14" font-family="Segoe UI, sans-serif">working directory</text>
+  <text x="70" y="130" fill="#8b93a3" font-size="13">docs/readme.md   "hello"</text>
+  <text x="70" y="158" fill="#8b93a3" font-size="13">notes/readme.md  "hello"</text>
+  <text x="70" y="186" fill="#8b93a3" font-size="13">app/main.py      "print(1)"</text>
+
+  <line x1="285" y1="145" x2="345" y2="145" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow3)"/>
+  <text x="315" y="132" text-anchor="middle" fill="#f05133" font-size="12">git add</text>
+
+  <!-- object store -->
+  <rect x="350" y="70" width="470" height="150" rx="10" fill="#0d1017" stroke="#3a4254"/>
+  <text x="585" y="98" text-anchor="middle" fill="#d7dce4" font-size="14" font-family="Segoe UI, sans-serif">object store (.git/objects)</text>
+
+  <rect x="390" y="120" width="180" height="40" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="480" y="145" text-anchor="middle" fill="#4da3ff" font-size="13">blob a1b2c3 "hello"</text>
+
+  <rect x="390" y="170" width="180" height="40" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="480" y="195" text-anchor="middle" fill="#4da3ff" font-size="13">blob d4e5f6 "print(1)"</text>
+
+  <!-- dedup arrows -->
+  <path d="M 160 122 C 330 100, 350 130, 388 138" fill="none" stroke="#4da3ff" stroke-width="1.5" marker-end="url(#arrow3)"/>
+  <path d="M 160 150 C 330 130, 350 130, 388 138" fill="none" stroke="#4da3ff" stroke-width="1.5" marker-end="url(#arrow3)"/>
+  <path d="M 160 178 C 330 190, 350 190, 388 190" fill="none" stroke="#4da3ff" stroke-width="1.5" marker-end="url(#arrow3)"/>
+</svg>
+<p class="caption">Two files named <code>readme.md</code> with identical content map to one blob. The name lives in the tree, not the blob.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="tree">4. The tree: a directory snapshot</h2>
+
+<p>A <strong>tree</strong> represents one directory. It is a flat list of entries, each with a mode, a name, and the hash of a blob or another tree:</p>
+
+<pre><code>$ git cat-file -p HEAD^{tree}
+100644 blob e69de29bb2d1d6434b8b29ae775ad8c2e48c5391    .gitignore
+040000 tree 5b1c8a2f4d3e6f708192a3b4c5d6e7f8091a2b3c    src
+100644 blob 9d1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3d    README.md</code></pre>
+
+<table>
+  <tr><th>Field</th><th>Example</th><th>Meaning</th></tr>
+  <tr><td>mode</td><td><code>100644</code>, <code>100755</code>, <code>040000</code></td><td>regular file, executable, directory (symlinks and gitlinks exist too)</td></tr>
+  <tr><td>type</td><td><code>blob</code> / <code>tree</code></td><td>what the entry points to</td></tr>
+  <tr><td>hash</td><td>40 hex chars</td><td>the child object's key</td></tr>
+  <tr><td>name</td><td><code>README.md</code></td><td>the <em>only</em> place a filename exists in Git</td></tr>
+</table>
+
+<p>Trees nest: a tree entry can point at another tree, which is how subdirectories work. A commit's tree is the root, and following it recursively gives you the complete state of every file in the project at that moment.</p>
+
+<div class="figure">
+<svg viewBox="0 0 860 460" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="30" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">A project directory maps to a tree of trees and blobs</text>
+
+  <!-- left: filesystem -->
+  <text x="180" y="70" text-anchor="middle" fill="#8b93a3" font-size="14" font-family="Segoe UI, sans-serif">filesystem</text>
+  <rect x="60" y="85" width="240" height="330" rx="10" fill="#1a1f2b" stroke="#3a4254"/>
+  <text x="80" y="115" fill="#d7dce4" font-size="14">project/</text>
+  <text x="100" y="145" fill="#d7dce4" font-size="13">├── README.md</text>
+  <text x="100" y="175" fill="#d7dce4" font-size="13">├── app.py</text>
+  <text x="100" y="205" fill="#d7dce4" font-size="13">└── src/</text>
+  <text x="120" y="235" fill="#d7dce4" font-size="13">    ├── main.py</text>
+  <text x="120" y="265" fill="#d7dce4" font-size="13">    └── util/</text>
+  <text x="140" y="295" fill="#d7dce4" font-size="13">        └── helpers.py</text>
+  <text x="100" y="335" fill="#d7dce4" font-size="13">└── logo.png</text>
+
+  <!-- right: git objects -->
+  <text x="620" y="70" text-anchor="middle" fill="#8b93a3" font-size="14" font-family="Segoe UI, sans-serif">git objects</text>
+
+  <!-- root tree -->
+  <rect x="490" y="85" width="260" height="60" rx="10" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="620" y="112" text-anchor="middle" fill="#ffc857" font-size="14" font-weight="bold">tree (root)</text>
+  <text x="620" y="132" text-anchor="middle" fill="#8b93a3" font-size="11">README.md, app.py, src/, logo.png</text>
+
+  <!-- src tree -->
+  <rect x="490" y="195" width="260" height="60" rx="10" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="620" y="222" text-anchor="middle" fill="#ffc857" font-size="14" font-weight="bold">tree (src)</text>
+  <text x="620" y="242" text-anchor="middle" fill="#8b93a3" font-size="11">main.py, util/</text>
+
+  <!-- util tree -->
+  <rect x="490" y="300" width="260" height="55" rx="10" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="620" y="325" text-anchor="middle" fill="#ffc857" font-size="14" font-weight="bold">tree (src/util)</text>
+  <text x="620" y="345" text-anchor="middle" fill="#8b93a3" font-size="11">helpers.py</text>
+
+  <!-- blobs -->
+  <rect x="120" y="380" width="150" height="45" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="195" y="408" text-anchor="middle" fill="#4da3ff" font-size="13">blobs (contents)</text>
+  <rect x="560" y="395" width="150" height="45" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="635" y="423" text-anchor="middle" fill="#4da3ff" font-size="13">blob × 4</text>
+
+  <!-- arrows tree->tree -->
+  <line x1="560" y1="145" x2="560" y2="192" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow4)"/>
+  <line x1="560" y1="255" x2="560" y2="297" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow4)"/>
+  <!-- arrows tree->blob -->
+  <line x1="680" y1="355" x2="660" y2="392" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow4)"/>
+  <line x1="500" y1="145" x2="290" y2="385" stroke="#8b93a3" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow4)"/>
+  <text x="360" y="250" fill="#8b93a3" font-size="11">each file entry points to a blob</text>
+</svg>
+<p class="caption">Directories become trees; files become blobs. The filename exists only as an entry inside a tree.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="commit">5. The commit: a pointer to a tree (plus history)</h2>
+
+<p>Here is the key mental shift: <strong>a commit is not a diff</strong>. A commit is a snapshot of the entire project, encoded as a pointer to a root tree. It also records metadata and the hash(es) of its parent commit(s), which is where "history" comes from.</p>
+
+<pre><code>$ git cat-file -p HEAD
+tree 8f3c2a1b4d5e6f708192a3b4c5d6e7f8091a2b3c
+parent 91c4d2e5f6a708192a3b4c5d6e7f8091a2b3c4d
+parent 2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e   <span class="cmt">← second parent = merge commit</span>
+author Jane Doe &lt;jane@example.com&gt; 1724700000 +0200
+committer Jane Doe &lt;jane@example.com&gt; 1724700000 +0200
+
+Add user authentication</code></pre>
+
+<table>
+  <tr><th>Field</th><th>Role</th></tr>
+  <tr><td><code>tree</code></td><td>the snapshot: root tree of the whole project at this moment</td></tr>
+  <tr><td><code>parent</code></td><td>zero or more parent commits (0 = initial, 1 = normal, 2+ = merge)</td></tr>
+  <tr><td><code>author</code> / <code>committer</code></td><td>who wrote it / who committed it (can differ, e.g. patches applied by email)</td></tr>
+  <tr><td>message</td><td>free text</td></tr>
+</table>
+
+<div class="big-idea">
+  A commit's hash covers its <em>content and its parents</em>. Because each commit's hash includes its parent's hash, the chain is tamper-evident all the way back: rewrite any old commit and every descendant hash changes. This is why "rewriting history" means creating entirely new commits.
+</div>
+
+<div class="figure">
+<svg viewBox="0 0 860 250" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="30" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">Anatomy of one commit object</text>
+
+  <rect x="230" y="55" width="400" height="160" rx="12" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="430" y="85" text-anchor="middle" fill="#7ee787" font-size="15" font-weight="bold">commit 4a5b6c7…</text>
+
+  <text x="260" y="120" fill="#d7dce4" font-size="13">tree:   8f3c2a1…</text>
+  <text x="260" y="145" fill="#d7dce4" font-size="13">parent: 91c4d2e…</text>
+  <text x="260" y="170" fill="#d7dce4" font-size="13">author: Jane  1724700000 +0200</text>
+  <text x="260" y="195" fill="#d7dce4" font-size="13">message: "Add feature"</text>
+
+  <!-- annotations -->
+  <line x1="630" y1="115" x2="700" y2="115" stroke="#ffc857" stroke-width="2" marker-end="url(#arrow5)"/>
+  <rect x="705" y="90" width="130" height="50" rx="8" fill="#0d1017" stroke="#ffc857"/>
+  <text x="770" y="112" text-anchor="middle" fill="#ffc857" font-size="12">the snapshot</text>
+  <text x="770" y="130" text-anchor="middle" fill="#8b93a3" font-size="11">(root tree)</text>
+
+  <line x1="630" y1="140" x2="700" y2="170" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow5)"/>
+  <rect x="705" y="155" width="130" height="50" rx="8" fill="#0d1017" stroke="#3a4254"/>
+  <text x="770" y="177" text-anchor="middle" fill="#d7dce4" font-size="12">the history</text>
+  <text x="770" y="195" text-anchor="middle" fill="#8b93a3" font-size="11">(previous commit)</text>
+</svg>
+<p class="caption">A commit = one snapshot (tree) + links to the past (parents) + metadata.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="graph">6. How commits form history</h2>
+
+<p>Each commit points to its parent(s), so history is a directed graph that grows forward in time and is read backward. A normal commit has one parent; a merge commit has two or more; the initial commit has none.</p>
+
+<div class="figure">
+<svg viewBox="0 0 860 330" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="30" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">History is a graph of snapshots, not a list of changes</text>
+
+  <!-- commits left to right, arrows point backward (child -> parent) -->
+  <!-- C1 -->
+  <circle cx="90" cy="180" r="26" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="90" y="186" text-anchor="middle" fill="#7ee787" font-size="13">C1</text>
+  <!-- C2 -->
+  <circle cx="230" cy="180" r="26" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="230" y="186" text-anchor="middle" fill="#7ee787" font-size="13">C2</text>
+  <!-- C3 -->
+  <circle cx="370" cy="180" r="26" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="370" y="186" text-anchor="middle" fill="#7ee787" font-size="13">C3</text>
+  <!-- C4 branch -->
+  <circle cx="370" cy="80" r="26" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="370" y="86" text-anchor="middle" fill="#7ee787" font-size="13">C4</text>
+  <!-- C5 merge -->
+  <circle cx="510" cy="130" r="26" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="510" y="136" text-anchor="middle" fill="#7ee787" font-size="13">C5</text>
+  <!-- C6 -->
+  <circle cx="650" cy="130" r="26" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="650" y="136" text-anchor="middle" fill="#7ee787" font-size="13">C6</text>
+
+  <!-- branch labels -->
+  <rect x="610" y="60" width="80" height="30" rx="15" fill="#0d1017" stroke="#f05133"/>
+  <text x="650" y="80" text-anchor="middle" fill="#f05133" font-size="13">main</text>
+  <line x1="650" y1="90" x2="650" y2="100" stroke="#f05133" stroke-width="1.5"/>
+
+  <!-- arrows (child -> parent) -->
+  <line x1="207" y1="180" x2="120" y2="180" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow6)"/>
+  <line x1="347" y1="180" x2="260" y2="180" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow6)"/>
+  <line x1="355" y1="102" x2="385" y2="158" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow6)"/>
+  <line x1="487" y1="120" x2="395" y2="90"  stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow6)"/>
+  <line x1="487" y1="142" x2="395" y2="172" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow6)"/>
+  <line x1="627" y1="130" x2="540" y2="130" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow6)"/>
+
+  <!-- annotations -->
+  <text x="90" y="235" text-anchor="middle" fill="#8b93a3" font-size="12">no parent</text>
+  <text x="90" y="252" text-anchor="middle" fill="#8b93a3" font-size="12">(initial)</text>
+  <text x="510" y="235" text-anchor="middle" fill="#8b93a3" font-size="12">two parents</text>
+  <text x="510" y="252" text-anchor="middle" fill="#8b93a3" font-size="12">(merge)</text>
+  <text x="770" y="135" text-anchor="middle" fill="#f05133" font-size="12">a branch is just a</text>
+  <text x="770" y="152" text-anchor="middle" fill="#f05133" font-size="12">movable pointer</text>
+</svg>
+<p class="caption">Arrows point from child to parent: each commit knows where it came from, not what came after.</p>
+</div>
+
+<p>And each commit's tree points at a full snapshot. Here are three commits where only one file changed between C2 and C3 — note that unchanged files still point at the <em>same</em> blobs:</p>
+
+<div class="figure">
+<svg viewBox="0 0 860 420" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="28" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">Three commits, two trees, three blobs — sharing in action</text>
+
+  <!-- commits row -->
+  <circle cx="150" cy="90" r="24" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="150" y="96" text-anchor="middle" fill="#7ee787" font-size="13">C1</text>
+  <circle cx="430" cy="90" r="24" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="430" y="96" text-anchor="middle" fill="#7ee787" font-size="13">C2</text>
+  <circle cx="710" cy="90" r="24" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="710" y="96" text-anchor="middle" fill="#7ee787" font-size="13">C3</text>
+
+  <line x1="407" y1="90" x2="178" y2="90" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow7)"/>
+  <line x1="687" y1="90" x2="458" y2="90" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow7)"/>
+  <text x="292" y="78" text-anchor="middle" fill="#8b93a3" font-size="11">parent</text>
+  <text x="572" y="78" text-anchor="middle" fill="#8b93a3" font-size="11">parent</text>
+
+  <!-- trees -->
+  <rect x="90" y="170" width="120" height="45" rx="8" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="150" y="198" text-anchor="middle" fill="#ffc857" font-size="13">tree T1</text>
+
+  <rect x="370" y="170" width="120" height="45" rx="8" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="430" y="198" text-anchor="middle" fill="#ffc857" font-size="13">tree T2</text>
+
+  <rect x="650" y="170" width="120" height="45" rx="8" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="710" y="198" text-anchor="middle" fill="#ffc857" font-size="13">tree T3</text>
+
+  <!-- commit->tree -->
+  <line x1="150" y1="114" x2="150" y2="167" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow7)"/>
+  <line x1="430" y1="114" x2="430" y2="167" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow7)"/>
+  <line x1="710" y1="114" x2="710" y2="167" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow7)"/>
+
+  <!-- blobs -->
+  <rect x="60" y="290" width="180" height="45" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="150" y="312" text-anchor="middle" fill="#4da3ff" font-size="12">blob B1  README "v1"</text>
+  <text x="150" y="328" text-anchor="middle" fill="#8b93a3" font-size="10">shared by C1, C2, C3</text>
+
+  <rect x="340" y="290" width="180" height="45" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="430" y="312" text-anchor="middle" fill="#4da3ff" font-size="12">blob B2  app.py "v1"</text>
+  <text x="430" y="328" text-anchor="middle" fill="#8b93a3" font-size="10">shared by C1, C2, C3</text>
+
+  <rect x="620" y="290" width="180" height="45" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="710" y="312" text-anchor="middle" fill="#4da3ff" font-size="12">blob B3  README "v2"</text>
+  <text x="710" y="328" text-anchor="middle" fill="#8b93a3" font-size="10">only C3</text>
+
+  <!-- T1 -> B1, B2 -->
+  <line x1="120" y1="215" x2="140" y2="287" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow7)"/>
+  <line x1="165" y1="215" x2="395" y2="287" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow7)"/>
+  <!-- T2 -> B1, B2 -->
+  <line x1="400" y1="215" x2="175" y2="287" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow7)"/>
+  <line x1="445" y1="215" x2="440" y2="287" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow7)"/>
+  <!-- T3 -> B2, B3 -->
+  <line x1="680" y1="215" x2="490" y2="287" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow7)"/>
+  <line x1="725" y1="215" x2="715" y2="287" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow7)"/>
+
+  <text x="430" y="385" text-anchor="middle" fill="#8b93a3" font-size="12" font-family="Segoe UI, sans-serif">C3 changed README only: new blob B3, new tree T3 — but app.py's blob B2 is reused.</text>
+</svg>
+<p class="caption">Commits chain via parents; trees are per-commit snapshots; blobs are shared whenever content is unchanged.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="refs">7. Refs and HEAD: naming the tips</h2>
+
+<p>Hashes are unwieldy, so Git gives them names. A <strong>ref</strong> is a tiny text file containing one hash:</p>
+
+<pre><code>.git/HEAD                <span class="cmt">→ "ref: refs/heads/main" (symbolic)</span>
+.git/refs/heads/main     <span class="cmt">→ 4a5b6c7d8e...   (the commit main points to)</span>
+.git/refs/heads/feature  <span class="cmt">→ 91c4d2e5f6...</span></code></pre>
+
+<ul>
+  <li><strong>A branch is nothing but a ref that moves forward when you commit.</strong> There is no branch object, no branch history — just a 41-byte file.</li>
+  <li><strong>HEAD</strong> is a symbolic ref: it names the branch you have checked out (or, in "detached HEAD" state, a raw commit hash).</li>
+  <li><strong>Tags</strong> are refs too — lightweight tags point straight at a commit; annotated tags point at a tag object, which points at the commit.</li>
+</ul>
+
+<div class="figure">
+<svg viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="30" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">HEAD → branch → commit → tree → blobs</text>
+
+  <!-- HEAD -->
+  <rect x="60" y="70" width="120" height="45" rx="8" fill="#0d1017" stroke="#f05133" stroke-width="2"/>
+  <text x="120" y="98" text-anchor="middle" fill="#f05133" font-size="14">HEAD</text>
+
+  <!-- branch -->
+  <rect x="240" y="70" width="120" height="45" rx="8" fill="#0d1017" stroke="#f05133" stroke-width="2"/>
+  <text x="300" y="98" text-anchor="middle" fill="#f05133" font-size="14">main</text>
+
+  <!-- commits -->
+  <circle cx="470" cy="92" r="24" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="470" y="98" text-anchor="middle" fill="#7ee787" font-size="12">C3</text>
+  <circle cx="600" cy="92" r="24" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="600" y="98" text-anchor="middle" fill="#7ee787" font-size="12">C2</text>
+  <circle cx="730" cy="92" r="24" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="730" y="98" text-anchor="middle" fill="#7ee787" font-size="12">C1</text>
+
+  <!-- tree -->
+  <rect x="410" y="180" width="120" height="45" rx="8" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="470" y="208" text-anchor="middle" fill="#ffc857" font-size="13">tree</text>
+
+  <!-- blobs -->
+  <rect x="570" y="180" width="90" height="45" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="615" y="208" text-anchor="middle" fill="#4da3ff" font-size="13">blob</text>
+  <rect x="680" y="180" width="90" height="45" rx="8" fill="#1a1f2b" stroke="#4da3ff" stroke-width="2"/>
+  <text x="725" y="208" text-anchor="middle" fill="#4da3ff" font-size="13">blob</text>
+
+  <!-- arrows -->
+  <line x1="180" y1="92" x2="236" y2="92" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow8)"/>
+  <text x="208" y="80" text-anchor="middle" fill="#8b93a3" font-size="11">ref:</text>
+  <line x1="360" y1="92" x2="442" y2="92" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow8)"/>
+  <line x1="460" y1="116" x2="580" y2="116" stroke="#8b93a3" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow8)"/>
+  <text x="520" y="110" text-anchor="middle" fill="#8b93a3" font-size="10">parent</text>
+  <line x1="590" y1="116" x2="712" y2="116" stroke="#8b93a3" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrow8)"/>
+  <line x1="470" y1="116" x2="470" y2="177" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow8)"/>
+  <line x1="530" y1="202" x2="566" y2="202" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow8)"/>
+  <line x1="660" y1="202" x2="676" y2="202" stroke="#8b93a3" stroke-width="1.5" marker-end="url(#arrow8)"/>
+
+  <text x="430" y="270" text-anchor="middle" fill="#8b93a3" font-size="12" font-family="Segoe UI, sans-serif">When you commit, Git writes new objects, then moves the branch ref — that's all "a commit on a branch" means.</text>
+</svg>
+<p class="caption">The full pointer chain from a human-friendly name down to raw file content.</p>
+</div>
+
+<!-- ============================================================ -->
+<h2 id="sha">8. How the SHA-1 is computed</h2>
+
+<p>An object's key is the SHA-1 of a small header followed by the content. The header is the object type, a space, the byte length, a NUL byte — then the payload:</p>
+
+<pre><code>hash = SHA1( "&lt;type&gt; &lt;size&gt;\0" + content )
+
+<span class="cmt"># e.g. for a blob containing "hello world\n":</span>
+$ printf "blob 12\0hello world\n" | sha1sum
+3b18e512dba79e4c8300dd08aeb37f8ebc8f4bc</code></pre>
+
+<p>Because the type and size are part of the hash, a blob and a tree can never collide by accident, and the hash pins the object's entire identity.</p>
+
+<!-- ============================================================ -->
+<h2 id="lifecycle">9. Putting it together: add and commit</h2>
+
+<p>Now the everyday commands make sense in object terms:</p>
+
+<div class="figure">
+<svg viewBox="0 0 860 340" xmlns="http://www.w3.org/2000/svg" font-family="Consolas, monospace">
+  <defs>
+    <marker id="arrow9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b93a3"/>
+    </marker>
+  </defs>
+  <text x="430" y="30" text-anchor="middle" fill="#d7dce4" font-size="16" font-family="Segoe UI, sans-serif" font-weight="bold">Where your work lives at each stage</text>
+
+  <!-- working dir -->
+  <rect x="40" y="70" width="220" height="200" rx="10" fill="#1a1f2b" stroke="#3a4254"/>
+  <text x="150" y="100" text-anchor="middle" fill="#d7dce4" font-size="14" font-family="Segoe UI, sans-serif">working directory</text>
+  <text x="150" y="130" text-anchor="middle" fill="#8b93a3" font-size="12">plain files on disk</text>
+  <text x="150" y="155" text-anchor="middle" fill="#8b93a3" font-size="12">no objects yet</text>
+
+  <!-- index -->
+  <rect x="320" y="70" width="220" height="200" rx="10" fill="#1a1f2b" stroke="#ffc857" stroke-width="2"/>
+  <text x="430" y="100" text-anchor="middle" fill="#ffc857" font-size="14" font-family="Segoe UI, sans-serif">index (staging)</text>
+  <text x="430" y="130" text-anchor="middle" fill="#8b93a3" font-size="12">a list: name → blob hash</text>
+  <text x="430" y="155" text-anchor="middle" fill="#8b93a3" font-size="12">= the <tspan fill="#ffc857">next</tspan> tree, pre-built</text>
+  <text x="430" y="185" text-anchor="middle" fill="#8b93a3" font-size="12">blobs already written</text>
+  <text x="430" y="205" text-anchor="middle" fill="#8b93a3" font-size="12">to the object store</text>
+
+  <!-- repo -->
+  <rect x="600" y="70" width="220" height="200" rx="10" fill="#1a1f2b" stroke="#7ee787" stroke-width="2"/>
+  <text x="710" y="100" text-anchor="middle" fill="#7ee787" font-size="14" font-family="Segoe UI, sans-serif">repository</text>
+  <text x="710" y="130" text-anchor="middle" fill="#8b93a3" font-size="12">commit → tree → blobs</text>
+  <text x="710" y="155" text-anchor="middle" fill="#8b93a3" font-size="12">branch ref updated</text>
+  <text x="710" y="185" text-anchor="middle" fill="#8b93a3" font-size="12">immutable snapshots</text>
+
+  <!-- arrows -->
+  <line x1="262" y1="170" x2="316" y2="170" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow9)"/>
+  <text x="289" y="155" text-anchor="middle" fill="#f05133" font-size="13">git add</text>
+  <line x1="542" y1="170" x2="596" y2="170" stroke="#8b93a3" stroke-width="2" marker-end="url(#arrow9)"/>
+  <text x="569" y="155" text-anchor="middle" fill="#f05133" font-size="13">git commit</text>
+
+  <text x="430" y="310" text-anchor="middle" fill="#8b93a3" font-size="12" font-family="Segoe UI, sans-serif">The index is why you can stage half a file: it is a separate tree under construction, not a copy of HEAD.</text>
+</svg>
+<p class="caption"><code>git add</code> writes blobs and records them in the index; <code>git commit</code> turns the index into a tree, wraps it in a commit, and moves the branch ref.</p>
+</div>
+
+<p>Step by step, what <code>git add app.py</code> + <code>git commit -m "fix"</code> actually do:</p>
+<ol>
+  <li><strong>add:</strong> compress <code>app.py</code>'s content, write a blob object (if that content doesn't already exist), record <code>app.py → &lt;blob hash&gt;</code> in the index.</li>
+  <li><strong>commit:</strong> write tree objects from the index (nested directories become nested trees).</li>
+  <li><strong>commit:</strong> write the commit object: root tree hash, parent = current <code>HEAD</code> commit, author, message.</li>
+  <li><strong>commit:</strong> update <code>refs/heads/main</code> to the new commit's hash. Done — the "branch" has moved.</li>
+</ol>
+
+<!-- ============================================================ -->
+<h2 id="cheatsheet">10. Plumbing commands cheat sheet</h2>
+
+<p>Git's low-level ("plumbing") commands let you inspect the object database directly:</p>
+
+<pre><code><span class="cmt"># what type is this object? (-t) / print its content (-p)</span>
+$ git cat-file -t  3b18e51          <span class="cmt">→ blob</span>
+$ git cat-file -p  3b18e51          <span class="cmt">→ hello world</span>
+
+<span class="cmt"># list a tree without switching to it</span>
+$ git ls-tree HEAD src
+
+<span class="cmt"># every object in the store, with type and size</span>
+$ git cat-file --batch-all-objects --batch-check
+
+<span class="cmt"># everything reachable from all refs (garbage-collection view)</span>
+$ git rev-list --all --objects
+
+<span class="cmt"># where a blob's content lives across history</span>
+$ git log --all --oneline -- path/to/file</code></pre>
+
+<div class="big-idea">
+  The one-sentence summary: <strong>a commit is a named snapshot whose hash chains it to its parents; a tree is a directory listing mapping names to blobs and subtrees; a blob is file content with no name and no history.</strong> Branches, HEAD, tags, the index — all of it is bookkeeping on top of this object graph.
+</div>
+
+</main>
+</body>
+</html>

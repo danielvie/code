@@ -1,0 +1,22 @@
+version: "3"
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  run:
+    aliases: [r]
+    desc: Run the interactive questionnaire
+    cmds:
+      - elixir hello.exs
+
+  test:
+    desc: Test the state machine transitions
+    cmds:
+      - elixir test/questionnaire_test.exs
+
+  version:
+    desc: Show Elixir and Erlang versions
+    cmds:
+      - elixir --version

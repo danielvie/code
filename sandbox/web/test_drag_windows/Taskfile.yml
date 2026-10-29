@@ -1,0 +1,29 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  setup:
+    desc: Install dependencies and the Chromium test browser
+    cmds:
+      - bun install
+      - bunx playwright install chromium
+
+  run:
+    desc: Run the prototype at http://localhost:3000/prototype.html
+    cmds:
+      - bun run run
+
+  test:
+    desc: Verify cross-window synthetic drag-and-drop in headless Chromium
+    cmds:
+      - bun run test
+
+  clear:
+    desc: Clear generated test output
+    cmds:
+      - >-
+        node -e "require('fs').rmSync('test-results', { recursive: true, force: true })"

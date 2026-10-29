@@ -1,0 +1,12 @@
+{
+  "name": "cross-window-drag-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "run": "node server.js",
+    "test": "node test.js"
+  },
+  "devDependencies": {
+    "playwright": "1.61.1"
+  }
+}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PROTOTYPE — cross-window drag</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; min-height: 100vh; overflow: hidden; font: 16px system-ui; background: #eef2ff; }
+    header { position: relative; z-index: 2; padding: 16px; background: #111827; color: white; }
+    button { margin-left: 12px; padding: 6px 10px; }
+    #item, #dropzone { position: absolute; display: grid; place-items: center; border-radius: 12px; }
+    #item { width: 130px; height: 70px; cursor: grab; color: white; background: #2563eb; box-shadow: 0 8px 20px #0003; }
+    #dropzone { width: 180px; height: 120px; border: 3px dashed #64748b; background: #fff; }
+    #dropzone.over { border-color: #16a34a; background: #dcfce7; }
+    #state { position: fixed; left: 16px; bottom: 16px; z-index: 2; margin: 0; padding: 10px; background: #ffffffdd; }
+  </style>
+</head>
+<body>
+  <!-- PROTOTYPE: prove synthetic DataTransfer handoff between two browser Pages. -->
+  <header>
+    Window <strong id="window-name"></strong>
+    <button id="open-window">Open another window</button>
+  </header>
+  <div id="item" draggable="true" data-testid="item">Drag item-42</div>
+  <div id="dropzone" data-testid="dropzone">Drop here</div>
+  <pre id="state" data-testid="state"></pre>
+  <script>
+    const params = new URLSearchParams(location.search);
+    const windowId = params.get('window') || 'A';
+    const item = document.querySelector('#item');
+    const dropzone = document.querySelector('#dropzone');
+    const state = document.querySelector('#state');
+    document.querySelector('#window-name').textContent = windowId;
+
+    const random = (min, max) => Math.floor(min + Math.random() * (max - min));
+    item.style.left = `${random(20, innerWidth / 2 - 150)}px`;
+    item.style.top = `${random(100, innerHeight - 90)}px`;
+    dropzone.style.left = `${random(innerWidth / 2 + 20, innerWidth - 200)}px`;
+    dropzone.style.top = `${random(100, innerHeight - 140)}px`;
+
+    const render = value => state.textContent = JSON.stringify(value, null, 2);
+    render({ windowId, status: 'ready' });
+
+    item.addEventListener('dragstart', event => {
+      event.dataTransfer.setData('application/x-tree-item', JSON.stringify({ id: 'item-42', sourceWindow: windowId }));
+      event.dataTransfer.effectAllowed = 'move';
+      render({ windowId, status: 'dragging', itemId: 'item-42' });
+    });
+    dropzone.addEventListener('dragenter', () => dropzone.classList.add('over'));
+    dropzone.addEventListener('dragover', event => event.preventDefault());
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('over'));
+    dropzone.addEventListener('drop', event => {
+      event.preventDefault();
+      dropzone.classList.remove('over');
+      const payload = JSON.parse(event.dataTransfer.getData('application/x-tree-item'));
+      render({ windowId, status: 'dropped', ...payload });
+    });
+    document.querySelector('#open-window').addEventListener('click', () => {
+      window.open(`/prototype.html?window=${windowId === 'A' ? 'B' : 'A'}`, '_blank', 'popup,width=900,height=700');
+    });
+  </script>
+</body>
+</html>

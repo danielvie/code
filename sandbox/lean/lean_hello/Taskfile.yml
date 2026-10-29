@@ -1,0 +1,27 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Run the Lean hello world
+    cmds:
+      - lean --run hello.lean
+
+  test:
+    desc: Type-check the Lean program
+    cmds:
+      - lean hello.lean
+
+  build:
+    desc: Compile the Lean module
+    cmds:
+      - lean -o hello.olean hello.lean
+
+  clean:
+    desc: Remove the compiled Lean module
+    cmds:
+      - rm -f hello.olean
