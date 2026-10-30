@@ -1,0 +1,22 @@
+version: '3'
+
+tasks:
+  default:
+    cmds:
+      - task --list
+
+  run:
+    aliases: [r]
+    desc: "Run main application"
+    cmds:
+      - cargo run
+
+  test:
+    desc: "Run tests"
+    cmds:
+      - cargo test
+
+  clean:
+    desc: "Remove build artifacts"
+    cmds:
+      - cargo clean
