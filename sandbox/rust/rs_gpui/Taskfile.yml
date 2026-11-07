@@ -7,7 +7,7 @@ tasks:
       - task --list
 
   run:
-    desc: Run the GPUI counter
+    desc: Run the GPUI Bezier canvas
     cmds:
       - cargo run
 

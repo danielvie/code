@@ -4,4 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-gpui = "=0.2.2"
+gpui-pre = "0.3.11"
+gpui-pre-platform = "0.3.11"
