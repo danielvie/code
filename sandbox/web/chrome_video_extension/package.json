@@ -1,0 +1,16 @@
+{
+  "name": "lesson-video-saver",
+  "version": "0.3.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "node tools/check.mjs",
+    "run": "node tools/run.mjs",
+    "clean": "node tools/clean.mjs",
+    "smoke": "node tools/smoke.mjs",
+    "smoke:firefox": "python tools/firefox-smoke.py",
+    "package:firefox": "python tools/package-firefox.py"
+  },
+  "engines": { "node": ">=22" }
+}

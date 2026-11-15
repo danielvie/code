@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>25 icon concepts | Lesson video saver</title>
+<style>
+  :root { color-scheme: light; --ink: #172c40; --muted: #526376; --line: #dbe3ea; --paper: #fff; --canvas: #f3f6f9; --blue: #155a82; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: var(--canvas); font: 14px/1.5 "Segoe UI", Arial, sans-serif; }
+  main { max-width: 1280px; margin: auto; padding: 32px; }
+  header { display: flex; align-items: end; justify-content: space-between; gap: 24px; margin-bottom: 24px; }
+  h1 { font-size: 30px; line-height: 1.2; letter-spacing: -.5px; margin: 0 0 8px; font-weight: 650; }
+  header p { margin: 0; color: var(--muted); max-width: 650px; }
+  .recommendation { font-size: 12px; padding: 10px 14px; background: #e3eef5; border-radius: 6px; max-width: 270px; }
+  .recommendation strong { display: block; }
+  .grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+  article { background: var(--paper); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; min-width: 0; }
+  .number { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .preview { height: 80px; display: flex; align-items: center; justify-content: center; }
+  .preview svg { width: 64px; height: 64px; }
+  h2 { font-size: 13px; font-weight: 650; margin: 0 0 10px; }
+  .sizes { border-top: 1px solid var(--line); padding-top: 8px; display: flex; align-items: center; justify-content: center; gap: 20px; }
+  .sample { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px; }
+  .sample svg { flex-shrink: 0; }
+  footer { margin-top: 20px; color: var(--muted); font-size: 12px; }
+  .sprite { position: absolute; width: 0; height: 0; overflow: hidden; }
+  @media (max-width: 1000px) { .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } header { align-items: start; flex-direction: column; gap: 12px; } }
+  @media (max-width: 720px) { main { padding: 20px; } .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } h1 { font-size: 25px; } }
+  @media (max-width: 480px) { .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } article { padding: 10px; } .sizes { gap: 10px; } }
+</style>
+</head>
+<body>
+<!-- Original SVG concepts. Every symbol uses a 64 by 64 canvas. No external assets. -->
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+<defs>
+  <symbol id="icon-01" viewBox="0 0 64 64">
+    <rect x="3" y="3" width="58" height="58" rx="14" fill="#155a82"/>
+    <path d="M25 14 43 25 25 36Z" fill="#fff"/>
+    <path d="M32 36v12m-7-6 7 7 7-7M19 48v6h26v-6" fill="none" stroke="#7ae0d0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-02" viewBox="0 0 64 64">
+    <circle cx="32" cy="32" r="29" fill="#087f77"/>
+    <path d="m21 14 29 18-29 18Z" fill="#fff"/>
+    <path d="M30 26v14m-5-5 5 5 5-5" fill="none" stroke="#087f77" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-03" viewBox="0 0 64 64">
+    <rect x="4" y="7" width="52" height="42" rx="8" fill="#213e60"/>
+    <path d="m24 17 18 11-18 11Z" fill="#fff"/>
+    <circle cx="49" cy="48" r="13" fill="#d76a24" stroke="#fff" stroke-width="3"/>
+    <path d="M49 41v13m-5-5 5 5 5-5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-04" viewBox="0 0 64 64">
+    <circle cx="32" cy="24" r="20" fill="#155a82"/>
+    <path d="m27 14 15 10-15 10Z" fill="#fff"/>
+    <path d="M11 45v11h42V45M32 40v12m-6-6 6 6 6-6" fill="none" stroke="#087f77" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-05" viewBox="0 0 64 64">
+    <path d="M5 18a5 5 0 0 1 5-5h15l6 7h23a5 5 0 0 1 5 5v27H5Z" fill="#d99125"/>
+    <path d="m17 29 14 9-14 9Z" fill="#fff"/>
+    <path d="M44 29v17m-7-7 7 7 7-7" fill="none" stroke="#563b16" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-06" viewBox="0 0 64 64">
+    <path d="M13 4h26l13 13v43H13Z" fill="#e3eef5" stroke="#155a82" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M39 4v14h13" fill="none" stroke="#155a82" stroke-width="4"/>
+    <path d="m25 23 15 10-15 10Z" fill="#155a82"/>
+    <path d="M24 50h17" stroke="#087f77" stroke-width="5" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-07" viewBox="0 0 64 64">
+    <path d="M15 46a13 13 0 0 1-2-26A20 20 0 0 1 51 22a12 12 0 0 1-1 24Z" fill="#357da0"/>
+    <path d="m27 14 14 9-14 9Z" fill="#fff"/>
+    <path d="M32 35v22m-8-8 8 8 8-8" fill="none" stroke="#17364b" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-08" viewBox="0 0 64 64">
+    <rect x="8" y="4" width="48" height="56" rx="6" fill="#233e56"/>
+    <path d="M14 12h5m-5 12h5m-5 12h5m-5 12h5m26-36h5m-5 12h5m-5 12h5m-5 12h5" stroke="#fff" stroke-width="5"/>
+    <path d="m26 16 15 10-15 10Z" fill="#7ae0d0"/>
+    <path d="M32 39v14m-5-5 5 5 5-5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-09" viewBox="0 0 64 64">
+    <path d="M8 7h48v50H8Z" fill="none" stroke="#155a82" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M8 18h48" stroke="#155a82" stroke-width="5"/>
+    <circle cx="15" cy="12.5" r="2" fill="#155a82"/><circle cx="22" cy="12.5" r="2" fill="#155a82"/>
+    <path d="m19 27 13 8-13 8Z" fill="#155a82"/>
+    <path d="M43 26v21m-6-6 6 6 6-6" fill="none" stroke="#087f77" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-10" viewBox="0 0 64 64">
+    <path d="M18 7h28v49L32 46 18 56Z" fill="#087f77"/>
+    <path d="m26 17 14 9-14 9Z" fill="#fff"/>
+    <path d="M9 50v9h46v-9" fill="none" stroke="#17364b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-11" viewBox="0 0 64 64">
+    <rect x="5" y="20" width="54" height="39" rx="6" fill="#155a82"/>
+    <path d="M8 9h51v13H8Z" fill="#213e60" transform="rotate(-9 8 22)"/>
+    <path d="m17 8-5 13m18-15-5 13m18-15-5 13m18-15-5 13" stroke="#fff" stroke-width="5"/>
+    <path d="m19 31 15 9-15 9Z" fill="#fff"/>
+    <path d="M46 30v19m-6-6 6 6 6-6" fill="none" stroke="#7ae0d0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-12" viewBox="0 0 64 64">
+    <path d="m4 20 28-13 28 13-28 13Z" fill="#155a82"/>
+    <path d="M15 29v13q17 11 34 0V29" fill="#5da2bd"/>
+    <path d="M57 22v19" stroke="#155a82" stroke-width="3" stroke-linecap="round"/>
+    <path d="M32 36v20m-7-7 7 7 7-7" fill="none" stroke="#17364b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-13" viewBox="0 0 64 64">
+    <rect x="7" y="7" width="50" height="50" rx="12" fill="#fff" stroke="#155a82" stroke-width="5"/>
+    <path d="m19 18 16 10-16 10Z" fill="#155a82"/>
+    <path d="m37 41 5 5 10-12" fill="none" stroke="#087f77" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-14" viewBox="0 0 64 64">
+    <path d="m9 25 8-17h30l8 17v32H9Z" fill="#dcebf1" stroke="#155a82" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M9 36h13l5 7h10l5-7h13" fill="none" stroke="#155a82" stroke-width="4" stroke-linejoin="round"/>
+    <path d="m26 15 14 9-14 9Z" fill="#087f77"/>
+  </symbol>
+  <symbol id="icon-15" viewBox="0 0 64 64">
+    <path d="m32 3 25 14v30L32 61 7 47V17Z" fill="#235e64"/>
+    <path d="m23 14 20 12-20 12Z" fill="#fff"/>
+    <path d="M32 38v14m-6-6 6 6 6-6" fill="none" stroke="#98d8c4" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-16" viewBox="0 0 64 64">
+    <path d="M5 10h23l5 5h26v39H5Z" fill="#f1be67"/>
+    <path d="M5 25h54v29H5Z" fill="#d99125"/>
+    <path d="m18 30 17 10-17 10Z" fill="#fff"/>
+    <path d="M46 29v18m-6-6 6 6 6-6" fill="none" stroke="#624115" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-17" viewBox="0 0 64 64">
+    <path d="M6 16q13-5 26 2 13-7 26-2v35q-13-5-26 2-13-7-26-2Z" fill="#e5f0f5" stroke="#155a82" stroke-width="4" stroke-linejoin="round"/>
+    <path d="M32 18v35" stroke="#155a82" stroke-width="3"/>
+    <path d="m15 25 12 8-12 8Z" fill="#155a82"/>
+    <path d="M45 25v18m-5-5 5 5 5-5" fill="none" stroke="#087f77" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-18" viewBox="0 0 64 64">
+    <rect x="4" y="7" width="56" height="50" rx="12" fill="#155a82"/>
+    <path d="M18 18v28h27" fill="none" stroke="#fff" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="m30 16 17 11-17 11Z" fill="#7ae0d0"/>
+  </symbol>
+  <symbol id="icon-19" viewBox="0 0 64 64">
+    <path d="m32 5 25 15v24L32 59 7 44V20Z" fill="#e3eef5" stroke="#155a82" stroke-width="4" stroke-linejoin="round"/>
+    <path d="m8 20 24 14 24-14M32 34v24" fill="none" stroke="#155a82" stroke-width="4" stroke-linejoin="round"/>
+    <path d="m25 14 15 9-15 9Z" fill="#087f77"/>
+  </symbol>
+  <symbol id="icon-20" viewBox="0 0 64 64">
+    <circle cx="28" cy="27" r="20" fill="#e5f1f4" stroke="#155a82" stroke-width="5"/>
+    <path d="m23 17 15 10-15 10Z" fill="#155a82"/>
+    <path d="m43 43 14 14" stroke="#155a82" stroke-width="7" stroke-linecap="round"/>
+    <path d="M51 10v18m-6-6 6 6 6-6" fill="none" stroke="#087f77" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-21" viewBox="0 0 64 64">
+    <path d="m20 8-5 48M43 8l-5 48M8 24h48M6 41h48" fill="none" stroke="#155a82" stroke-width="6" stroke-linecap="round"/>
+    <circle cx="47" cy="47" r="14" fill="#087f77" stroke="#fff" stroke-width="3"/>
+    <path d="M47 39v15m-5-5 5 5 5-5" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+  <symbol id="icon-22" viewBox="0 0 64 64">
+    <path d="M15 3h34v20H15Z" fill="#155a82"/>
+    <path d="M24 17h16l-8 12Z" fill="#155a82"/>
+    <path d="M8 35v23h48V35H43l-5 8H26l-5-8Z" fill="#087f77"/>
+    <path d="m27 46 12 6-12 6Z" fill="#fff"/>
+  </symbol>
+  <symbol id="icon-23" viewBox="0 0 64 64">
+    <rect x="4" y="4" width="56" height="56" rx="14" fill="#2f566f"/>
+    <path d="m17 15 29 17-29 17Z" fill="#fff"/>
+    <path d="M47 15v34" stroke="#92d9ca" stroke-width="5" stroke-linecap="round"/>
+    <path d="M15 54h34" stroke="#92d9ca" stroke-width="4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-24" viewBox="0 0 64 64">
+    <path d="M7 23h50v34H7Z" fill="#155a82"/>
+    <path d="M4 12h56v13H4Z" fill="#78a6bb"/>
+    <path d="m26 30 14 9-14 9Z" fill="#fff"/>
+    <path d="M24 18h16" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="icon-25" viewBox="0 0 64 64">
+    <path d="M8 16h48v36H8Z" fill="none" stroke="#155a82" stroke-width="5" stroke-linejoin="round"/>
+    <path d="m25 24 15 10-15 10Z" fill="#155a82"/>
+    <circle cx="50" cy="49" r="13" fill="#087f77" stroke="#fff" stroke-width="3"/>
+    <path d="m44 49 4 4 8-9" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+</defs>
+</svg>
+<main>
+<header>
+  <div><h1>A small icon for your lesson videos.</h1><p>25 directions for Lesson video saver. Compare the large mark with its actual toolbar sizes, then pick a number.</p></div>
+  <aside class="recommendation"><strong>My shortlist: 01, 03, 15, 18, 25</strong>Simple silhouettes, clear video cues, and less detail to lose at 16px.</aside>
+</header>
+<div class="grid">
+  <article><span class="number">01</span><div class="preview"><svg role="img" aria-labelledby="name-01" viewBox="0 0 64 64"><use href="#icon-01"/></svg></div><h2 id="name-01">Play to tray</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-01"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-01"/></svg>32px</span></div></article>
+  <article><span class="number">02</span><div class="preview"><svg role="img" aria-labelledby="name-02" viewBox="0 0 64 64"><use href="#icon-02"/></svg></div><h2 id="name-02">Arrow inside play</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-02"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-02"/></svg>32px</span></div></article>
+  <article><span class="number">03</span><div class="preview"><svg role="img" aria-labelledby="name-03" viewBox="0 0 64 64"><use href="#icon-03"/></svg></div><h2 id="name-03">Player with save badge</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-03"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-03"/></svg>32px</span></div></article>
+  <article><span class="number">04</span><div class="preview"><svg role="img" aria-labelledby="name-04" viewBox="0 0 64 64"><use href="#icon-04"/></svg></div><h2 id="name-04">Playback dock</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-04"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-04"/></svg>32px</span></div></article>
+  <article><span class="number">05</span><div class="preview"><svg role="img" aria-labelledby="name-05" viewBox="0 0 64 64"><use href="#icon-05"/></svg></div><h2 id="name-05">Video folder</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-05"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-05"/></svg>32px</span></div></article>
+  <article><span class="number">06</span><div class="preview"><svg role="img" aria-labelledby="name-06" viewBox="0 0 64 64"><use href="#icon-06"/></svg></div><h2 id="name-06">Original video file</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-06"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-06"/></svg>32px</span></div></article>
+  <article><span class="number">07</span><div class="preview"><svg role="img" aria-labelledby="name-07" viewBox="0 0 64 64"><use href="#icon-07"/></svg></div><h2 id="name-07">Cloud to computer</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-07"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-07"/></svg>32px</span></div></article>
+  <article><span class="number">08</span><div class="preview"><svg role="img" aria-labelledby="name-08" viewBox="0 0 64 64"><use href="#icon-08"/></svg></div><h2 id="name-08">Film strip</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-08"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-08"/></svg>32px</span></div></article>
+  <article><span class="number">09</span><div class="preview"><svg role="img" aria-labelledby="name-09" viewBox="0 0 64 64"><use href="#icon-09"/></svg></div><h2 id="name-09">From this tab</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-09"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-09"/></svg>32px</span></div></article>
+  <article><span class="number">10</span><div class="preview"><svg role="img" aria-labelledby="name-10" viewBox="0 0 64 64"><use href="#icon-10"/></svg></div><h2 id="name-10">Keep this lesson</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-10"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-10"/></svg>32px</span></div></article>
+  <article><span class="number">11</span><div class="preview"><svg role="img" aria-labelledby="name-11" viewBox="0 0 64 64"><use href="#icon-11"/></svg></div><h2 id="name-11">Clapperboard</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-11"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-11"/></svg>32px</span></div></article>
+  <article><span class="number">12</span><div class="preview"><svg role="img" aria-labelledby="name-12" viewBox="0 0 64 64"><use href="#icon-12"/></svg></div><h2 id="name-12">Course download</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-12"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-12"/></svg>32px</span></div></article>
+  <article><span class="number">13</span><div class="preview"><svg role="img" aria-labelledby="name-13" viewBox="0 0 64 64"><use href="#icon-13"/></svg></div><h2 id="name-13">Saved playback</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-13"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-13"/></svg>32px</span></div></article>
+  <article><span class="number">14</span><div class="preview"><svg role="img" aria-labelledby="name-14" viewBox="0 0 64 64"><use href="#icon-14"/></svg></div><h2 id="name-14">Video inbox</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-14"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-14"/></svg>32px</span></div></article>
+  <article><span class="number">15</span><div class="preview"><svg role="img" aria-labelledby="name-15" viewBox="0 0 64 64"><use href="#icon-15"/></svg></div><h2 id="name-15">Play hexagon</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-15"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-15"/></svg>32px</span></div></article>
+  <article><span class="number">16</span><div class="preview"><svg role="img" aria-labelledby="name-16" viewBox="0 0 64 64"><use href="#icon-16"/></svg></div><h2 id="name-16">Open save folder</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-16"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-16"/></svg>32px</span></div></article>
+  <article><span class="number">17</span><div class="preview"><svg role="img" aria-labelledby="name-17" viewBox="0 0 64 64"><use href="#icon-17"/></svg></div><h2 id="name-17">Lesson book</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-17"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-17"/></svg>32px</span></div></article>
+  <article><span class="number">18</span><div class="preview"><svg role="img" aria-labelledby="name-18" viewBox="0 0 64 64"><use href="#icon-18"/></svg></div><h2 id="name-18">Lesson monogram</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-18"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-18"/></svg>32px</span></div></article>
+  <article><span class="number">19</span><div class="preview"><svg role="img" aria-labelledby="name-19" viewBox="0 0 64 64"><use href="#icon-19"/></svg></div><h2 id="name-19">Video package</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-19"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-19"/></svg>32px</span></div></article>
+  <article><span class="number">20</span><div class="preview"><svg role="img" aria-labelledby="name-20" viewBox="0 0 64 64"><use href="#icon-20"/></svg></div><h2 id="name-20">Find and save</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-20"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-20"/></svg>32px</span></div></article>
+  <article><span class="number">21</span><div class="preview"><svg role="img" aria-labelledby="name-21" viewBox="0 0 64 64"><use href="#icon-21"/></svg></div><h2 id="name-21">Hash and save</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-21"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-21"/></svg>32px</span></div></article>
+  <article><span class="number">22</span><div class="preview"><svg role="img" aria-labelledby="name-22" viewBox="0 0 64 64"><use href="#icon-22"/></svg></div><h2 id="name-22">Into the tray</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-22"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-22"/></svg>32px</span></div></article>
+  <article><span class="number">23</span><div class="preview"><svg role="img" aria-labelledby="name-23" viewBox="0 0 64 64"><use href="#icon-23"/></svg></div><h2 id="name-23">Play on disk</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-23"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-23"/></svg>32px</span></div></article>
+  <article><span class="number">24</span><div class="preview"><svg role="img" aria-labelledby="name-24" viewBox="0 0 64 64"><use href="#icon-24"/></svg></div><h2 id="name-24">Video archive</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-24"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-24"/></svg>32px</span></div></article>
+  <article><span class="number">25</span><div class="preview"><svg role="img" aria-labelledby="name-25" viewBox="0 0 64 64"><use href="#icon-25"/></svg></div><h2 id="name-25">Ready offline</h2><div class="sizes"><span class="sample"><svg width="16" height="16" aria-hidden="true"><use href="#icon-25"/></svg>16px</span><span class="sample"><svg width="32" height="32" aria-hidden="true"><use href="#icon-25"/></svg>32px</span></div></article>
+</div>
+<footer>All concepts are original inline SVGs. This is a comparison sheet only; the installed extension has not been changed. A chosen mark can be refined for Chrome's 16px, 32px, 48px and 128px icon sizes.</footer>
+</main>
+</body>
+</html>

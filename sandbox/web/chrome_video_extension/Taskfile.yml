@@ -1,0 +1,35 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+  run:
+    desc: Open Chrome's extension manager and print installation instructions
+    cmds:
+      - node tools/run.mjs
+  test:
+    desc: Run focused media detection and original-filename tests
+    cmds:
+      - npm test
+  check:
+    desc: Check JavaScript syntax and extension manifest references
+    cmds:
+      - npm run check
+  smoke:
+    desc: Check the unpacked extension in an isolated Chromium profile
+    cmds:
+      - npm run smoke
+  smoke-firefox:
+    desc: Check temporary installation and downloads in isolated Firefox
+    cmds:
+      - python tools/firefox-smoke.py
+  package-firefox:
+    desc: Build an unsigned Firefox package for temporary installation or signing
+    cmds:
+      - python tools/package-firefox.py
+  clean:
+    desc: Remove generated artifacts, never downloaded videos
+    cmds:
+      - node tools/clean.mjs
