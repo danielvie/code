@@ -1,2 +1,16 @@
 .DS_Store
 target/
+
+# Generated build outputs and caches
+/sandbox/ai/python_agent/step8_mcp/build/
+/sandbox/ai/python_agent/step9_skill/build/
+/sandbox/c/c_arena/build/
+/sandbox/java/java_opentelemetry/back/bin/
+/sandbox/python/py_monorepo/math-monorepo-bun/.nx/
+/sandbox/python/py_monorepo/math-monorepo-uv-nx/.nx/
+/sandbox/web/web_otel/dist/
+/sandbox/web/web_otel/*.tsbuildinfo
+/rust/rust_book/c_examples/c_prototype/main.exe
+/rust/rust_book/c_examples/c_prototype/main.o
+/rust/rust_book/c_examples/c_prototype/soma.o
+/sandbox/java/java_robot/src/main/java/DragDropBot.class
