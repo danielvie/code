@@ -1,0 +1,6 @@
+/.cache/
+/.task/
+/grammars/
+/extension.wasm
+/__pycache__/
+/tests/__pycache__/

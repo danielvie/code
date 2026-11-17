@@ -1,0 +1,50 @@
+version: '3'
+
+vars:
+  GRAMMAR_DIR: .cache/tree-sitter-tlaplus
+  GRAMMAR_REPOSITORY:
+    sh: python -c "import pathlib, tomllib; print(tomllib.loads(pathlib.Path('extension.toml').read_text(encoding='utf-8'))['grammars']['tlaplus']['repository'])"
+  GRAMMAR_REV:
+    sh: python -c "import pathlib, tomllib; print(tomllib.loads(pathlib.Path('extension.toml').read_text(encoding='utf-8'))['grammars']['tlaplus']['rev'])"
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task --list
+
+  setup:
+    desc: Fetch the pinned Tree-sitter grammar for local checks
+    status:
+      - test "$(git -C '{{.GRAMMAR_DIR}}' rev-parse HEAD 2>/dev/null)" = '{{.GRAMMAR_REV}}'
+    cmds:
+      - git init -q "{{.GRAMMAR_DIR}}"
+      - git -C "{{.GRAMMAR_DIR}}" fetch --depth 1 "{{.GRAMMAR_REPOSITORY}}" "{{.GRAMMAR_REV}}"
+      - git -C "{{.GRAMMAR_DIR}}" checkout --detach FETCH_HEAD
+
+  build:
+    desc: Compile the grammar into a native library for tests
+    deps: [setup]
+    sources:
+      - extension.toml
+      - '{{.GRAMMAR_DIR}}/src/**'
+    generates:
+      - .cache/tlaplus.so
+    cmds:
+      - tree-sitter build "{{.GRAMMAR_DIR}}" --output .cache/tlaplus.so
+
+  test:
+    desc: Check metadata, parsing, highlighting, brackets, and queries
+    deps: [build]
+    cmds:
+      - python -m unittest discover -s tests -v
+
+  run:
+    desc: Open the extension and sample module in Zed
+    cmds:
+      - zed . examples/Counter.tla
+
+  clean:
+    desc: Remove downloaded grammar and generated build files
+    cmds:
+      - rm -rf .cache .task grammars extension.wasm

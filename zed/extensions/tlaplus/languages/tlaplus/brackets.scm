@@ -1,0 +1,7 @@
+("(" @open ")" @close)
+("[" @open "]" @close)
+("{" @open "}" @close)
+((langle_bracket) @open (rangle_bracket) @close)
+(step_expr_or_stutter "[" @open "]_" @close)
+(step_expr_no_stutter (langle_bracket) @open (rangle_bracket_sub) @close)
+(("\"" @open "\"" @close) (#set! rainbow.exclude))

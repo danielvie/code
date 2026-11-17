@@ -1,0 +1,7 @@
+{
+  "url": "https://github.com/tlaplus/tlapm/blob/main/examples/Euclid.tla",
+  "download_url": "https://raw.githubusercontent.com/tlaplus/tlapm/main/examples/Euclid.tla",
+  "bytes": 2003,
+  "sha256": "e91d47ecd63881b3f9009dd9740b44017314e48c2e720055d16c41babf374268",
+  "identical_to_bundled_1_4_5_example": true
+}

@@ -1,0 +1,48 @@
+version: '3'
+
+tasks:
+  default:
+    desc: List the isolated experiment tasks
+    cmds:
+      - task --list
+
+  extract:
+    desc: Extract the verified downloaded package without executing the installer
+    cmds:
+      - python extract_package.py
+
+  runtime:
+    desc: Fetch and verify the folder-local archived x86 runtime DLLs and shell
+    cmds:
+      - python fetch_runtime.py
+
+  run:
+    desc: Probe folder-local Windows executables with a process-local environment
+    cmds:
+      - python probe.py
+
+  proof:
+    desc: Check valid Zenon and SMT proofs and reject false theorems with both backends
+    cmds:
+      - python proof_probe.py
+
+  euclid:
+    desc: Run the unchanged upstream Euclid proof with the Windows bundle
+    cmds:
+      - python run_euclid.py
+
+  relocation:
+    desc: Check the wrapper and SMT proof in a separate bundle path containing spaces
+    cmds:
+      - python relocation_probe.py
+
+  test:
+    desc: Run startup and actual proof smoke checks
+    cmds:
+      - python probe.py
+      - python proof_probe.py
+
+  clean:
+    desc: Remove only generated probe scratch files, preserving downloads and evidence
+    cmds:
+      - python -c "import shutil; shutil.rmtree('scratch', ignore_errors=True)"

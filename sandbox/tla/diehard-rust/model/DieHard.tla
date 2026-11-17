@@ -16,9 +16,7 @@ EXTENDS Naturals
 (***************************************************************************)
 (* We next declare the specification's variables.                          *)
 (***************************************************************************)
-VARIABLES big,   \* The number of gallons of water in the 5 gallon jug.
-          small  \* The number of gallons of water in the 3 gallon jug.
-
+VARIABLES big, small 
 
 (***************************************************************************)
 (* We now define TypeOK to be the type invariant, asserting that the value *)
@@ -37,7 +35,6 @@ VARIABLES big,   \* The number of gallons of water in the 5 gallon jug.
 (***************************************************************************)
 TypeOK == /\ small \in 0..3 
           /\ big   \in 0..5
-
 
 (***************************************************************************)
 (* Now we define of the initial predicate, that specifies the initial      *)

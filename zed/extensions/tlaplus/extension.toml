@@ -1,0 +1,11 @@
+id = "tlaplus"
+name = "TLA+"
+version = "0.1.0"
+schema_version = 1
+authors = ["danielvie"]
+description = "TLA+ syntax highlighting, comments, bracket matching, and indentation."
+repository = "https://github.com/danielvie/code"
+
+[grammars.tlaplus]
+repository = "https://github.com/tlaplus-community/tree-sitter-tlaplus"
+rev = "add40814fda369f6efd989977b2c498aaddde984"

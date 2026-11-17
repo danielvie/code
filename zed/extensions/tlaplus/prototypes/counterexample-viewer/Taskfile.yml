@@ -1,0 +1,21 @@
+version: '3'
+
+vars:
+  PORT: '{{default "8765" .PORT}}'
+
+tasks:
+  default:
+    desc: List prototype tasks
+    cmds:
+      - task --list
+
+  run:
+    desc: Serve the visual prototype at http://127.0.0.1:8765
+    cmds:
+      - python -m http.server {{.PORT}} --bind 127.0.0.1 --directory "{{.TASKFILE_DIR}}"
+
+  check:
+    desc: Check the inline JavaScript syntax without running TLC or extension tests
+    dir: '{{.TASKFILE_DIR}}'
+    cmds:
+      - node -e "const fs = require('node:fs'); const vm = require('node:vm'); const html = fs.readFileSync('index.html', 'utf8'); const script = html.match(/<script>([\s\S]*?)<\/script>/)[1]; new vm.Script(script); console.log('Inline JavaScript syntax OK');"

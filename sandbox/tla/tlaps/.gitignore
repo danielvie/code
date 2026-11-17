@@ -1,0 +1,16 @@
+# Downloaded distributions, extracted tools, and archives
+/bundle/
+/runtime/
+/downloads/
+/*.zip
+
+# Probe output, generated proofs, and relocated test copies
+/logs/
+/scratch/
+/relocation check/
+*.tlaps/
+
+# Task and Python caches
+/.task/
+__pycache__/
+*.py[cod]
